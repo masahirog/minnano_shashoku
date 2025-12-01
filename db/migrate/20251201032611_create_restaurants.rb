@@ -2,7 +2,7 @@ class CreateRestaurants < ActiveRecord::Migration[7.1]
   def change
     create_table :restaurants do |t|
       t.string :name, null: false
-      t.references :staff, foreign_key: true
+      t.references :staff, foreign_key: { to_table: :staff }
       t.string :supplier_code
       t.string :invoice_number
       t.string :contract_status, null: false

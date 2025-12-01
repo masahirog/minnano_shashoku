@@ -4,7 +4,7 @@ class CreateCompanies < ActiveRecord::Migration[7.1]
       t.string :name, null: false
       t.string :formal_name, null: false
       t.string :contract_status, null: false
-      t.references :staff, foreign_key: true
+      t.references :staff, foreign_key: { to_table: :staff }
 
       # クライアント情報
       t.string :contact_person
