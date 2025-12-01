@@ -1,0 +1,7 @@
+:concurrency: 5
+:queues:
+  - default
+  - mailers
+
+:schedule:
+  # 将来的に定期実行タスクを追加する場合はここに記述
