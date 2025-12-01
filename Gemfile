@@ -41,6 +41,7 @@ gem "redis", ">= 4.0.1"
 # 管理画面
 gem "activeadmin"
 gem "devise"
+gem "sassc-rails"
 
 # バックグラウンド処理
 gem "sidekiq"

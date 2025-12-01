@@ -309,6 +309,14 @@ GEM
     rubyzip (3.2.2)
     rufus-scheduler (3.9.2)
       fugit (~> 1.1, >= 1.11.1)
+    sassc (2.4.0)
+      ffi (~> 1.9)
+    sassc-rails (2.1.2)
+      railties (>= 4.0.0)
+      sassc (>= 2.0)
+      sprockets (> 3.0)
+      sprockets-rails
+      tilt
     securerandom (0.4.1)
     sidekiq (7.3.9)
       base64
@@ -337,6 +345,7 @@ GEM
     tailwindcss-ruby (4.1.16-arm64-darwin)
     tailwindcss-ruby (4.1.16-x86_64-linux-gnu)
     thor (1.4.0)
+    tilt (2.6.1)
     timeout (0.4.4)
     tsort (0.2.0)
     ttfunk (1.8.0)
@@ -382,6 +391,7 @@ DEPENDENCIES
   rails (~> 7.1.5, >= 7.1.5.1)
   redis (>= 4.0.1)
   roo
+  sassc-rails
   sidekiq
   sidekiq-scheduler
   sprockets-rails
