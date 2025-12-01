@@ -36,6 +36,14 @@ module MinnanoShashoku
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
 
+    # ロケール設定
+    config.i18n.default_locale = :ja
+    config.i18n.available_locales = [:ja, :en]
+
+    # タイムゾーン設定
+    config.time_zone = 'Tokyo'
+    config.active_record.default_timezone = :local
+
     # Don't generate system test files.
     config.generators.system_tests = nil
   end

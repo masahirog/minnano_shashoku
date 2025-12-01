@@ -1,0 +1,221 @@
+ja:
+  activerecord:
+    models:
+      admin_user: 管理者
+      staff: スタッフ
+      company: 導入企業
+      restaurant: 飲食店
+      menu: メニュー
+      delivery_company: 配送会社
+      driver: ドライバー
+      order: 案件
+      delivery_sheet_item: 配送シート明細
+    attributes:
+      admin_user:
+        id: ID
+        email: メールアドレス
+        password: パスワード
+        password_confirmation: パスワード（確認）
+        created_at: 作成日時
+        updated_at: 更新日時
+      staff:
+        id: ID
+        name: 氏名
+        email: メールアドレス
+        role: 役割
+        created_at: 作成日時
+        updated_at: 更新日時
+      company:
+        id: ID
+        name: 通称
+        formal_name: 正式名称
+        contract_status: 契約ステータス
+        staff: 担当スタッフ
+        contact_person: 担当者名
+        contact_phone: 電話番号
+        contact_email: メールアドレス
+        delivery_address: 配送先住所
+        billing_email: 請求先メール
+        billing_dept: 請求先部署
+        billing_person_title: 請求先役職
+        billing_person_name: 請求先氏名
+        default_meal_count: デフォルト食数
+        paypay_enabled: PayPay有効
+        paypay_employee_rate_1: PayPay従業員負担額1
+        paypay_employee_rate_2: PayPay従業員負担額2
+        discount_type: 割引種別
+        discount_amount: 割引額
+        initial_fee_waived: 初期費用免除
+        created_at: 作成日時
+        updated_at: 更新日時
+      restaurant:
+        id: ID
+        name: 飲食店名
+        staff: 担当スタッフ
+        supplier_code: 送付先コード
+        invoice_number: インボイス番号
+        contract_status: 契約ステータス
+        genre: ジャンル
+        phone: 電話番号
+        contact_person: 担当者名
+        contact_phone: 担当者電話
+        contact_email: 担当者メール
+        max_capacity: 対応可能食数
+        pickup_time_with_main: 集荷時刻（本導入あり）
+        pickup_time_trial_only: 集荷時刻（試食会のみ）
+        pickup_address: 集荷先住所
+        closed_days: 定休日
+        has_delivery_fee: 配送料発生
+        delivery_fee_per_meal: 配送料（1食あたり）
+        self_delivery: 自社配送
+        trial_available: 試食会対応可能
+        created_at: 作成日時
+        updated_at: 更新日時
+      menu:
+        id: ID
+        restaurant: 飲食店
+        name: メニュー名
+        description: 説明
+        price_per_meal: 1食あたり価格
+        is_active: 有効
+        photo_url: 写真URL
+        created_at: 作成日時
+        updated_at: 更新日時
+      delivery_company:
+        id: ID
+        name: 配送会社名
+        contact_person: 担当者名
+        phone: 電話番号
+        email: メールアドレス
+        is_active: 有効
+        created_at: 作成日時
+        updated_at: 更新日時
+      driver:
+        id: ID
+        delivery_company: 配送会社
+        name: ドライバー名
+        phone: 電話番号
+        is_active: 有効
+        created_at: 作成日時
+        updated_at: 更新日時
+      order:
+        id: ID
+        company: 導入企業
+        restaurant: 飲食店
+        menu: メニュー
+        second_menu: 2つ目のメニュー
+        delivery_company: 配送会社
+        order_type: 案件種別
+        scheduled_date: 実施予定日
+        delivery_group: 配送グループ
+        delivery_priority: 配送優先順
+        default_meal_count: デフォルト食数
+        confirmed_meal_count: 確定食数
+        status: ステータス
+        restaurant_status: 飲食店ステータス
+        delivery_company_status: 配送会社ステータス
+        options: オプション
+        created_at: 作成日時
+        updated_at: 更新日時
+      delivery_sheet_item:
+        id: ID
+        order: 案件
+        driver: ドライバー
+        delivery_date: 配送日
+        sequence: 順路番号
+        action_type: 種別
+        delivery_type: 配送種別
+        scheduled_time: 予定時刻
+        location_type: 場所種別
+        location_name: 場所名
+        address: 住所
+        phone: 電話番号
+        has_setup: 設置有無
+        meal_info: 食数情報
+        supplies_info: 備品情報
+        notes: 備考
+        photo_url: 写真URL
+        created_at: 作成日時
+        updated_at: 更新日時
+  date:
+    abbr_day_names:
+    - 日
+    - 月
+    - 火
+    - 水
+    - 木
+    - 金
+    - 土
+    abbr_month_names:
+    -
+    - 1月
+    - 2月
+    - 3月
+    - 4月
+    - 5月
+    - 6月
+    - 7月
+    - 8月
+    - 9月
+    - 10月
+    - 11月
+    - 12月
+    day_names:
+    - 日曜日
+    - 月曜日
+    - 火曜日
+    - 水曜日
+    - 木曜日
+    - 金曜日
+    - 土曜日
+    formats:
+      default: "%Y/%m/%d"
+      long: "%Y年%m月%d日(%a)"
+      short: "%m/%d"
+    month_names:
+    -
+    - 1月
+    - 2月
+    - 3月
+    - 4月
+    - 5月
+    - 6月
+    - 7月
+    - 8月
+    - 9月
+    - 10月
+    - 11月
+    - 12月
+    order:
+    - :year
+    - :month
+    - :day
+  datetime:
+    distance_in_words:
+      about_x_hours: 約%{count}時間
+      about_x_months: 約%{count}ヶ月
+      about_x_years: 約%{count}年
+      almost_x_years: "%{count}年弱"
+      half_a_minute: 30秒前後
+      less_than_x_seconds: "%{count}秒未満"
+      less_than_x_minutes: "%{count}分未満"
+      over_x_years: "%{count}年以上"
+      x_seconds: "%{count}秒"
+      x_minutes: "%{count}分"
+      x_days: "%{count}日"
+      x_months: "%{count}ヶ月"
+      x_years: "%{count}年"
+    prompts:
+      second: 秒
+      minute: 分
+      hour: 時
+      day: 日
+      month: 月
+      year: 年
+  time:
+    am: 午前
+    formats:
+      default: "%Y年%m月%d日(%a) %H時%M分%S秒 %z"
+      long: "%Y/%m/%d %H:%M"
+      short: "%m/%d %H:%M"
+    pm: 午後
