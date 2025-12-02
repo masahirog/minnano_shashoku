@@ -1,0 +1,31 @@
+ja:
+  administrate:
+    actions:
+      confirm: 本当によろしいですか？
+      destroy: 削除
+      edit: 編集
+      edit_resource: "編集"
+      show: 詳細
+      show_resource: "%{name}"
+      new_resource: "新規作成"
+      destroy_confirmation: "本当に削除してもよろしいですか？"
+      back: "戻る"
+    controller:
+      create:
+        success: "%{resource}を作成しました"
+      destroy:
+        success: "%{resource}を削除しました"
+      update:
+        success: "%{resource}を更新しました"
+    search:
+      label: 検索
+    table:
+      collection_size:
+        one: "%{resource_name} 1件"
+        other: "%{resource_name} %{count}件"
+    form:
+      required: 必須
+  helpers:
+    submit:
+      create: "保存"
+      update: "更新"

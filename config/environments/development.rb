@@ -34,7 +34,8 @@ Rails.application.configure do
   end
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
-  config.active_storage.service = :local
+  # 開発環境でもAWS S3を使用（環境変数が設定されている場合）
+  config.active_storage.service = :amazon
 
   # Don't care if the mailer can't send.
   config.action_mailer.raise_delivery_errors = false
@@ -73,4 +74,12 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = true
+
+  # AWS S3のSSL検証をスキップ（開発環境のみ）
+  config.after_initialize do
+    require 'aws-sdk-s3'
+    Aws.config.update(
+      ssl_verify_peer: false
+    )
+  end
 end

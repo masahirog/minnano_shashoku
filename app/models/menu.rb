@@ -1,6 +1,7 @@
 class Menu < ApplicationRecord
   belongs_to :restaurant
   has_many :orders
+  has_one_attached :photo
 
   validates :name, presence: true
   validates :price_per_meal, presence: true

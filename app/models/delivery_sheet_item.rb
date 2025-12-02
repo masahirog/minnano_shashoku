@@ -1,6 +1,7 @@
 class DeliverySheetItem < ApplicationRecord
   belongs_to :order
   belongs_to :driver, optional: true
+  has_one_attached :photo
 
   validates :delivery_date, presence: true
   validates :sequence, presence: true

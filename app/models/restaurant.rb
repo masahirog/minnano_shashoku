@@ -2,6 +2,7 @@ class Restaurant < ApplicationRecord
   belongs_to :staff, optional: true
   has_many :menus
   has_many :orders
+  has_many :supply_stocks, as: :location, dependent: :destroy
 
   validates :name, presence: true
   validates :contract_status, presence: true
@@ -15,6 +16,6 @@ class Restaurant < ApplicationRecord
   end
 
   def self.ransackable_associations(auth_object = nil)
-    ["menus", "orders", "staff"]
+    ["menus", "orders", "staff", "supply_stocks"]
   end
 end

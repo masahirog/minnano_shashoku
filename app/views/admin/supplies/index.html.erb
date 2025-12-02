@@ -1,0 +1,73 @@
+<% content_for(:title) do %>
+  <%= display_resource_name(:supply) %>
+<% end %>
+
+<% breadcrumb :admin_supplies %>
+
+<!-- Content Header -->
+<div class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1 class="m-0">備品管理</h1>
+      </div>
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+          <%= breadcrumbs separator: " / ", autoroot: false %>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Main content -->
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">備品一覧</h3>
+          <div class="card-tools">
+            <%= link_to "拠点別在庫一覧", by_location_admin_supplies_path, class: "btn btn-success btn-sm mr-1" %>
+            <%= link_to "備品移動登録", new_admin_bulk_supply_movement_path, class: "btn btn-primary btn-sm mr-1" %>
+            <%= link_to t("administrate.actions.new_resource"), new_admin_supply_path, class: "btn btn-info btn-sm" %>
+          </div>
+        </div>
+
+        <div class="card-body p-0">
+          <table class="table table-striped table-hover">
+            <thead>
+              <tr>
+                <th>備品名</th>
+                <th>SKU</th>
+                <th>カテゴリ</th>
+                <th class="text-right">合計在庫数</th>
+                <th class="text-center">拠点数</th>
+                <th class="text-center">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% Supply.includes(:supply_stocks).order(:name).each do |supply| %>
+                <tr>
+                  <td><%= supply.name %></td>
+                  <td><%= supply.sku %></td>
+                  <td><span class="badge badge-info"><%= supply.category %></span></td>
+                  <td class="text-right">
+                    <strong><%= supply.supply_stocks.sum(:quantity) %></strong> <%= supply.unit %>
+                  </td>
+                  <td class="text-center">
+                    <span class="badge badge-secondary"><%= supply.supply_stocks.count %> 拠点</span>
+                  </td>
+                  <td class="text-center">
+                    <%= link_to "拠点別詳細", by_location_admin_supplies_path(supply_id: supply.id), class: "btn btn-sm btn-outline-primary mr-1" %>
+                    <%= link_to "編集", edit_admin_supply_path(supply), class: "btn btn-sm btn-outline-secondary" %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

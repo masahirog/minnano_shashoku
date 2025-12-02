@@ -24,6 +24,18 @@
 
 - Docker
 - Docker Compose
+- AWS S3バケット（ファイルアップロード用）
+
+### AWS S3バケットの作成
+
+開発環境用と本番環境用に別々のバケットを作成してください：
+
+1. AWS S3コンソールにアクセス
+2. 以下のバケットを作成：
+   - **開発環境**: `minnano-shashoku-development`
+   - **本番環境**: `minnano-shashoku-production`
+3. リージョン：`ap-northeast-1`（東京）
+4. パブリックアクセスはすべてブロック（デフォルト）
 
 ### 初回セットアップ
 
@@ -33,23 +45,38 @@ git clone <repository-url>
 cd minnano_shashoku
 ```
 
-2. Docker コンテナをビルド・起動
+2. 環境変数の設定
+```bash
+cp .env.sample .env
+```
+
+`.env` ファイルを開いて、以下の値を設定してください：
+```
+AWS_ACCESS_KEY_ID=your_access_key_id
+AWS_SECRET_ACCESS_KEY=your_secret_access_key
+AWS_REGION=ap-northeast-1
+AWS_BUCKET=minnano-shashoku-development
+```
+
+**注意：** .env ファイルは絶対にGitにコミットしないでください。認証情報が漏洩します。
+
+3. Docker コンテナをビルド・起動
 ```bash
 docker-compose up -d
 ```
 
-3. データベースを作成・マイグレーション
+4. データベースを作成・マイグレーション
 ```bash
 docker-compose exec web rails db:create
 docker-compose exec web rails db:migrate
 ```
 
-4. 初期データを投入（オプション）
+5. 初期データを投入（オプション）
 ```bash
 docker-compose exec web rails db:seed
 ```
 
-5. ブラウザでアクセス
+6. ブラウザでアクセス
 ```
 http://localhost:3000
 ```
@@ -99,11 +126,36 @@ docker-compose exec web rails import:all
 
 ## 本番環境
 
-Heroku にデプロイ
+### Heroku にデプロイ
 
 ```bash
 # Heroku へのデプロイは指示があるまで実行しないこと
 ```
+
+### 本番環境の環境変数設定
+
+Heroku では以下の環境変数を設定してください：
+
+```bash
+heroku config:set AWS_ACCESS_KEY_ID=your_access_key_id
+heroku config:set AWS_SECRET_ACCESS_KEY=your_secret_access_key
+heroku config:set AWS_REGION=ap-northeast-1
+heroku config:set AWS_BUCKET=minnano-shashoku-production
+```
+
+## ファイルアップロード
+
+メニュー写真や配送シート写真は AWS S3 に保存されます。
+
+- 開発環境・本番環境ともに S3 を使用
+- S3バケット名：
+  - 開発環境: `minnano-shashoku-development`
+  - 本番環境: `minnano-shashoku-production`
+- リージョン：`ap-northeast-1`（東京）
+
+管理画面からメニューや配送シート明細を編集する際に、写真をアップロードできます。
+
+**重要：** 環境ごとに異なるバケットを使用することで、開発環境と本番環境のファイルが混在しません。
 
 ## ライセンス
 

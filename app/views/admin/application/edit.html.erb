@@ -1,0 +1,55 @@
+<% content_for(:title) { t("administrate.actions.edit_resource", name: page.page_title) } %>
+
+<% breadcrumb "admin_#{page.resource_name}".to_sym, page.resource %>
+
+<!-- Content Header -->
+<div class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1 class="m-0"><%= page.page_title %> の編集</h1>
+      </div>
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+          <%= breadcrumbs separator: " / ", autoroot: false %>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%= content_for(:header_middle) %>
+
+<!-- Main content -->
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">編集フォーム</h3>
+          <div class="card-tools">
+            <%= link_to(
+              "詳細",
+              [namespace, page.resource],
+              class: "btn btn-info btn-sm",
+            ) if accessible_action?(page.resource, :show) %>
+          </div>
+        </div>
+
+        <%= content_for(:header_last) %>
+
+        <%= content_for(:before_main) %>
+
+        <% if content_for?(:main) %>
+          <%= content_for(:main) %>
+        <% else %>
+          <div class="card-body">
+            <%= render "form", page: page %>
+          </div>
+        <% end %>
+
+        <%= content_for(:after_main) %>
+      </div>
+    </div>
+  </div>
+</div>

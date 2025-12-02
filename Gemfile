@@ -39,9 +39,11 @@ gem "redis", ">= 4.0.1"
 # gem "bcrypt", "~> 3.1.7"
 
 # 管理画面
-gem "activeadmin"
-gem "devise"
+gem "administrate"
 gem "sassc-rails"
+gem "devise"
+gem "slim-rails"
+gem "gretel"
 
 # バックグラウンド処理
 gem "sidekiq"
@@ -65,9 +67,15 @@ gem "bootsnap", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"
 
+# AWS S3でファイル保存
+gem "aws-sdk-s3", require: false
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ]
+
+  # 環境変数管理
+  gem "dotenv-rails"
 end
 
 group :development do

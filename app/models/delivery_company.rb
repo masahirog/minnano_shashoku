@@ -12,4 +12,9 @@ class DeliveryCompany < ApplicationRecord
   def self.ransackable_associations(auth_object = nil)
     ["drivers", "orders"]
   end
+
+  # ドライバー数を返す
+  def drivers_count
+    drivers.count
+  end
 end

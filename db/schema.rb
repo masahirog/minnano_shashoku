@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_12_01_033438) do
+ActiveRecord::Schema[7.1].define(version: 2025_12_01_222550) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -26,6 +26,34 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_01_033438) do
     t.index ["author_type", "author_id"], name: "index_active_admin_comments_on_author"
     t.index ["namespace"], name: "index_active_admin_comments_on_namespace"
     t.index ["resource_type", "resource_id"], name: "index_active_admin_comments_on_resource"
+  end
+
+  create_table "active_storage_attachments", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
+    t.bigint "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "filename", null: false
+    t.string "content_type"
+    t.text "metadata"
+    t.string "service_name", null: false
+    t.bigint "byte_size", null: false
+    t.string "checksum"
+    t.datetime "created_at", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_variant_records", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
   create_table "admin_users", force: :cascade do |t|
@@ -62,6 +90,26 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_01_033438) do
     t.boolean "initial_fee_waived", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "delivery_day_of_week"
+    t.boolean "has_setup"
+    t.string "digital_signage_id"
+    t.date "first_delivery_date"
+    t.date "discount_campaign_end_date"
+    t.boolean "trial_billable"
+    t.integer "trial_free_meal_count"
+    t.date "trial_date"
+    t.boolean "employee_burden_enabled"
+    t.integer "employee_burden_amount"
+    t.string "delivery_time_goal"
+    t.string "pickup_time_goal"
+    t.text "delivery_notes"
+    t.text "pickup_notes"
+    t.string "monthly_fee_type"
+    t.integer "initial_fee_amount"
+    t.date "delivery_fee_campaign_end_date"
+    t.integer "delivery_fee_discount"
+    t.integer "remote_delivery_fee"
+    t.integer "special_delivery_fee"
     t.index ["contract_status"], name: "index_companies_on_contract_status"
     t.index ["name"], name: "index_companies_on_name"
     t.index ["staff_id"], name: "index_companies_on_staff_id"
@@ -151,6 +199,16 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_01_033438) do
     t.index ["status"], name: "index_orders_on_status"
   end
 
+  create_table "own_locations", force: :cascade do |t|
+    t.string "name"
+    t.string "location_type"
+    t.string "address"
+    t.string "phone"
+    t.boolean "is_active"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "restaurants", force: :cascade do |t|
     t.string "name", null: false
     t.bigint "staff_id"
@@ -186,6 +244,57 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_01_033438) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "supplies", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "sku", null: false
+    t.string "category", null: false
+    t.string "unit", null: false
+    t.integer "reorder_point"
+    t.text "storage_guideline"
+    t.boolean "is_active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category"], name: "index_supplies_on_category"
+    t.index ["sku"], name: "index_supplies_on_sku", unique: true
+  end
+
+  create_table "supply_movements", force: :cascade do |t|
+    t.bigint "supply_id", null: false
+    t.string "movement_type", null: false
+    t.decimal "quantity", precision: 10, scale: 2, null: false
+    t.string "from_location_type"
+    t.bigint "from_location_id"
+    t.string "to_location_type"
+    t.bigint "to_location_id"
+    t.date "movement_date", null: false
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["from_location_type", "from_location_id"], name: "index_supply_movements_on_from_location"
+    t.index ["movement_date"], name: "index_supply_movements_on_movement_date"
+    t.index ["movement_type"], name: "index_supply_movements_on_movement_type"
+    t.index ["supply_id"], name: "index_supply_movements_on_supply_id"
+    t.index ["to_location_type", "to_location_id"], name: "index_supply_movements_on_to_location"
+  end
+
+  create_table "supply_stocks", force: :cascade do |t|
+    t.bigint "supply_id", null: false
+    t.string "location_type"
+    t.bigint "location_id"
+    t.string "location_name"
+    t.string "location_type_detail"
+    t.decimal "quantity", precision: 10, scale: 2, default: "0.0", null: false
+    t.decimal "physical_count", precision: 10, scale: 2
+    t.datetime "last_updated_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["location_type", "location_id"], name: "index_supply_stocks_on_location"
+    t.index ["supply_id", "location_type", "location_id", "location_name"], name: "index_supply_stocks_on_supply_and_location", unique: true
+    t.index ["supply_id"], name: "index_supply_stocks_on_supply_id"
+  end
+
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "companies", "staff"
   add_foreign_key "delivery_sheet_items", "drivers"
   add_foreign_key "delivery_sheet_items", "orders"
@@ -197,4 +306,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_01_033438) do
   add_foreign_key "orders", "menus", column: "second_menu_id"
   add_foreign_key "orders", "restaurants"
   add_foreign_key "restaurants", "staff"
+  add_foreign_key "supply_movements", "supplies"
+  add_foreign_key "supply_stocks", "supplies"
 end

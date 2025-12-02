@@ -1,0 +1,228 @@
+header.main-content__header role="banner"
+  h1.main-content__page-title 一括備品移動
+
+section.main-content__body.main-content__body--flush
+  = form_with url: admin_bulk_supply_movements_path, method: :post, local: true do |f|
+    div style="padding: 20px;"
+
+      / 移動日
+      div style="margin-bottom: 20px;"
+        label style="display: block; font-weight: bold; margin-bottom: 5px;"
+          | 移動日
+          span style="color: red;" *
+        = date_field_tag :movement_date, Date.today, required: true, style: "width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
+
+      / 移動種別
+      div style="margin-bottom: 20px;"
+        label style="display: block; font-weight: bold; margin-bottom: 5px;"
+          | 移動種別
+          span style="color: red;" *
+        = select_tag :movement_type, options_for_select(@movement_types), prompt: '選択してください', required: true, style: "width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;", onchange: "updateMovementTypeFields(this.value)"
+
+      / 移動元拠点区分
+      div#from_location_section style="margin-bottom: 20px;"
+        label style="display: block; font-weight: bold; margin-bottom: 5px;" 移動元拠点区分
+        = select_tag :from_location_type, options_for_select([['みんなの食堂', 'OwnLocation'], ['導入企業', 'Company'], ['飲食店', 'Restaurant'], ['配送会社', 'DeliveryCompany']]), style: "width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;", onchange: "updateFromLocationSelect(this.value)"
+
+      / 移動元拠点
+      div#from_location_id_container style="margin-bottom: 20px;"
+        label style="display: block; font-weight: bold; margin-bottom: 5px;" 移動元拠点
+        = select_tag :from_location_id, options_for_select([['選択してください', '']]), style: "width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;", onchange: "loadStockData()"
+
+      / 移動先拠点区分
+      div#to_location_section style="margin-bottom: 20px;"
+        label style="display: block; font-weight: bold; margin-bottom: 5px;" 移動先拠点区分
+        = select_tag :to_location_type, options_for_select([['みんなの食堂', 'OwnLocation'], ['導入企業', 'Company'], ['飲食店', 'Restaurant'], ['配送会社', 'DeliveryCompany']]), style: "width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;", onchange: "updateToLocationSelect(this.value)"
+
+      / 移動先拠点
+      div#to_location_id_container style="margin-bottom: 20px;"
+        label style="display: block; font-weight: bold; margin-bottom: 5px;" 移動先拠点
+        = select_tag :to_location_id, options_for_select([['選択してください', '']]), style: "width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
+
+      / 備品選択
+      div style="margin-bottom: 30px;"
+        h2 style="font-size: 18px; font-weight: bold; margin-bottom: 10px;" 移動する備品を選択（数量を入力）
+        div#supply_list style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 15px; background: #f9f9f9;"
+          - @supplies.each do |supply|
+            div.supply-item data-supply-id=supply.id style="margin-bottom: 12px; display: flex; align-items: center;"
+              label style="display: flex; align-items: center; cursor: pointer; flex: 1;"
+                = check_box_tag 'supply_ids[]', supply.id, false, id: "supply_#{supply.id}", class: "supply-checkbox", style: "margin-right: 8px;"
+                span style="flex: 1;"
+                  = "#{supply.name} (#{supply.sku})"
+                  span.stock-info style="color: #666; font-size: 12px; margin-left: 10px;" data-supply-id=supply.id
+                span style="margin-right: 10px;" 数量:
+                = number_field_tag "quantities[#{supply.id}]", nil, min: 1, class: "quantity-input", data: { supply_id: supply.id }, style: "width: 80px; padding: 4px; border: 1px solid #ddd; border-radius: 4px;", placeholder: "0"
+
+      / 備考
+      div style="margin-bottom: 20px;"
+        label style="display: block; font-weight: bold; margin-bottom: 5px;" 備考
+        = text_area_tag :notes, nil, rows: 3, style: "width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
+
+      div style="display: flex; gap: 10px;"
+        = submit_tag '登録', style: "padding: 10px 20px; background: #0074D9; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;"
+        = link_to 'キャンセル', admin_supply_movements_path, style: "padding: 10px 20px; background: #ddd; color: #333; border: none; border-radius: 4px; text-decoration: none; display: inline-block;"
+
+javascript:
+  const companies = #{raw @companies.map { |c| { id: c.id, name: c.name } }.to_json};
+  const restaurants = #{raw @restaurants.map { |r| { id: r.id, name: r.name } }.to_json};
+  const deliveryCompanies = #{raw @delivery_companies.map { |d| { id: d.id, name: d.name } }.to_json};
+  const ownLocations = #{raw @own_locations.map { |o| { id: o.id, name: o.name } }.to_json};
+  let currentStocks = {};
+
+  // 移動種別による表示制御
+  function updateMovementTypeFields(type) {
+    const fromSection = document.getElementById('from_location_section');
+    const fromIdContainer = document.getElementById('from_location_id_container');
+    const toSection = document.getElementById('to_location_section');
+    const toIdContainer = document.getElementById('to_location_id_container');
+
+    if (type === '入荷') {
+      // 入荷：移動元を非表示、移動先のみ表示
+      fromSection.style.display = 'none';
+      fromIdContainer.style.display = 'none';
+      toSection.style.display = 'block';
+      toIdContainer.style.display = 'block';
+      clearStockInfo();
+    } else if (type === '消費') {
+      // 消費：移動先を非表示、移動元のみ表示
+      fromSection.style.display = 'block';
+      fromIdContainer.style.display = 'block';
+      toSection.style.display = 'none';
+      toIdContainer.style.display = 'none';
+    } else if (type === '移動') {
+      // 移動：両方表示
+      fromSection.style.display = 'block';
+      fromIdContainer.style.display = 'block';
+      toSection.style.display = 'block';
+      toIdContainer.style.display = 'block';
+    } else {
+      // 未選択時は全て非表示
+      fromSection.style.display = 'none';
+      fromIdContainer.style.display = 'none';
+      toSection.style.display = 'none';
+      toIdContainer.style.display = 'none';
+      clearStockInfo();
+    }
+  }
+
+  function updateFromLocationSelect(type) {
+    const select = document.getElementById('from_location_id');
+    updateLocationSelect(select, type);
+    loadStockData();
+  }
+
+  function updateToLocationSelect(type) {
+    const select = document.getElementById('to_location_id');
+    updateLocationSelect(select, type);
+  }
+
+  function updateLocationSelect(select, type) {
+    select.innerHTML = '<option value="">選択してください</option>';
+
+    let data = [];
+    if (type === 'Company') {
+      data = companies;
+    } else if (type === 'Restaurant') {
+      data = restaurants;
+    } else if (type === 'DeliveryCompany') {
+      data = deliveryCompanies;
+    } else if (type === 'OwnLocation') {
+      data = ownLocations;
+    }
+
+    data.forEach(item => {
+      const option = document.createElement('option');
+      option.value = item.id;
+      option.textContent = item.name;
+      select.appendChild(option);
+    });
+  }
+
+  // 在庫情報を取得
+  function loadStockData() {
+    const movementType = document.getElementById('movement_type').value;
+
+    // 入荷の場合は在庫情報を取得しない
+    if (movementType === '入荷') {
+      clearStockInfo();
+      return;
+    }
+
+    const locationType = document.getElementById('from_location_type').value;
+    const locationId = document.getElementById('from_location_id').value;
+
+    // 本社倉庫の場合は location_type と location_id を空にする
+    const params = new URLSearchParams();
+    if (locationType !== '') {
+      params.append('location_type', locationType);
+      if (locationId !== '') {
+        params.append('location_id', locationId);
+      }
+    }
+
+    fetch(`/admin/bulk_supply_movements/get_stocks?${params.toString()}`)
+      .then(response => response.json())
+      .then(stocks => {
+        currentStocks = stocks;
+        updateStockDisplay();
+      })
+      .catch(error => {
+        console.error('在庫情報の取得に失敗しました:', error);
+        clearStockInfo();
+      });
+  }
+
+  // 在庫表示を更新
+  function updateStockDisplay() {
+    document.querySelectorAll('.stock-info').forEach(span => {
+      const supplyId = span.getAttribute('data-supply-id');
+      const stock = currentStocks[supplyId] || 0;
+      span.textContent = `（在庫: ${stock}）`;
+
+      // 数量入力欄のmax属性を設定
+      const quantityInput = document.querySelector(`.quantity-input[data-supply-id="${supplyId}"]`);
+      if (quantityInput) {
+        quantityInput.max = stock;
+
+        // 在庫0の場合は無効化
+        const checkbox = document.getElementById(`supply_${supplyId}`);
+        const supplyItem = document.querySelector(`.supply-item[data-supply-id="${supplyId}"]`);
+
+        if (stock === 0) {
+          checkbox.disabled = true;
+          checkbox.checked = false;
+          quantityInput.disabled = true;
+          supplyItem.style.opacity = '0.5';
+        } else {
+          checkbox.disabled = false;
+          quantityInput.disabled = false;
+          supplyItem.style.opacity = '1';
+        }
+      }
+    });
+  }
+
+  // 在庫情報をクリア
+  function clearStockInfo() {
+    currentStocks = {};
+    document.querySelectorAll('.stock-info').forEach(span => {
+      span.textContent = '';
+    });
+
+    // 全ての備品を有効化
+    document.querySelectorAll('.supply-checkbox').forEach(checkbox => {
+      checkbox.disabled = false;
+    });
+    document.querySelectorAll('.quantity-input').forEach(input => {
+      input.disabled = false;
+      input.removeAttribute('max');
+    });
+    document.querySelectorAll('.supply-item').forEach(item => {
+      item.style.opacity = '1';
+    });
+  }
+
+  // ページ読み込み時の初期化
+  document.addEventListener('DOMContentLoaded', function() {
+    updateMovementTypeFields('');
+  });

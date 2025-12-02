@@ -10,6 +10,10 @@ ja:
       driver: ドライバー
       order: 案件
       delivery_sheet_item: 配送シート明細
+      supply: 備品
+      supply_stock: 在庫
+      supply_movement: 備品移動登録
+      own_location: 自社拠点
     attributes:
       admin_user:
         id: ID
@@ -46,6 +50,26 @@ ja:
         discount_type: 割引種別
         discount_amount: 割引額
         initial_fee_waived: 初期費用免除
+        delivery_day_of_week: 配送曜日
+        has_setup: 設置有無
+        digital_signage_id: デジタルサイネージID
+        first_delivery_date: 初回配送日
+        discount_campaign_end_date: 割引キャンペーン適用末日
+        trial_billable: 試食会請求対象
+        trial_free_meal_count: 試食会無料対象食数
+        trial_date: 体験配送日
+        employee_burden_enabled: 従業員負担有無
+        employee_burden_amount: 従業員負担額
+        delivery_time_goal: 納品時間目安
+        pickup_time_goal: 集荷時間目安
+        delivery_notes: 納品時備考
+        pickup_notes: 集荷時間備考
+        monthly_fee_type: 月額利用料種別
+        initial_fee_amount: 初期費用金額
+        delivery_fee_campaign_end_date: 配送料サービスキャンペーン末日
+        delivery_fee_discount: 配送料割引額
+        remote_delivery_fee: 遠方特別配送料
+        special_delivery_fee: 配送特別料金
         created_at: 作成日時
         updated_at: 更新日時
       restaurant:
@@ -87,6 +111,7 @@ ja:
         contact_person: 担当者名
         phone: 電話番号
         email: メールアドレス
+        drivers_count: ドライバー数
         is_active: 有効
         created_at: 作成日時
         updated_at: 更新日時
@@ -135,6 +160,51 @@ ja:
         supplies_info: 備品情報
         notes: 備考
         photo_url: 写真URL
+        created_at: 作成日時
+        updated_at: 更新日時
+      supply:
+        id: ID
+        name: 商品名
+        sku: SKU
+        category: 備品区分
+        unit: 単位
+        reorder_point: 発注点
+        storage_guideline: 保管目安
+        is_active: 有効
+        created_at: 作成日時
+        updated_at: 更新日時
+      supply_stock:
+        id: ID
+        supply: 備品
+        location_type: 拠点区分
+        location_id: 拠点ID
+        location_name: 拠点名
+        location_type_detail: 拠点区分詳細
+        quantity: 在庫数
+        physical_count: 棚卸し数量
+        last_updated_at: 最終更新日
+        created_at: 作成日時
+        updated_at: 更新日時
+      supply_movement:
+        id: ID
+        supply: 備品
+        movement_type: 移動種別
+        quantity: 数量
+        from_location_type: 移動元拠点区分
+        from_location_id: 移動元拠点ID
+        to_location_type: 移動先拠点区分
+        to_location_id: 移動先拠点ID
+        movement_date: 移動日
+        notes: 備考
+        created_at: 作成日時
+        updated_at: 更新日時
+      own_location:
+        id: ID
+        name: 拠点名
+        location_type: 拠点種別
+        address: 住所
+        phone: 電話番号
+        is_active: 有効
         created_at: 作成日時
         updated_at: 更新日時
   date:
@@ -215,7 +285,7 @@ ja:
   time:
     am: 午前
     formats:
-      default: "%Y年%m月%d日(%a) %H時%M分%S秒 %z"
+      default: "%Y年%m月%d日(%a) %H時%M分"
       long: "%Y/%m/%d %H:%M"
       short: "%m/%d %H:%M"
     pm: 午後
