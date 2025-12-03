@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_12_03_120959) do
+ActiveRecord::Schema[7.1].define(version: 2025_12_03_135345) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -163,6 +163,41 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_03_120959) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["delivery_company_id"], name: "index_drivers_on_delivery_company_id"
+  end
+
+  create_table "invoice_items", force: :cascade do |t|
+    t.bigint "invoice_id", null: false
+    t.bigint "order_id"
+    t.string "description", null: false
+    t.integer "quantity", default: 1
+    t.integer "unit_price", null: false
+    t.integer "amount", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["invoice_id"], name: "index_invoice_items_on_invoice_id"
+    t.index ["order_id"], name: "index_invoice_items_on_order_id"
+  end
+
+  create_table "invoices", force: :cascade do |t|
+    t.bigint "company_id", null: false
+    t.string "invoice_number", null: false
+    t.date "issue_date", null: false
+    t.date "payment_due_date", null: false
+    t.date "billing_period_start", null: false
+    t.date "billing_period_end", null: false
+    t.integer "subtotal", default: 0
+    t.integer "tax_amount", default: 0
+    t.integer "total_amount", null: false
+    t.string "status", default: "draft", null: false
+    t.string "payment_status", default: "unpaid"
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["company_id"], name: "index_invoices_on_company_id"
+    t.index ["invoice_number"], name: "index_invoices_on_invoice_number", unique: true
+    t.index ["issue_date"], name: "index_invoices_on_issue_date"
+    t.index ["payment_status"], name: "index_invoices_on_payment_status"
+    t.index ["status"], name: "index_invoices_on_status"
   end
 
   create_table "menus", force: :cascade do |t|
@@ -353,6 +388,9 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_03_120959) do
   add_foreign_key "delivery_sheet_items", "drivers"
   add_foreign_key "delivery_sheet_items", "orders"
   add_foreign_key "drivers", "delivery_companies"
+  add_foreign_key "invoice_items", "invoices"
+  add_foreign_key "invoice_items", "orders"
+  add_foreign_key "invoices", "companies"
   add_foreign_key "menus", "restaurants"
   add_foreign_key "orders", "companies"
   add_foreign_key "orders", "delivery_companies"

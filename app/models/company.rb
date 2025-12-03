@@ -1,6 +1,7 @@
 class Company < ApplicationRecord
   belongs_to :staff, optional: true
   has_many :orders
+  has_many :invoices
   has_many :supply_stocks, as: :location, dependent: :destroy
 
   validates :name, presence: true
@@ -20,6 +21,6 @@ class Company < ApplicationRecord
   end
 
   def self.ransackable_associations(auth_object = nil)
-    ["orders", "staff", "supply_stocks"]
+    ["invoices", "orders", "staff", "supply_stocks"]
   end
 end

@@ -6,6 +6,7 @@ class Order < ApplicationRecord
   belongs_to :delivery_company, optional: true
   belongs_to :recurring_order, optional: true
   has_many :delivery_sheet_items
+  has_many :invoice_items
 
   validates :order_type, presence: true
   validates :scheduled_date, presence: true
@@ -25,7 +26,7 @@ class Order < ApplicationRecord
   end
 
   def self.ransackable_associations(auth_object = nil)
-    ["company", "delivery_company", "delivery_sheet_items", "menu", "restaurant", "second_menu"]
+    ["company", "delivery_company", "delivery_sheet_items", "invoice_items", "menu", "restaurant", "second_menu"]
   end
 
   # 同じ週に同じメニューが重複しているかチェック
