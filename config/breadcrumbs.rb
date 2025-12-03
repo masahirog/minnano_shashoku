@@ -102,6 +102,17 @@ crumb :admin_order do |order|
   parent :admin_orders
 end
 
+# 定期スケジュール
+crumb :admin_recurring_orders do
+  link "定期スケジュール", admin_recurring_orders_path
+  parent :root
+end
+
+crumb :admin_recurring_order do |recurring_order|
+  link "ID:#{recurring_order.id}", admin_recurring_order_path(recurring_order)
+  parent :admin_recurring_orders
+end
+
 # 配送シート明細
 crumb :admin_delivery_sheet_items do
   link "配送シート明細", admin_delivery_sheet_items_path
