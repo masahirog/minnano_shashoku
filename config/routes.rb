@@ -9,6 +9,8 @@ Rails.application.routes.draw do
       resources :orders do
         collection do
           get :calendar
+          get :schedule
+          patch :update_schedule
         end
       end
       resources :recurring_orders do

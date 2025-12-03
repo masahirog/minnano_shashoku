@@ -43,6 +43,46 @@ module Admin
       @orders = @orders.order(:scheduled_date, :delivery_time)
     end
 
+    # スケジュール調整画面
+    def schedule
+      @start_date = params.fetch(:start_date, Date.today).to_date
+      @end_date = params.fetch(:end_date, @start_date + 1.month).to_date
+
+      @orders = Order.includes(:company, :restaurant, :menu, :delivery_company)
+                     .where(scheduled_date: @start_date..@end_date)
+
+      # フィルター適用
+      @orders = @orders.where(company_id: params[:company_id]) if params[:company_id].present?
+      @orders = @orders.where(restaurant_id: params[:restaurant_id]) if params[:restaurant_id].present?
+      @orders = @orders.where(status: params[:status]) if params[:status].present?
+
+      @orders = @orders.order(:scheduled_date, :collection_time)
+    end
+
+    # スケジュール一括更新
+    def update_schedule
+      order_updates = params[:orders] || {}
+      errors = []
+      success_count = 0
+
+      order_updates.each do |order_id, attributes|
+        order = Order.find_by(id: order_id)
+        next unless order
+
+        if order.update(attributes.permit(:scheduled_date, :collection_time))
+          success_count += 1
+        else
+          errors << "Order ##{order_id}: #{order.errors.full_messages.join(', ')}"
+        end
+      end
+
+      if errors.empty?
+        redirect_to schedule_admin_orders_path, notice: "#{success_count}件の案件を更新しました。"
+      else
+        redirect_to schedule_admin_orders_path, alert: "エラー: #{errors.join('; ')}"
+      end
+    end
+
     # Override `resource_params` if you want to transform the submitted
     # data before it's persisted. For example, the following would turn all
     # empty values into nil values. It uses other APIs such as `resource_class`

@@ -37,4 +37,55 @@ class Order < ApplicationRecord
          .where.not(id: id)
          .exists?
   end
+
+  # スケジュールコンフリクトをチェック
+  def schedule_conflicts
+    conflicts = []
+    return conflicts unless scheduled_date
+
+    # 1. 同じ飲食店・同じ日・似た時間帯のOrderをチェック
+    if restaurant_id && collection_time
+      time_buffer = 2.hours
+      start_time = collection_time - time_buffer
+      end_time = collection_time + time_buffer
+
+      similar_orders = Order.where(restaurant_id: restaurant_id, scheduled_date: scheduled_date)
+                            .where.not(id: id)
+                            .where.not(status: 'cancelled')
+
+      similar_orders.each do |other_order|
+        next unless other_order.collection_time
+
+        if other_order.collection_time.between?(start_time, end_time)
+          conflicts << {
+            type: :restaurant_time_overlap,
+            message: "同じ飲食店で近い時間帯に別の案件があります（Order ##{other_order.id}: #{other_order.collection_time.strftime('%H:%M')}）",
+            other_order: other_order
+          }
+        end
+      end
+    end
+
+    # 2. 同じ企業・同じ日に複数配送がある場合
+    if company_id
+      same_day_orders = Order.where(company_id: company_id, scheduled_date: scheduled_date)
+                             .where.not(id: id)
+                             .where.not(status: 'cancelled')
+
+      if same_day_orders.exists?
+        conflicts << {
+          type: :multiple_deliveries_same_day,
+          message: "同じ企業の同じ日に#{same_day_orders.count}件の配送があります",
+          other_orders: same_day_orders
+        }
+      end
+    end
+
+    conflicts
+  end
+
+  # コンフリクトがあるかどうかを返す
+  def has_conflicts?
+    schedule_conflicts.any?
+  end
 end
