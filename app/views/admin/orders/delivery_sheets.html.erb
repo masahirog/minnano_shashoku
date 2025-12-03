@@ -1,6 +1,5 @@
-<div class="content-wrapper">
-  <!-- Content Header (Page header) -->
-  <section class="content-header">
+<!-- Content Header (Page header) -->
+<section class="content-header">
     <div class="container-fluid">
       <div class="row mb-2">
         <div class="col-sm-6">
@@ -87,12 +86,8 @@
       </div>
 
       <!-- Delivery Sheet Card -->
-      <div class="card card-primary">
+      <div class="card">
         <div class="card-header">
-          <h3 class="card-title">
-            <i class="fas fa-file-pdf mr-2"></i>
-            配送シート一覧（<%= @start_date.strftime('%Y/%m/%d') %> 〜 <%= @end_date.strftime('%Y/%m/%d') %>）
-          </h3>
           <div class="card-tools">
             <%= link_to delivery_sheet_pdf_admin_orders_path(
                   start_date: params[:start_date] || @start_date,
@@ -112,7 +107,7 @@
         </div>
         <div class="card-body">
           <% if @orders.any? %>
-            <div class="alert alert-info">
+            <div class="alert alert-secondary">
               <i class="fas fa-info-circle mr-2"></i>
               合計 <strong><%= @orders.count %></strong> 件の配送案件があります。
             </div>
@@ -205,9 +200,42 @@
       </div>
     </div>
   </section>
-</div>
 
 <style>
+/* コンテンツエリアの余白削減 - 配送シートページ専用 */
+body .content-wrapper {
+  padding: 0 !important;
+  margin-right: 0 !important;
+}
+
+.content-wrapper .container-fluid {
+  max-width: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  width: 100% !important;
+}
+
+.content {
+  padding: 0 !important;
+}
+
+.content-header {
+  padding: 10px !important;
+}
+
+.content-header .container-fluid {
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+}
+
+.content .container-fluid {
+  padding-left: 5px;
+  padding-right: 5px;
+  max-width: none !important;
+  margin: 0 !important;
+  width: 100% !important;
+}
+
 .table-sm td {
   vertical-align: middle;
 }

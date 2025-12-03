@@ -1,11 +1,10 @@
 <div class="simple-calendar">
   <div class="calendar-heading">
-    <time datetime="<%= start_date.strftime('%Y-%m') %>" class="calendar-title"><%= t('date.month_names')[start_date.month] %> <%= start_date.year %></time>
-
-    <nav>
-      <%= link_to t('simple_calendar.previous', default: 'Previous'), calendar.url_for_previous_view %>
-      <%= link_to t('simple_calendar.today', default: 'Today'), calendar.url_for_today_view %>
-      <%= link_to t('simple_calendar.next', default: 'Next'), calendar.url_for_next_view %>
+    <time datetime="<%= start_date.strftime('%Y-%m') %>" class="calendar-title"><%= start_date.year %>年<%= start_date.month %>月</time>
+    <nav class="calendar-nav">
+      <%= link_to '◀ 前月', calendar.url_for_previous_view, class: 'calendar-nav-link' %>
+      <%= link_to '今日', calendar.url_for_today_view, class: 'calendar-nav-link' %>
+      <%= link_to '翌月 ▶', calendar.url_for_next_view, class: 'calendar-nav-link' %>
     </nav>
   </div>
 

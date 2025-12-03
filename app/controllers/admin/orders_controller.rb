@@ -40,7 +40,7 @@ module Admin
       @orders = @orders.where(restaurant_id: params[:restaurant_id]) if params[:restaurant_id].present?
       @orders = @orders.where(status: params[:status]) if params[:status].present?
 
-      @orders = @orders.order(:scheduled_date, :delivery_time)
+      @orders = @orders.order(:scheduled_date, :collection_time)
     end
 
     # スケジュール調整画面

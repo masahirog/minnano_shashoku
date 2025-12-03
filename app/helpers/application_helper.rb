@@ -1,5 +1,5 @@
 module ApplicationHelper
-  include SimpleCalendar::ViewHelpers
+  include SimpleCalendar::CalendarHelper
 
   def nav_link_state(resource_name)
     controller_name = params[:controller]&.split('/')&.last

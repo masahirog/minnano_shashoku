@@ -246,6 +246,23 @@ for every page that Administrate generates.
     body.sidebar-collapse .brand-link {
       justify-content: space-between;
     }
+
+    /* メニューの青い背景を削除 */
+    .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active {
+      background-color: transparent !important;
+      color: #c2c7d0 !important;
+    }
+
+    .sidebar-dark-primary .nav-sidebar > .nav-item.menu-open > .nav-link {
+      background-color: transparent !important;
+      color: #c2c7d0 !important;
+    }
+
+    /* サブメニューの青い背景も削除 */
+    .sidebar-dark-primary .nav-treeview > .nav-item > .nav-link.active {
+      background-color: rgba(255,255,255,.1) !important;
+      color: #fff !important;
+    }
   </style>
 </head>
 
@@ -288,6 +305,58 @@ for every page that Administrate generates.
         var isCollapsed = $('body').hasClass('sidebar-collapse');
         localStorage.setItem('sidebar-collapse', isCollapsed);
       });
+
+      // メニューの開閉状態を保存・復元
+      const MENU_STORAGE_KEY = 'sidebar-menu-state';
+
+      // ページロード時に保存された状態を復元
+      function restoreMenuState() {
+        const savedState = localStorage.getItem(MENU_STORAGE_KEY);
+        if (savedState) {
+          try {
+            const openMenus = JSON.parse(savedState);
+            openMenus.forEach(function(menuId) {
+              const menuItem = $('#' + menuId);
+              if (menuItem.length && !menuItem.hasClass('menu-open')) {
+                menuItem.addClass('menu-open');
+                // サブメニューを表示状態にする
+                menuItem.find('> .nav-treeview').show();
+              }
+            });
+          } catch (e) {
+            console.error('Failed to restore menu state:', e);
+          }
+        }
+      }
+
+      // 現在開いているメニューを保存
+      function saveMenuState() {
+        const openMenus = [];
+        $('.nav-item.has-treeview.menu-open').each(function() {
+          const id = $(this).attr('id');
+          if (id) {
+            openMenus.push(id);
+          }
+        });
+        localStorage.setItem(MENU_STORAGE_KEY, JSON.stringify(openMenus));
+      }
+
+      // 親メニュークリック時：AdminLTEのアニメーション完了を待ってから保存
+      $('.nav-item.has-treeview > .nav-link').on('click', function(e) {
+        // AdminLTEのアニメーション完了を待つ（400ms）
+        setTimeout(function() {
+          saveMenuState();
+        }, 400);
+      });
+
+      // サブメニューのリンククリック時にも親メニューの状態を保存
+      $('.nav-treeview .nav-link').on('click', function(e) {
+        // すぐに保存（サブメニューはアニメーションなし）
+        saveMenuState();
+      });
+
+      // 初期状態を復元
+      restoreMenuState();
     });
   </script>
 </body>

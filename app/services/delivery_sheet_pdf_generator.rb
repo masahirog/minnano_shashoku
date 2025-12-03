@@ -15,7 +15,7 @@ class DeliverySheetPdfGenerator
       end
 
       # タイトル
-      pdf.text "配送シート", size: 20, style: :bold, align: :center
+      pdf.text "配送シート", size: 20, align: :center
       pdf.move_down 5
       pdf.text "期間: #{@start_date.strftime('%Y年%m月%d日')} 〜 #{@end_date.strftime('%Y年%m月%d日')}",
                size: 12, align: :center
@@ -34,7 +34,7 @@ class DeliverySheetPdfGenerator
   def generate_daily_sheet(pdf, date, orders)
     # 日付ヘッダー
     pdf.text "#{date.strftime('%Y年%m月%d日')} (#{%w[日 月 火 水 木 金 土][date.wday]}曜日)",
-             size: 16, style: :bold
+             size: 16
     pdf.move_down 10
 
     # テーブルデータ作成
@@ -66,7 +66,6 @@ class DeliverySheetPdfGenerator
               },
               column_widths: column_widths(pdf.bounds.width)) do |table|
       # ヘッダー行のスタイル
-      table.row(0).font_style = :bold
       table.row(0).background_color = 'CCCCCC'
       table.row(0).align = :center
     end

@@ -34,7 +34,7 @@
       <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
 
         <!-- 自社管理 -->
-        <li class="nav-item has-treeview">
+        <li class="nav-item has-treeview" id="menu-own-company">
           <a href="#" class="nav-link">
             <i class="nav-icon fas fa-building"></i>
             <p>
@@ -57,7 +57,7 @@
         </li>
 
         <!-- 取引先管理 -->
-        <li class="nav-item has-treeview">
+        <li class="nav-item has-treeview" id="menu-partners">
           <a href="#" class="nav-link">
             <i class="nav-icon fas fa-briefcase"></i>
             <p>
@@ -85,7 +85,7 @@
         </li>
 
         <!-- メニュー管理 -->
-        <li class="nav-item has-treeview">
+        <li class="nav-item has-treeview" id="menu-menus">
           <a href="#" class="nav-link">
             <i class="nav-icon fas fa-book"></i>
             <p>
@@ -103,7 +103,7 @@
         </li>
 
         <!-- 案件管理 -->
-        <li class="nav-item has-treeview">
+        <li class="nav-item has-treeview" id="menu-orders">
           <a href="#" class="nav-link">
             <i class="nav-icon fas fa-file-alt"></i>
             <p>
@@ -135,8 +135,26 @@
           </ul>
         </li>
 
+        <!-- 経理管理 -->
+        <li class="nav-item has-treeview" id="menu-accounting">
+          <a href="#" class="nav-link">
+            <i class="nav-icon fas fa-file-invoice-dollar"></i>
+            <p>
+              経理管理
+              <i class="right fas fa-angle-left"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <%= link_to admin_invoices_path, class: "nav-link #{nav_link_state(:invoices) == 'active' ? 'active' : ''}" do %>
+                <p>請求書</p>
+              <% end %>
+            </li>
+          </ul>
+        </li>
+
         <!-- 備品管理 -->
-        <li class="nav-item has-treeview">
+        <li class="nav-item has-treeview" id="menu-supplies">
           <a href="#" class="nav-link">
             <i class="nav-icon fas fa-boxes"></i>
             <p>
@@ -159,7 +177,7 @@
         </li>
 
         <!-- システム管理 -->
-        <li class="nav-item has-treeview">
+        <li class="nav-item has-treeview" id="menu-system">
           <a href="#" class="nav-link">
             <i class="nav-icon fas fa-user-shield"></i>
             <p>

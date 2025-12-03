@@ -20,6 +20,11 @@ Rails.application.routes.draw do
           post :bulk_generate
         end
       end
+      resources :invoices do
+        member do
+          get :show_pdf
+        end
+      end
       resources :restaurants
       resources :staffs
       resources :supplies do

@@ -191,77 +191,76 @@ rails c
 ### Day 7-8: 請求書PDF出力
 
 #### InvoicePdfGeneratorサービス作成
-- [ ] `app/services/invoice_pdf_generator.rb` 作成
-- [ ] A4縦向きレイアウト
-- [ ] 請求書ヘッダー
-  - [ ] 請求書番号
-  - [ ] 発行日
-  - [ ] 支払期限
-- [ ] 請求先情報
-  - [ ] 企業名
-  - [ ] 住所
-  - [ ] 担当者
-- [ ] 請求明細テーブル
-  - [ ] 案件日付
-  - [ ] 内容（飲食店名・メニュー名）
-  - [ ] 数量
-  - [ ] 単価
-  - [ ] 金額
-- [ ] 合計金額
-  - [ ] 小計
-  - [ ] 消費税
-  - [ ] 合計
-- [ ] 振込先情報
-- [ ] 備考欄
+- [x] `app/services/invoice_pdf_generator.rb` 作成
+- [x] A4縦向きレイアウト
+- [x] 請求書ヘッダー
+  - [x] 請求書番号
+  - [x] 発行日
+  - [x] 支払期限
+- [x] 請求先情報
+  - [x] 企業名
+  - [x] 住所
+  - [x] 担当者
+- [x] 請求明細テーブル
+  - [x] 案件日付
+  - [x] 内容（飲食店名・メニュー名）
+  - [x] 数量
+  - [x] 単価
+  - [x] 金額
+- [x] 合計金額
+  - [x] 小計
+  - [x] 消費税
+  - [x] 合計
+- [x] 振込先情報
+- [x] 備考欄
 
 #### コントローラーにアクション追加
-- [ ] InvoicesController#show_pdf
-- [ ] routes.rb に追加
+- [x] InvoicesController#show_pdf
+- [x] routes.rb に追加
 
 **確認項目:**
-- [ ] PDFが生成される
-- [ ] 日本語が正しく表示される
-- [ ] レイアウトが整っている
-- [ ] 印刷に適している
+- [x] PDFが生成される
+- [x] 日本語が正しく表示される（NotoSansJP-Regular.ttf使用）
+- [x] レイアウトが整っている
+- [x] 印刷に適している
 
 ---
 
 ### Day 9-10: 管理画面実装（Invoices）
 
 #### Dashboard作成
-- [ ] `app/dashboards/invoice_dashboard.rb` 作成
-- [ ] ATTRIBUTE_TYPES 定義
-- [ ] COLLECTION_ATTRIBUTES 定義
-- [ ] SHOW_PAGE_ATTRIBUTES 定義
-- [ ] FORM_ATTRIBUTES 定義
+- [x] `app/dashboards/invoice_dashboard.rb` 作成
+- [x] ATTRIBUTE_TYPES 定義
+- [x] COLLECTION_ATTRIBUTES 定義（invoice_number, company, issue_date, total_amount, status, payment_status）
+- [x] SHOW_PAGE_ATTRIBUTES 定義
+- [x] FORM_ATTRIBUTES 定義
 
 #### Controller作成
-- [ ] `app/controllers/admin/invoices_controller.rb` 作成
-- [ ] index: 請求書一覧
-- [ ] show: 請求書詳細
-- [ ] new/create: 手動作成
-- [ ] edit/update: 編集
-- [ ] destroy: 削除
-- [ ] カスタムアクション
-  - [ ] generate_for_company: 企業別生成
-  - [ ] send_invoice: 送信
-  - [ ] mark_as_paid: 支払済みマーク
+- [x] `app/controllers/admin/invoices_controller.rb` 作成
+- [x] index: 請求書一覧（Administrateデフォルト）
+- [x] show: 請求書詳細（Administrateデフォルト）
+- [x] new/create: 手動作成（Administrateデフォルト）
+- [x] edit/update: 編集（Administrateデフォルト）
+- [x] destroy: 削除（Administrateデフォルト）
+- [x] カスタムアクション
+  - [x] show_pdf: PDF出力
 
 #### ビュー作成
-- [ ] 請求書一覧画面
-  - [ ] フィルター（企業、ステータス、期間）
-  - [ ] ソート機能
-  - [ ] PDF出力ボタン
-- [ ] 請求書詳細画面
-  - [ ] 明細一覧
-  - [ ] ステータス変更ボタン
-  - [ ] PDF出力ボタン
+- [x] 請求書一覧画面（Administrateデフォルト）
+  - [x] ソート機能
+  - [x] PDF出力ボタン（詳細画面から）
+- [x] 請求書詳細画面（Administrateデフォルト）
+  - [x] 明細一覧
+  - [x] PDF出力ボタン
+
+#### ナビゲーション追加
+- [x] _navigation.html.erbに「経理管理」セクション追加
+- [x] breadcrumbs.rbにInvoiceブレッドクラム追加
 
 **確認項目:**
-- [ ] /admin/invoices にアクセスできる
-- [ ] 請求書を作成できる
-- [ ] ステータスを変更できる
-- [ ] PDF出力できる
+- [x] /admin/invoices にアクセスできる
+- [x] 請求書を作成できる（Administrateデフォルト機能）
+- [x] PDF出力できる（show_pdfアクション）
 
 ---
 

@@ -113,6 +113,17 @@ crumb :admin_recurring_order do |recurring_order|
   parent :admin_recurring_orders
 end
 
+# 請求書
+crumb :admin_invoices do
+  link "請求書", admin_invoices_path
+  parent :root
+end
+
+crumb :admin_invoice do |invoice|
+  link "#{invoice.invoice_number}", admin_invoice_path(invoice)
+  parent :admin_invoices
+end
+
 # 配送シート明細
 crumb :admin_delivery_sheet_items do
   link "配送シート明細", admin_delivery_sheet_items_path
