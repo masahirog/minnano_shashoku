@@ -1,5 +1,5 @@
 # Prawn PDF生成設定
-Prawn.debug = false
+# Prawn.debug = false
 
-# M17N警告を非表示にする
-Prawn::Document.hide_m17n_warning = true
+# M17N警告を非表示にする（このメソッドはPrawn 2.5.0以降では不要）
+# Prawn 2.5.0以降では警告は出力されないため、設定不要

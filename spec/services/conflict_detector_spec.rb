@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe ConflictDetector do
-  let(:company) { Company.create!(name: 'テスト企業', invoice_recipient: 'テスト企業') }
+  let(:company) { Company.create!(name: 'テスト企業', formal_name: 'テスト企業株式会社', contract_status: 'active') }
   let(:restaurant) do
     Restaurant.create!(
       name: 'テスト飲食店',

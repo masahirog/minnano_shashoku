@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.feature "DeliverySheets", type: :feature do
   let(:admin_user) { AdminUser.create!(email: 'admin@example.com', password: 'password', password_confirmation: 'password') }
-  let(:company) { Company.create!(name: 'テスト企業', invoice_recipient: 'テスト企業', color: '#2196f3') }
+  let(:company) { Company.create!(name: 'テスト企業', formal_name: 'テスト企業株式会社', contract_status: 'active', color: '#2196f3') }
   let(:restaurant) do
     Restaurant.create!(
       name: 'テスト飲食店',
