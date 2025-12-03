@@ -84,6 +84,31 @@ http://localhost:3000
 管理画面: http://localhost:3000/admin
 - デフォルトログイン: admin@example.com / password
 
+### 日本語フォント設定（PDF生成用）
+
+配送シートPDF生成で日本語を正しく表示するには、日本語フォントファイルが必要です。
+
+1. Google FontsからNoto Sans JPをダウンロード
+```bash
+# ダウンロードページ: https://fonts.google.com/noto/specimen/Noto+Sans+JP
+# または直接ダウンロード
+curl -L -o NotoSansJP.zip "https://fonts.google.com/download?family=Noto%20Sans%20JP"
+unzip NotoSansJP.zip -d noto_sans_jp
+```
+
+2. フォントファイルを配置
+```bash
+mkdir -p app/assets/fonts
+cp noto_sans_jp/static/NotoSansJP-Regular.ttf app/assets/fonts/
+```
+
+3. 確認
+```bash
+ls -la app/assets/fonts/NotoSansJP-Regular.ttf
+```
+
+**注意：** フォントファイルは容量が大きいため、Gitにコミットしないことを推奨します。`.gitignore` に `app/assets/fonts/*.ttf` が既に追加されています。
+
 ## ローカル開発
 
 ### サーバー起動
@@ -125,6 +150,18 @@ docker-compose exec web rails import:all
 - 配送会社向け閲覧画面
 
 ## 開発履歴
+
+### Phase 1 Week 3 Day 21（2025-12-03）
+**日本語フォント設定**
+- config/initializers/prawn.rb作成
+  - Prawnの警告メッセージを非表示に設定
+- .gitignoreにフォントファイル除外設定追加
+- README.mdにフォントダウンロード手順追加
+  - Google FontsからNoto Sans JPをダウンロード
+  - app/assets/fonts/に配置
+- DeliverySheetPdfGeneratorは既にフォント対応済み
+  - フォントファイルがある場合は自動的に適用
+  - フォントファイルがない場合はデフォルトフォント使用
 
 ### Phase 1 Week 3 Day 19-20（2025-12-03）
 **配送シートUI画面**

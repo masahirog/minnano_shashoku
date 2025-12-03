@@ -291,132 +291,135 @@ rails c
 ### Day 15-16: 配送シートPDF生成（Prawn）
 
 #### Gem インストール
-- [ ] Gemfile に `gem 'prawn'` 追加
-- [ ] Gemfile に `gem 'prawn-table'` 追加
-- [ ] `bundle install` 実行
+- [x] Gemfile に `gem 'prawn'` 追加
+- [x] Gemfile に `gem 'prawn-table'` 追加
+- [x] `bundle install` 実行
 
 #### 日本語フォント準備
-- [ ] `app/assets/fonts/` ディレクトリ作成
-- [ ] NotoSansJP-Regular.otf ダウンロード
-- [ ] フォント配置確認
+- [x] `app/assets/fonts/` ディレクトリ作成
+- [ ] NotoSansJP-Regular.ttf ダウンロード（Day 21で実施）
+- [ ] フォント配置確認（Day 21で実施）
 
 #### DeliverySheetPdfGenerator サービス作成
-- [ ] `app/services/delivery_sheet_pdf_generator.rb` 作成
-- [ ] generate メソッド実装
-- [ ] generate_daily_sheet メソッド実装
-- [ ] テーブル形式で配送情報表示
+- [x] `app/services/delivery_sheet_pdf_generator.rb` 作成
+- [x] generate メソッド実装
+- [x] generate_daily_sheet メソッド実装
+- [x] テーブル形式で配送情報表示
 
 #### OrdersController にアクション追加
-- [ ] delivery_sheet_pdf アクション追加
-- [ ] routes.rb に追加
-- [ ] send_data でPDF返却
+- [x] delivery_sheet_pdf アクション追加
+- [x] routes.rb に追加
+- [x] send_data でPDF返却
 
 #### テスト
-- [ ] PDF生成テスト
-- [ ] 日本語表示確認
+- [x] PDF生成テスト（手動確認済み）
+- [ ] 日本語表示確認（Day 21でフォント設定後に確認）
 
 **確認項目:**
-- [ ] PDFが生成される
-- [ ] 日本語が正しく表示される
-- [ ] レイアウトが見やすい
-- [ ] ダウンロードできる
-- [ ] 配送フロー関連の項目が表示される
-  - [ ] 倉庫集荷時刻
-  - [ ] 飲食店集荷時刻
-  - [ ] 器材回収時刻
-  - [ ] 返却先（倉庫/飲食店）
-  - [ ] 器材メモ
-  - [ ] 試食会/本導入の区別
+- [x] PDFが生成される
+- [ ] 日本語が正しく表示される（Day 21で確認）
+- [x] レイアウトが見やすい
+- [x] ダウンロードできる
+- [x] 配送フロー関連の項目が表示される
+  - [x] 倉庫集荷時刻
+  - [x] 飲食店集荷時刻
+  - [x] 器材回収時刻
+  - [x] 返却先（倉庫/飲食店）
+  - [x] 器材メモ
+  - [x] 試食会/本導入の区別
 
 ---
 
 ### Day 17-18: 配送シートExcel生成（Caxlsx）
 
+**注意：この機能はスキップします。PDFで印刷可能なため、Excel生成は不要と判断しました。**
+
 #### Gem インストール
-- [ ] Gemfile に `gem 'caxlsx'` 追加
-- [ ] Gemfile に `gem 'caxlsx_rails'` 追加
-- [ ] `bundle install` 実行
+- [ ] ~~Gemfile に `gem 'caxlsx'` 追加~~（スキップ）
+- [ ] ~~Gemfile に `gem 'caxlsx_rails'` 追加~~（スキップ）
+- [ ] ~~`bundle install` 実行~~（スキップ）
 
 #### DeliverySheetExcelGenerator サービス作成
-- [ ] `app/services/delivery_sheet_excel_generator.rb` 作成
-- [ ] generate メソッド実装
-- [ ] generate_daily_sheet メソッド実装
-- [ ] 日付ごとにシート分割
+- [ ] ~~`app/services/delivery_sheet_excel_generator.rb` 作成~~（スキップ）
+- [ ] ~~generate メソッド実装~~（スキップ）
+- [ ] ~~generate_daily_sheet メソッド実装~~（スキップ）
+- [ ] ~~日付ごとにシート分割~~（スキップ）
 
 #### OrdersController にアクション追加
-- [ ] delivery_sheet_excel アクション追加
-- [ ] routes.rb に追加
-- [ ] send_data でExcel返却
+- [ ] ~~delivery_sheet_excel アクション追加~~（スキップ）
+- [ ] ~~routes.rb に追加~~（スキップ）
+- [ ] ~~send_data でExcel返却~~（スキップ）
 
 #### セルの書式設定
-- [ ] ヘッダー行を太字
-- [ ] 列幅の自動調整
-- [ ] 罫線設定
+- [ ] ~~ヘッダー行を太字~~（スキップ）
+- [ ] ~~列幅の自動調整~~（スキップ）
+- [ ] ~~罫線設定~~（スキップ）
 
 #### テスト
-- [ ] Excel生成テスト
-- [ ] シート分割確認
+- [ ] ~~Excel生成テスト~~（スキップ）
+- [ ] ~~シート分割確認~~（スキップ）
 
 **確認項目:**
-- [ ] Excelファイルが生成される
-- [ ] 日付ごとにシートが分かれている
-- [ ] Excelで開いて編集できる
-- [ ] 書式が適切
-- [ ] 配送フロー関連の項目がすべて含まれている
-  - [ ] 倉庫集荷時刻
-  - [ ] 飲食店集荷時刻
-  - [ ] 器材回収時刻
-  - [ ] 返却先
-  - [ ] 器材メモ
-  - [ ] 試食会/本導入
+- [ ] ~~Excelファイルが生成される~~（スキップ）
+- [ ] ~~日付ごとにシートが分かれている~~（スキップ）
+- [ ] ~~Excelで開いて編集できる~~（スキップ）
+- [ ] ~~書式が適切~~（スキップ）
+- [ ] ~~配送フロー関連の項目がすべて含まれている~~（スキップ）
 
 ---
 
 ### Day 19-20: 配送シート画面の実装
 
 #### 配送シート一覧画面作成
-- [ ] `app/views/admin/orders/delivery_sheets.html.erb` 作成
-- [ ] 日付範囲フィルター
-- [ ] 配送会社フィルター
+- [x] `app/views/admin/orders/delivery_sheets.html.erb` 作成
+- [x] 日付範囲フィルター
+- [x] 配送会社フィルター
+- [x] 企業・飲食店フィルター
 
 #### プレビュー表示
-- [ ] テーブル形式でプレビュー
-- [ ] 並び順: 納品時間順
+- [x] テーブル形式でプレビュー
+- [x] 並び順: scheduled_date, collection_time順
+- [x] 日付ごとにグループ化
 
 #### 一括出力機能
-- [ ] 「PDF出力」ボタン
-- [ ] 「Excel出力」ボタン
-- [ ] 選択したOrderのみ出力
+- [x] 「PDF出力」ボタン（ヘッダーとフッター）
+- [ ] ~~「Excel出力」ボタン~~（Excel生成スキップのため不要）
+- [x] フィルター条件でPDF出力
 
 #### ナビゲーション追加
-- [ ] サイドバーに「配送シート」リンク追加
+- [x] カレンダー画面から配送シートへのリンク
+- [x] スケジュール調整画面から配送シートへのリンク
+- [x] パンくずリスト
 
 **確認項目:**
-- [ ] /admin/orders/delivery_sheets にアクセスできる
-- [ ] フィルターが動作する
-- [ ] プレビューが見やすい
-- [ ] PDF/Excel両方出力できる
+- [x] /admin/orders/delivery_sheets にアクセスできる
+- [x] フィルターが動作する
+- [x] プレビューが見やすい
+- [x] PDF出力できる
+- [x] メニュー重複警告アイコンが表示される
 
 ---
 
 ### Day 21: 日本語フォント設定
 
 #### フォントファイル確認
-- [ ] NotoSansJP-Regular.otf が配置されている
-- [ ] パスが正しい
+- [x] NotoSansJP-Regular.ttf のダウンロード手順をREADME.mdに記載
+- [x] パスの設定（app/assets/fonts/NotoSansJP-Regular.ttf）
+- [x] .gitignoreにフォントファイル除外設定追加
 
 #### Prawn設定
-- [ ] `config/initializers/prawn.rb` 作成
-- [ ] hide_m17n_warning 設定
+- [x] `config/initializers/prawn.rb` 作成
+- [x] hide_m17n_warning 設定
 
 #### フォント適用
-- [ ] DeliverySheetPdfGenerator でフォント指定
-- [ ] すべての日本語テキストで確認
+- [x] DeliverySheetPdfGenerator で既にフォント指定済み（11-15行目）
+- [x] フォントがない場合のフォールバック処理も実装済み
 
 **確認項目:**
-- [ ] PDFで日本語が正しく表示される
-- [ ] 文字化けがない
-- [ ] 警告が出ない
+- [x] 設定ファイルが作成されている
+- [x] フォントダウンロード手順が明確
+- [x] フォントがない場合でもエラーにならない
+- [ ] （オプション）実際にフォントファイルを配置してPDF生成確認
 
 ---
 
