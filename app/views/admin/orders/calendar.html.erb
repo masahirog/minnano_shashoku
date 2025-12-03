@@ -101,6 +101,7 @@
                 </div>
                 <div class="calendar-events">
                   <% orders.each do |order| %>
+                    <% has_duplicate = order.duplicate_menu_in_week? %>
                     <div class="calendar-event"
                          data-order-id="<%= order.id %>"
                          style="background-color: <%= order.company&.color || '#2196f3' %>20; border-left-color: <%= order.company&.color || '#2196f3' %>;"
@@ -110,10 +111,13 @@
                                 <%= order.restaurant&.name %><br>
                                 <% if order.menu %>メニュー: <%= order.menu.name %><br><% end %>
                                 食数: <%= order.default_meal_count %>食<br>
-                                ステータス: <%= order.status %>">
+                                ステータス: <%= order.status %><% if has_duplicate %><br><span class='text-warning'><strong>注意: 同じ週に同じメニューが重複しています</strong></span><% end %>">
                       <%= link_to admin_order_path(order), class: 'calendar-event-link' do %>
                         <div class="event-time">
-                          <%= order.delivery_time&.strftime('%H:%M') %>
+                          <%= order.collection_time&.strftime('%H:%M') %>
+                          <% if has_duplicate %>
+                            <i class="fas fa-exclamation-triangle text-warning ml-1" title="メニュー重複"></i>
+                          <% end %>
                         </div>
                         <div class="event-company">
                           <%= order.company&.name %>
@@ -138,6 +142,7 @@
                 </div>
                 <div class="calendar-events">
                   <% orders.each do |order| %>
+                    <% has_duplicate = order.duplicate_menu_in_week? %>
                     <div class="calendar-event calendar-event-small"
                          data-order-id="<%= order.id %>"
                          style="background-color: <%= order.company&.color || '#2196f3' %>20; border-left-color: <%= order.company&.color || '#2196f3' %>;"
@@ -147,10 +152,13 @@
                                 <%= order.restaurant&.name %><br>
                                 <% if order.menu %>メニュー: <%= order.menu.name %><br><% end %>
                                 食数: <%= order.default_meal_count %>食<br>
-                                ステータス: <%= order.status %>">
+                                ステータス: <%= order.status %><% if has_duplicate %><br><span class='text-warning'><strong>注意: 同じ週に同じメニューが重複しています</strong></span><% end %>">
                       <%= link_to admin_order_path(order), class: 'calendar-event-link' do %>
                         <div class="event-time small">
-                          <%= order.delivery_time&.strftime('%H:%M') %>
+                          <%= order.collection_time&.strftime('%H:%M') %>
+                          <% if has_duplicate %>
+                            <i class="fas fa-exclamation-triangle text-warning ml-1" title="メニュー重複"></i>
+                          <% end %>
                         </div>
                         <div class="event-company small">
                           <%= truncate(order.company&.name, length: 15) %>
@@ -283,6 +291,22 @@
   text-align: center;
   padding: 10px;
   font-weight: bold;
+}
+
+/* メニュー重複警告アイコン */
+.fa-exclamation-triangle.text-warning {
+  color: #ffc107 !important;
+  font-size: 12px;
+  animation: pulse-warning 2s infinite;
+}
+
+@keyframes pulse-warning {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
 </style>
 

@@ -124,6 +124,36 @@ docker-compose exec web rails import:all
 - 配送シート自動生成（Excel/PDF出力）
 - 配送会社向け閲覧画面
 
+## 開発履歴
+
+### Phase 1 Week 2 Day 12（2025-12-03）
+**メニュー重複チェック機能**
+- Orderモデルに `duplicate_menu_in_week?` メソッドを実装
+- 同じ週（月曜〜日曜）に同じメニューが重複しているかチェック
+- カレンダービューに警告アイコン表示（Font Awesome exclamation-triangle）
+- ツールチップに重複警告メッセージを追加
+- 警告アイコンのパルスアニメーション実装
+- delivery_timeをcollection_timeに修正
+
+### Phase 1 Week 2 Day 10-11（2025-12-03）
+**カレンダーUI改善**
+- Companyモデルにcolorカラムを追加（デフォルト: #2196f3）
+- 既存企業データに8種類の異なる色を自動割当
+- カレンダーイベントに企業カラーを適用
+- Bootstrap tooltipでホバー時に詳細情報表示
+- 企業、飲食店、ステータスでフィルタリング機能
+- フィルター条件保持機能
+- CompanyDashboardにcolor編集機能追加
+
+### Phase 1 Week 2 Day 8-9
+**カレンダービュー基本実装**
+- 月間カレンダー・週間カレンダー表示
+- simple_calendarの導入
+
+### Phase 1 Day 7
+**RecurringOrder管理画面実装**
+- 定期注文の管理画面を実装
+
 ## 本番環境
 
 ### Heroku にデプロイ
