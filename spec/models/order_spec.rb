@@ -191,26 +191,27 @@ RSpec.describe Order, type: :model do
 
   describe '#duplicate_menu_in_week?' do
     it '同じ週に同じメニューがある場合、trueを返す' do
-      # 月曜日に案件作成
+      # 水曜日に案件作成（月曜は定休日のため）
       monday = Date.today.beginning_of_week(:monday)
+      wednesday = monday + 2.days
       Order.create!(
         company: company,
         restaurant: restaurant,
         menu: menu,
         order_type: 'trial',
-        scheduled_date: monday,
+        scheduled_date: wednesday,
         default_meal_count: 10,
         status: 'confirmed'
       )
 
-      # 水曜日に同じメニュー
-      wednesday = monday + 2.days
+      # 金曜日に同じメニュー
+      friday = monday + 4.days
       order = Order.new(
         company: company,
         restaurant: restaurant,
         menu: menu,
         order_type: 'trial',
-        scheduled_date: wednesday,
+        scheduled_date: friday,
         default_meal_count: 10,
         status: 'pending'
       )
@@ -219,14 +220,15 @@ RSpec.describe Order, type: :model do
     end
 
     it '同じ週に同じメニューがない場合、falseを返す' do
-      # 先週に案件作成
-      last_week = Date.today.beginning_of_week(:monday) - 7.days
+      # 先週の水曜日に案件作成（月曜は定休日のため）
+      last_week_monday = Date.today.beginning_of_week(:monday) - 7.days
+      last_week_wednesday = last_week_monday + 2.days
       Order.create!(
         company: company,
         restaurant: restaurant,
         menu: menu,
         order_type: 'trial',
-        scheduled_date: last_week,
+        scheduled_date: last_week_wednesday,
         default_meal_count: 10,
         status: 'confirmed'
       )
