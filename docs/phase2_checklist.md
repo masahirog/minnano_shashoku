@@ -153,30 +153,30 @@ rails c
 ### Day 5-6: 請求書自動生成機能
 
 #### InvoiceGeneratorサービス作成
-- [ ] `app/services/invoice_generator.rb` 作成
-- [ ] generate_monthly_invoice メソッド実装
-  - [ ] 指定期間の案件を取得
-  - [ ] 案件ごとに明細行を作成
-  - [ ] 金額を集計
-  - [ ] 請求書を生成
-- [ ] エラーハンドリング
+- [x] `app/services/invoice_generator.rb` 作成
+- [x] generate_monthly_invoice メソッド実装
+  - [x] 指定期間の案件を取得
+  - [x] 案件ごとに明細行を作成
+  - [x] 金額を集計
+  - [x] 請求書を生成
+- [x] エラーハンドリング
 
 #### 請求明細の集計ロジック
-- [ ] 企業ごとの月次集計
-- [ ] 食数×単価の計算
-- [ ] 割引の適用
-- [ ] 消費税の計算
+- [x] 企業ごとの月次集計
+- [x] 食数×単価の計算
+- [x] 割引の適用（固定額・パーセント）
+- [x] 消費税の計算
 
 #### Rakeタスク作成
-- [ ] `lib/tasks/invoices.rake` 作成
-- [ ] invoices:generate_monthly タスク実装
-  - [ ] 対象企業の指定
-  - [ ] 請求期間の指定
-  - [ ] 一括生成機能
+- [x] `lib/tasks/invoices.rake` 作成
+- [x] invoices:generate_monthly タスク実装
+  - [x] 対象企業の指定
+  - [x] 請求期間の指定
+  - [x] 一括生成機能
 
 #### バックグラウンドジョブ作成
-- [ ] `app/jobs/generate_invoices_job.rb` 作成
-- [ ] perform メソッド実装
+- [x] `app/jobs/generate_invoices_job.rb` 作成
+- [x] perform メソッド実装
 - [ ] スケジュール設定（月末自動実行）
 
 **確認コマンド:**
