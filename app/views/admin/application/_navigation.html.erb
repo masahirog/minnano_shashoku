@@ -118,6 +118,11 @@
               <% end %>
             </li>
             <li class="nav-item">
+              <%= link_to admin_recurring_orders_path, class: "nav-link #{nav_link_state(:recurring_orders) == 'active' ? 'active' : ''}" do %>
+                <p>定期案件</p>
+              <% end %>
+            </li>
+            <li class="nav-item">
               <%= link_to admin_delivery_sheet_items_path, class: "nav-link #{nav_link_state(:delivery_sheet_items) == 'active' ? 'active' : ''}" do %>
                 <p>配送シート明細</p>
               <% end %>

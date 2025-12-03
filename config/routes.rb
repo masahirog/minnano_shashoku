@@ -7,6 +7,11 @@ Rails.application.routes.draw do
       resources :drivers
       resources :menus
       resources :orders
+      resources :recurring_orders do
+        collection do
+          post :bulk_generate
+        end
+      end
       resources :restaurants
       resources :staffs
       resources :supplies do

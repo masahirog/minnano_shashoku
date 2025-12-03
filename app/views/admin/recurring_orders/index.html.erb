@@ -1,0 +1,41 @@
+<%=
+  render("index_header",
+    resources: resources,
+    search_term: search_term,
+    page: page,
+    show_search_bar: show_search_bar,
+    filters: filters,
+  )
+%>
+
+<%= content_for(:before_main) %>
+
+<% if content_for?(:main) %>
+  <%= content_for(:main) %>
+<% else %>
+  <section class="main-content__body main-content__body--flush">
+    <!-- 一括生成ボタン -->
+    <div class="card">
+      <div class="card-body">
+        <%= form_with url: bulk_generate_admin_recurring_orders_path, method: :post, local: true, class: "form-inline" do |f| %>
+          <label for="weeks" class="mr-2">生成期間（週）:</label>
+          <%= f.number_field :weeks, value: 4, min: 1, max: 52, class: "form-control mr-2", style: "width: 100px;" %>
+          <%= f.submit "注文を一括生成", class: "btn btn-primary", data: { confirm: "定期案件から注文を生成します。よろしいですか？" } %>
+        <% end %>
+      </div>
+    </div>
+
+    <%= render(
+      "collection",
+      collection_presenter: page,
+      collection_field_name: resource_name,
+      page: page,
+      resources: resources,
+      table_title: "page-title"
+    ) %>
+
+    <%= render("pagination", resources: resources) %>
+  </section>
+<% end %>
+
+<%= content_for(:after_main) %>
