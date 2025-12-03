@@ -126,6 +126,21 @@ docker-compose exec web rails import:all
 
 ## 開発履歴
 
+### Phase 1 Week 3 Day 15-16（2025-12-03）
+**配送シートPDF生成機能**
+- DeliverySheetPdfGeneratorサービスを実装
+- Prawn gemで印刷可能なPDF生成
+- A4横向きレイアウト、日付ごとにグループ化
+- 配送フロー情報を含むテーブル形式
+  - 回収時刻、倉庫集荷時刻
+  - 企業名、飲食店名、メニュー名、食数
+  - 区分（試食会/本導入）、返却先、器材メモ
+- OrdersControllerにdelivery_sheet_pdfアクション追加
+- 日付範囲・企業・飲食店・配送会社でフィルタリング可能
+- キャンセル済み案件を自動除外
+- PDFダウンロード機能
+- 日本語フォント対応準備（app/assets/fonts/）
+
 ### Phase 1 Week 2 Day 13（2025-12-03）
 **スケジュール調整画面とコンフリクト検出機能**
 - スケジュール調整画面を実装（/admin/orders/schedule）

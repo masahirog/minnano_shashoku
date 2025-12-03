@@ -83,6 +83,32 @@ module Admin
       end
     end
 
+    # 配送シートPDF出力
+    def delivery_sheet_pdf
+      start_date = params.fetch(:start_date, Date.today).to_date
+      end_date = params.fetch(:end_date, start_date + 7.days).to_date
+
+      @orders = Order.includes(:company, :restaurant, :menu, :delivery_company)
+                     .where(scheduled_date: start_date..end_date)
+                     .where.not(status: 'cancelled')
+
+      # フィルター適用
+      @orders = @orders.where(company_id: params[:company_id]) if params[:company_id].present?
+      @orders = @orders.where(restaurant_id: params[:restaurant_id]) if params[:restaurant_id].present?
+      @orders = @orders.where(delivery_company_id: params[:delivery_company_id]) if params[:delivery_company_id].present?
+
+      @orders = @orders.order(:scheduled_date, :collection_time)
+
+      # PDF生成
+      pdf = DeliverySheetPdfGenerator.new(@orders, start_date: start_date, end_date: end_date).generate
+
+      # PDFをダウンロード
+      send_data pdf,
+                filename: "delivery_sheet_#{start_date.strftime('%Y%m%d')}-#{end_date.strftime('%Y%m%d')}.pdf",
+                type: 'application/pdf',
+                disposition: 'attachment'
+    end
+
     # Override `resource_params` if you want to transform the submitted
     # data before it's persisted. For example, the following would turn all
     # empty values into nil values. It uses other APIs such as `resource_class`
