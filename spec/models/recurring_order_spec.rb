@@ -218,9 +218,137 @@ RSpec.describe RecurringOrder, type: :model do
   end
 
   describe '#generate_orders_for_range' do
-    it 'has a placeholder method' do
-      recurring_order = build(:recurring_order)
-      expect(recurring_order).to respond_to(:generate_orders_for_range)
+    let(:recurring_order) do
+      create(:recurring_order,
+        day_of_week: 1, # Monday
+        frequency: 'weekly',
+        start_date: Date.new(2025, 1, 6), # Monday, Jan 6, 2025
+        end_date: nil
+      )
+    end
+
+    it 'generates orders for matching days of week' do
+      start_date = Date.new(2025, 1, 6)  # Monday
+      end_date = Date.new(2025, 1, 27)   # 3 weeks later
+
+      orders = recurring_order.generate_orders_for_range(start_date, end_date)
+
+      expect(orders.size).to eq(4) # 4 Mondays in this range
+      expect(orders.map(&:scheduled_date)).to match_array([
+        Date.new(2025, 1, 6),
+        Date.new(2025, 1, 13),
+        Date.new(2025, 1, 20),
+        Date.new(2025, 1, 27)
+      ])
+    end
+
+    it 'does not generate orders for non-matching days' do
+      start_date = Date.new(2025, 1, 7)  # Tuesday
+      end_date = Date.new(2025, 1, 8)    # Wednesday
+
+      orders = recurring_order.generate_orders_for_range(start_date, end_date)
+
+      expect(orders).to be_empty
+    end
+
+    it 'respects the start_date boundary' do
+      start_date = Date.new(2025, 1, 13) # Second Monday
+      end_date = Date.new(2025, 1, 27)
+
+      orders = recurring_order.generate_orders_for_range(start_date, end_date)
+
+      expect(orders.size).to eq(3)
+      expect(orders.map(&:scheduled_date)).to match_array([
+        Date.new(2025, 1, 13),
+        Date.new(2025, 1, 20),
+        Date.new(2025, 1, 27)
+      ])
+    end
+
+    it 'respects the end_date boundary when set' do
+      recurring_order.update(end_date: Date.new(2025, 1, 20))
+
+      start_date = Date.new(2025, 1, 6)
+      end_date = Date.new(2025, 1, 27)
+
+      orders = recurring_order.generate_orders_for_range(start_date, end_date)
+
+      expect(orders.size).to eq(3)
+      expect(orders.map(&:scheduled_date)).to match_array([
+        Date.new(2025, 1, 6),
+        Date.new(2025, 1, 13),
+        Date.new(2025, 1, 20)
+      ])
+    end
+
+    it 'does not create duplicate orders' do
+      start_date = Date.new(2025, 1, 6)
+      end_date = Date.new(2025, 1, 13)
+
+      # First generation
+      first_orders = recurring_order.generate_orders_for_range(start_date, end_date)
+      expect(first_orders.size).to eq(2)
+
+      # Second generation (should not create duplicates)
+      second_orders = recurring_order.generate_orders_for_range(start_date, end_date)
+      expect(second_orders.size).to eq(0)
+
+      # Total orders in database
+      total_orders = Order.where(recurring_order_id: recurring_order.id).count
+      expect(total_orders).to eq(2)
+    end
+
+    context 'with biweekly frequency' do
+      it 'generates orders every 2 weeks' do
+        recurring_order.update(frequency: 'biweekly')
+
+        start_date = Date.new(2025, 1, 6)  # Week 1
+        end_date = Date.new(2025, 2, 3)    # Week 5
+
+        orders = recurring_order.generate_orders_for_range(start_date, end_date)
+
+        expect(orders.size).to eq(3)
+        expect(orders.map(&:scheduled_date)).to match_array([
+          Date.new(2025, 1, 6),   # Week 1
+          Date.new(2025, 1, 20),  # Week 3
+          Date.new(2025, 2, 3)    # Week 5
+        ])
+      end
+    end
+
+    context 'with monthly frequency' do
+      it 'generates orders on first occurrence of the day in each month' do
+        recurring_order.update(frequency: 'monthly')
+
+        start_date = Date.new(2025, 1, 1)
+        end_date = Date.new(2025, 3, 31)
+
+        orders = recurring_order.generate_orders_for_range(start_date, end_date)
+
+        # First Monday of Jan, Feb, Mar
+        expect(orders.size).to eq(3)
+        expect(orders.map(&:scheduled_date)).to match_array([
+          Date.new(2025, 1, 6),   # First Monday in January
+          Date.new(2025, 2, 3),   # First Monday in February
+          Date.new(2025, 3, 3)    # First Monday in March
+        ])
+      end
+    end
+
+    it 'copies all relevant fields to generated orders' do
+      order = recurring_order.generate_orders_for_range(Date.new(2025, 1, 6), Date.new(2025, 1, 6)).first
+
+      expect(order.company_id).to eq(recurring_order.company_id)
+      expect(order.restaurant_id).to eq(recurring_order.restaurant_id)
+      expect(order.menu_id).to eq(recurring_order.menu_id)
+      expect(order.delivery_company_id).to eq(recurring_order.delivery_company_id)
+      expect(order.default_meal_count).to eq(recurring_order.default_meal_count)
+      expect(order.recurring_order_id).to eq(recurring_order.id)
+      expect(order.is_trial).to eq(recurring_order.is_trial)
+      expect(order.collection_time).to eq(recurring_order.collection_time)
+      expect(order.warehouse_pickup_time).to eq(recurring_order.warehouse_pickup_time)
+      expect(order.return_location).to eq(recurring_order.return_location)
+      expect(order.equipment_notes).to eq(recurring_order.equipment_notes)
     end
   end
 end
