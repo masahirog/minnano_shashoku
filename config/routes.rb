@@ -11,6 +11,7 @@ Rails.application.routes.draw do
           get :calendar
           get :schedule
           patch :update_schedule
+          get :delivery_sheets
           get :delivery_sheet_pdf
         end
       end

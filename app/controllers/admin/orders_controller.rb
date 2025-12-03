@@ -83,6 +83,23 @@ module Admin
       end
     end
 
+    # 配送シート画面
+    def delivery_sheets
+      @start_date = params.fetch(:start_date, Date.today).to_date
+      @end_date = params.fetch(:end_date, @start_date + 7.days).to_date
+
+      @orders = Order.includes(:company, :restaurant, :menu, :delivery_company)
+                     .where(scheduled_date: @start_date..@end_date)
+                     .where.not(status: 'cancelled')
+
+      # フィルター適用
+      @orders = @orders.where(company_id: params[:company_id]) if params[:company_id].present?
+      @orders = @orders.where(restaurant_id: params[:restaurant_id]) if params[:restaurant_id].present?
+      @orders = @orders.where(delivery_company_id: params[:delivery_company_id]) if params[:delivery_company_id].present?
+
+      @orders = @orders.order(:scheduled_date, :collection_time)
+    end
+
     # 配送シートPDF出力
     def delivery_sheet_pdf
       start_date = params.fetch(:start_date, Date.today).to_date

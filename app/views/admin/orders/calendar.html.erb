@@ -89,6 +89,7 @@
             <% else %>
               <%= link_to '週間表示に切替', calendar_admin_orders_path(start_date: params[:start_date], view: 'week', company_id: params[:company_id], restaurant_id: params[:restaurant_id], status: params[:status]), class: 'btn btn-sm btn-secondary' %>
             <% end %>
+            <%= link_to '配送シート', delivery_sheets_admin_orders_path, class: 'btn btn-sm btn-success ml-2' %>
             <%= link_to '一覧に戻る', admin_orders_path, class: 'btn btn-sm btn-default ml-2' %>
           </div>
         </div>

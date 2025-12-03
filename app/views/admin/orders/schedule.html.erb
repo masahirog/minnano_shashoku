@@ -94,7 +94,8 @@
             案件一覧（<%= @start_date.strftime('%Y/%m/%d') %> 〜 <%= @end_date.strftime('%Y/%m/%d') %>）
           </h3>
           <div class="card-tools">
-            <%= link_to 'カレンダーに戻る', calendar_admin_orders_path, class: 'btn btn-sm btn-secondary' %>
+            <%= link_to '配送シート', delivery_sheets_admin_orders_path, class: 'btn btn-sm btn-success' %>
+            <%= link_to 'カレンダーに戻る', calendar_admin_orders_path, class: 'btn btn-sm btn-secondary ml-2' %>
             <%= link_to '一覧に戻る', admin_orders_path, class: 'btn btn-sm btn-default ml-2' %>
           </div>
         </div>
