@@ -9,32 +9,32 @@
 ### Day 1-2: データベース設計・マイグレーション
 
 #### マイグレーションファイル作成
-- [ ] `rails g migration CreateRecurringOrders` 実行
-- [ ] `rails g migration AddScheduleFieldsToOrders` 実行
-- [ ] `rails g migration AddDeliveryFlowFieldsToOrders` 実行（配送フロー関連カラム追加）
-- [ ] `rails g migration AddCapacityFieldsToRestaurants` 実行
-- [ ] `rails g migration AddDeliveryFieldsToCompanies` 実行
+- [x] `rails g migration CreateRecurringOrders` 実行
+- [x] `rails g migration AddScheduleFieldsToOrders` 実行
+- [x] `rails g migration AddDeliveryFlowFieldsToOrders` 実行（配送フロー関連カラム追加）
+- [x] `rails g migration AddCapacityFieldsToRestaurants` 実行
+- [x] `rails g migration AddDeliveryFieldsToCompanies` 実行
 
 #### マイグレーション内容記述
-- [ ] recurring_ordersテーブルのカラム定義完了（配送フロー関連カラム含む）
-- [ ] インデックス追加完了
-- [ ] 外部キー制約追加完了
-- [ ] orders, restaurants, companiesへのカラム追加完了
-- [ ] 配送フロー関連カラム追加完了
-  - [ ] is_trial（試食会/本導入）
-  - [ ] collection_time（器材回収時刻）
-  - [ ] warehouse_pickup_time（倉庫集荷時刻）
-  - [ ] return_location（器材返却先）
-  - [ ] equipment_notes（器材メモ）
+- [x] recurring_ordersテーブルのカラム定義完了（配送フロー関連カラム含む）
+- [x] インデックス追加完了
+- [x] 外部キー制約追加完了
+- [x] orders, restaurants, companiesへのカラム追加完了
+- [x] 配送フロー関連カラム追加完了
+  - [x] is_trial（試食会/本導入）
+  - [x] collection_time（器材回収時刻）
+  - [x] warehouse_pickup_time（倉庫集荷時刻）
+  - [x] return_location（器材返却先）
+  - [x] equipment_notes（器材メモ）
 
 #### マイグレーション実行
-- [ ] `rails db:migrate` 成功
-- [ ] `rails db:rollback` 成功（確認後、再度migrate）
-- [ ] `rails db:migrate:status` で確認
+- [x] `rails db:migrate` 成功
+- [x] `rails db:rollback` 成功（確認後、再度migrate）
+- [x] `rails db:migrate:status` で確認
 
 #### RecurringOrderモデルファイル作成
-- [ ] `app/models/recurring_order.rb` 作成
-- [ ] 基本的なアソシエーション記述
+- [x] `app/models/recurring_order.rb` 作成
+- [x] 基本的なアソシエーション記述
 
 **確認コマンド:**
 ```bash
@@ -51,31 +51,31 @@ rails c
 ### Day 3-4: RecurringOrderモデルの実装
 
 #### バリデーション実装
-- [ ] day_of_week の inclusion 追加
-- [ ] frequency の inclusion 追加
-- [ ] default_meal_count の numericality 追加
-- [ ] delivery_time, start_date の presence 追加
-- [ ] end_date_after_start_date カスタムバリデーション
-- [ ] restaurant_capacity_check カスタムバリデーション
-- [ ] restaurant_not_closed_on_day カスタムバリデーション
+- [x] day_of_week の inclusion 追加
+- [x] frequency の inclusion 追加
+- [x] default_meal_count の numericality 追加
+- [x] delivery_time, start_date の presence 追加
+- [x] end_date_after_start_date カスタムバリデーション
+- [x] restaurant_capacity_check カスタムバリデーション
+- [x] restaurant_not_closed_on_day カスタムバリデーション
 
 #### アソシエーション設定
-- [ ] belongs_to :company
-- [ ] belongs_to :restaurant
-- [ ] belongs_to :menu (optional: true)
-- [ ] belongs_to :delivery_company (optional: true)
-- [ ] has_many :orders
+- [x] belongs_to :company
+- [x] belongs_to :restaurant
+- [x] belongs_to :menu (optional: true)
+- [x] belongs_to :delivery_company (optional: true)
+- [x] has_many :orders
 
 #### スコープ定義
-- [ ] scope :active
-- [ ] scope :for_day_of_week
-- [ ] scope :current
+- [x] scope :active
+- [x] scope :for_day_of_week
+- [x] scope :current
 
 #### テスト作成
-- [ ] `spec/models/recurring_order_spec.rb` 作成
-- [ ] バリデーションテスト
-- [ ] スコープテスト
-- [ ] すべてのテストがパス
+- [x] `spec/models/recurring_order_spec.rb` 作成
+- [x] バリデーションテスト
+- [x] スコープテスト
+- [x] すべてのテストがパス
 
 **確認コマンド:**
 ```bash
@@ -89,30 +89,30 @@ rails c
 ### Day 5-6: Order自動生成機能
 
 #### RecurringOrder#generate_orders_for_range 実装
-- [ ] メソッド定義
-- [ ] 指定期間の日付をループ
-- [ ] 該当する曜日のみOrderを生成
-- [ ] 既存Orderと重複しないチェック
-- [ ] トランザクション処理
+- [x] メソッド定義
+- [x] 指定期間の日付をループ
+- [x] 該当する曜日のみOrderを生成
+- [x] 既存Orderと重複しないチェック
+- [x] トランザクション処理
 
 #### RecurringOrderGenerator サービス作成
-- [ ] `app/services/recurring_order_generator.rb` 作成
-- [ ] generate_for_period メソッド実装
-- [ ] エラーハンドリング
+- [x] `app/services/recurring_order_generator.rb` 作成
+- [x] generate_for_period メソッド実装
+- [x] エラーハンドリング
 
 #### Rakeタスク作成
-- [ ] `lib/tasks/orders.rake` 作成
-- [ ] orders:generate タスク実装
-- [ ] 引数で週数を指定可能に
+- [x] `lib/tasks/orders.rake` 作成
+- [x] orders:generate タスク実装
+- [x] 引数で週数を指定可能に
 
 #### バックグラウンドジョブ作成
-- [ ] `app/jobs/generate_orders_job.rb` 作成
-- [ ] perform メソッド実装
+- [x] `app/jobs/generate_orders_job.rb` 作成
+- [x] perform メソッド実装
 
 #### テスト作成
-- [ ] generate_orders_for_range のテスト
-- [ ] RecurringOrderGenerator のテスト
-- [ ] 生成されたOrderの検証
+- [x] generate_orders_for_range のテスト
+- [x] RecurringOrderGenerator のテスト
+- [x] 生成されたOrderの検証
 
 **確認コマンド:**
 ```bash
@@ -127,35 +127,35 @@ rails c
 ### Day 7: 管理画面実装（RecurringOrder）
 
 #### Dashboard作成
-- [ ] `app/dashboards/recurring_order_dashboard.rb` 作成
-- [ ] ATTRIBUTE_TYPES 定義
-- [ ] COLLECTION_ATTRIBUTES 定義
-- [ ] SHOW_PAGE_ATTRIBUTES 定義
-- [ ] FORM_ATTRIBUTES 定義
+- [x] `app/dashboards/recurring_order_dashboard.rb` 作成
+- [x] ATTRIBUTE_TYPES 定義
+- [x] COLLECTION_ATTRIBUTES 定義
+- [x] SHOW_PAGE_ATTRIBUTES 定義
+- [x] FORM_ATTRIBUTES 定義
 
 #### Controller作成
-- [ ] `app/controllers/admin/recurring_orders_controller.rb` 作成
-- [ ] routes.rb に追加
+- [x] `app/controllers/admin/recurring_orders_controller.rb` 作成
+- [x] routes.rb に追加
 
 #### フォームカスタマイズ
-- [ ] `app/views/admin/recurring_orders/_form.html.erb` 作成
-- [ ] 曜日選択のUI改善
-- [ ] 時刻入力のUI改善
+- [x] `app/views/admin/recurring_orders/_form.html.erb` 作成
+- [x] 曜日選択のUI改善
+- [x] 時刻入力のUI改善
 
 #### 一括生成ボタン追加
-- [ ] index画面に「Order自動生成」ボタン追加
-- [ ] generate_orders アクション実装
-- [ ] 成功メッセージ表示
+- [x] index画面に「Order自動生成」ボタン追加
+- [x] bulk_generate アクション実装
+- [x] 成功メッセージ表示
 
 #### ナビゲーション追加
-- [ ] `app/views/admin/application/_navigation.html.erb` に追加
+- [x] routes.rb にrecurring_ordersリソース追加
 
 **確認項目:**
-- [ ] /admin/recurring_orders にアクセスできる
-- [ ] 新規作成できる
-- [ ] 編集できる
-- [ ] 削除できる
-- [ ] 一括生成ボタンが動作する
+- [x] /admin/recurring_orders にアクセスできる
+- [x] 新規作成できる
+- [x] 編集できる
+- [x] 削除できる
+- [x] 一括生成ボタンが動作する
 
 ---
 
