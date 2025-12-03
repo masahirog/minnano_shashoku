@@ -13,6 +13,7 @@ class CompanyDashboard < Administrate::BaseDashboard
     billing_email: Field::String,
     billing_person_name: Field::String,
     billing_person_title: Field::String,
+    color: Field::String,
     contact_email: Field::String,
     contact_person: Field::String,
     contact_phone: Field::String,
@@ -74,6 +75,7 @@ class CompanyDashboard < Administrate::BaseDashboard
     formal_name
     staff
     contract_status
+    color
     contact_person
     contact_phone
     contact_email
@@ -123,6 +125,7 @@ class CompanyDashboard < Administrate::BaseDashboard
     formal_name
     staff
     contract_status
+    color
     contact_person
     contact_phone
     contact_email

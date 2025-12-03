@@ -34,7 +34,13 @@ module Admin
       start_date = params.fetch(:start_date, Date.today).to_date
       @orders = Order.includes(:company, :restaurant, :menu)
                      .where(scheduled_date: start_date.beginning_of_month..start_date.end_of_month)
-                     .order(:scheduled_date, :delivery_time)
+
+      # フィルター適用
+      @orders = @orders.where(company_id: params[:company_id]) if params[:company_id].present?
+      @orders = @orders.where(restaurant_id: params[:restaurant_id]) if params[:restaurant_id].present?
+      @orders = @orders.where(status: params[:status]) if params[:status].present?
+
+      @orders = @orders.order(:scheduled_date, :delivery_time)
     end
 
     # Override `resource_params` if you want to transform the submitted

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_12_03_111804) do
+ActiveRecord::Schema[7.1].define(version: 2025_12_03_120959) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -115,6 +115,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_03_111804) do
     t.time "delivery_time_latest"
     t.integer "meal_count_min"
     t.integer "meal_count_max"
+    t.string "color", default: "#2196f3"
     t.index ["contract_status"], name: "index_companies_on_contract_status"
     t.index ["name"], name: "index_companies_on_name"
     t.index ["staff_id"], name: "index_companies_on_staff_id"

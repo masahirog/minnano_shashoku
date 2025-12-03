@@ -20,6 +20,62 @@
   <!-- Main content -->
   <section class="content">
     <div class="container-fluid">
+      <!-- Filter Card -->
+      <div class="card card-secondary collapsed-card">
+        <div class="card-header">
+          <h3 class="card-title">
+            <i class="fas fa-filter mr-2"></i>
+            フィルター
+          </h3>
+          <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+        </div>
+        <div class="card-body" style="display: none;">
+          <%= form_with url: calendar_admin_orders_path, method: :get, local: true, class: "form-horizontal" do |f| %>
+            <div class="row">
+              <div class="col-md-4">
+                <div class="form-group">
+                  <%= f.label :company_id, '企業', class: 'control-label' %>
+                  <%= f.select :company_id,
+                      options_from_collection_for_select(Company.order(:name), :id, :name, params[:company_id]),
+                      { include_blank: '全て' },
+                      class: 'form-control' %>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <%= f.label :restaurant_id, '飲食店', class: 'control-label' %>
+                  <%= f.select :restaurant_id,
+                      options_from_collection_for_select(Restaurant.order(:name), :id, :name, params[:restaurant_id]),
+                      { include_blank: '全て' },
+                      class: 'form-control' %>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <%= f.label :status, 'ステータス', class: 'control-label' %>
+                  <%= f.select :status,
+                      options_for_select([['全て', ''], ['保留', 'pending'], ['確定', 'confirmed'], ['完了', 'completed'], ['キャンセル', 'cancelled']], params[:status]),
+                      {},
+                      class: 'form-control' %>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12">
+                <%= f.hidden_field :view, value: params[:view] %>
+                <%= f.hidden_field :start_date, value: params[:start_date] %>
+                <%= f.submit 'フィルター適用', class: 'btn btn-primary' %>
+                <%= link_to 'リセット', calendar_admin_orders_path(view: params[:view], start_date: params[:start_date]), class: 'btn btn-default ml-2' %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
       <!-- Calendar Card -->
       <div class="card card-primary">
         <div class="card-header">
@@ -29,9 +85,9 @@
           </h3>
           <div class="card-tools">
             <% if params[:view] == 'week' %>
-              <%= link_to '月間表示に切替', calendar_admin_orders_path(start_date: params[:start_date], view: 'month'), class: 'btn btn-sm btn-secondary' %>
+              <%= link_to '月間表示に切替', calendar_admin_orders_path(start_date: params[:start_date], view: 'month', company_id: params[:company_id], restaurant_id: params[:restaurant_id], status: params[:status]), class: 'btn btn-sm btn-secondary' %>
             <% else %>
-              <%= link_to '週間表示に切替', calendar_admin_orders_path(start_date: params[:start_date], view: 'week'), class: 'btn btn-sm btn-secondary' %>
+              <%= link_to '週間表示に切替', calendar_admin_orders_path(start_date: params[:start_date], view: 'week', company_id: params[:company_id], restaurant_id: params[:restaurant_id], status: params[:status]), class: 'btn btn-sm btn-secondary' %>
             <% end %>
             <%= link_to '一覧に戻る', admin_orders_path, class: 'btn btn-sm btn-default ml-2' %>
           </div>
@@ -45,7 +101,16 @@
                 </div>
                 <div class="calendar-events">
                   <% orders.each do |order| %>
-                    <div class="calendar-event" data-order-id="<%= order.id %>">
+                    <div class="calendar-event"
+                         data-order-id="<%= order.id %>"
+                         style="background-color: <%= order.company&.color || '#2196f3' %>20; border-left-color: <%= order.company&.color || '#2196f3' %>;"
+                         data-toggle="tooltip"
+                         data-html="true"
+                         title="<strong><%= order.company&.name %></strong><br>
+                                <%= order.restaurant&.name %><br>
+                                <% if order.menu %>メニュー: <%= order.menu.name %><br><% end %>
+                                食数: <%= order.default_meal_count %>食<br>
+                                ステータス: <%= order.status %>">
                       <%= link_to admin_order_path(order), class: 'calendar-event-link' do %>
                         <div class="event-time">
                           <%= order.delivery_time&.strftime('%H:%M') %>
@@ -73,7 +138,16 @@
                 </div>
                 <div class="calendar-events">
                   <% orders.each do |order| %>
-                    <div class="calendar-event calendar-event-small" data-order-id="<%= order.id %>">
+                    <div class="calendar-event calendar-event-small"
+                         data-order-id="<%= order.id %>"
+                         style="background-color: <%= order.company&.color || '#2196f3' %>20; border-left-color: <%= order.company&.color || '#2196f3' %>;"
+                         data-toggle="tooltip"
+                         data-html="true"
+                         title="<strong><%= order.company&.name %></strong><br>
+                                <%= order.restaurant&.name %><br>
+                                <% if order.menu %>メニュー: <%= order.menu.name %><br><% end %>
+                                食数: <%= order.default_meal_count %>食<br>
+                                ステータス: <%= order.status %>">
                       <%= link_to admin_order_path(order), class: 'calendar-event-link' do %>
                         <div class="event-time small">
                           <%= order.delivery_time&.strftime('%H:%M') %>
@@ -211,3 +285,13 @@
   font-weight: bold;
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize Bootstrap tooltips
+  $('[data-toggle="tooltip"]').tooltip({
+    placement: 'top',
+    boundary: 'window'
+  });
+});
+</script>
