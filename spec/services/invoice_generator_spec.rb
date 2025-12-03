@@ -220,4 +220,251 @@ RSpec.describe InvoiceGenerator do
       expect(invoices.first.company).to eq(company)
     end
   end
+
+  describe 'エッジケースのテスト' do
+    context 'confirmed_meal_countが設定されている場合' do
+      before do
+        base_date = Date.new(2025, 12, 1)
+        wednesday = base_date.beginning_of_month
+        wednesday += 1.day until wednesday.wday == 3
+
+        Order.create!(
+          company: company,
+          restaurant: restaurant,
+          menu: menu,
+          order_type: 'trial',
+          scheduled_date: wednesday,
+          default_meal_count: 20,
+          confirmed_meal_count: 25,
+          status: 'completed'
+        )
+      end
+
+      it 'confirmed_meal_countが優先される' do
+        invoice = generator.generate_monthly_invoice(company.id, 2025, 12)
+
+        # 25 * 800 = 20,000
+        expect(invoice.subtotal).to eq(20_000)
+        expect(invoice.invoice_items.first.quantity).to eq(25)
+      end
+    end
+
+    context '複数のステータスが混在する場合' do
+      before do
+        base_date = Date.new(2025, 12, 1)
+        wednesday = base_date.beginning_of_month
+        wednesday += 1.day until wednesday.wday == 3
+
+        # completed案件
+        Order.create!(
+          company: company,
+          restaurant: restaurant,
+          menu: menu,
+          order_type: 'trial',
+          scheduled_date: wednesday,
+          default_meal_count: 20,
+          status: 'completed'
+        )
+
+        # pending案件（対象外）
+        Order.create!(
+          company: company,
+          restaurant: restaurant,
+          menu: menu,
+          order_type: 'trial',
+          scheduled_date: wednesday + 7.days,
+          default_meal_count: 15,
+          status: 'pending'
+        )
+
+        # cancelled案件（対象外）
+        Order.create!(
+          company: company,
+          restaurant: restaurant,
+          menu: menu,
+          order_type: 'trial',
+          scheduled_date: wednesday + 14.days,
+          default_meal_count: 10,
+          status: 'cancelled'
+        )
+      end
+
+      it 'completedステータスのみが請求対象となる' do
+        invoice = generator.generate_monthly_invoice(company.id, 2025, 12)
+
+        expect(invoice.invoice_items.count).to eq(1)
+        expect(invoice.subtotal).to eq(16_000) # 20 * 800のみ
+      end
+    end
+
+    context '割引額が不正な値の場合' do
+      it '割引額が0の場合は割引なしとして処理される' do
+        company.update!(discount_type: 'fixed', discount_amount: 0)
+
+        base_date = Date.new(2025, 12, 1)
+        wednesday = base_date.beginning_of_month
+        wednesday += 1.day until wednesday.wday == 3
+
+        Order.create!(
+          company: company,
+          restaurant: restaurant,
+          menu: menu,
+          order_type: 'trial',
+          scheduled_date: wednesday,
+          default_meal_count: 20,
+          status: 'completed'
+        )
+
+        invoice = generator.generate_monthly_invoice(company.id, 2025, 12)
+
+        expect(invoice.subtotal).to eq(16_000)
+        expect(invoice.invoice_items.count).to eq(1) # 割引明細は作成されない
+      end
+
+      it 'パーセント割引が100%の場合' do
+        company.update!(discount_type: 'percentage', discount_amount: 100)
+
+        base_date = Date.new(2025, 12, 1)
+        wednesday = base_date.beginning_of_month
+        wednesday += 1.day until wednesday.wday == 3
+
+        Order.create!(
+          company: company,
+          restaurant: restaurant,
+          menu: menu,
+          order_type: 'trial',
+          scheduled_date: wednesday,
+          default_meal_count: 20,
+          status: 'completed'
+        )
+
+        invoice = generator.generate_monthly_invoice(company.id, 2025, 12)
+
+        expect(invoice.subtotal).to eq(0)
+        expect(invoice.total_amount).to eq(0)
+      end
+    end
+
+    context '月初と月末の境界値テスト' do
+      it '月初（1日）の案件が含まれる' do
+        Order.create!(
+          company: company,
+          restaurant: restaurant,
+          menu: menu,
+          order_type: 'trial',
+          scheduled_date: Date.new(2025, 12, 1),
+          default_meal_count: 20,
+          status: 'completed'
+        )
+
+        invoice = generator.generate_monthly_invoice(company.id, 2025, 12)
+
+        expect(invoice).to be_present
+        expect(invoice.invoice_items.count).to eq(1)
+      end
+
+      it '月末（31日）の案件が含まれる' do
+        Order.create!(
+          company: company,
+          restaurant: restaurant,
+          menu: menu,
+          order_type: 'trial',
+          scheduled_date: Date.new(2025, 12, 31),
+          default_meal_count: 20,
+          status: 'completed'
+        )
+
+        invoice = generator.generate_monthly_invoice(company.id, 2025, 12)
+
+        expect(invoice).to be_present
+        expect(invoice.invoice_items.count).to eq(1)
+      end
+
+      it '前月最終日の案件は含まれない' do
+        Order.create!(
+          company: company,
+          restaurant: restaurant,
+          menu: menu,
+          order_type: 'trial',
+          scheduled_date: Date.new(2025, 11, 30),
+          default_meal_count: 20,
+          status: 'completed'
+        )
+
+        invoice = generator.generate_monthly_invoice(company.id, 2025, 12)
+
+        expect(invoice).to be_nil
+      end
+
+      it '翌月初日の案件は含まれない' do
+        Order.create!(
+          company: company,
+          restaurant: restaurant,
+          menu: menu,
+          order_type: 'trial',
+          scheduled_date: Date.new(2026, 1, 1),
+          default_meal_count: 20,
+          status: 'completed'
+        )
+
+        invoice = generator.generate_monthly_invoice(company.id, 2025, 12)
+
+        expect(invoice).to be_nil
+      end
+    end
+
+    context '割引明細が正しく追加される' do
+      it '割引が明細として表示される（固定額）' do
+        company.update!(discount_type: 'fixed', discount_amount: 5000)
+
+        base_date = Date.new(2025, 12, 1)
+        wednesday = base_date.beginning_of_month
+        wednesday += 1.day until wednesday.wday == 3
+
+        Order.create!(
+          company: company,
+          restaurant: restaurant,
+          menu: menu,
+          order_type: 'trial',
+          scheduled_date: wednesday,
+          default_meal_count: 20,
+          status: 'completed'
+        )
+
+        invoice = generator.generate_monthly_invoice(company.id, 2025, 12)
+
+        expect(invoice.invoice_items.count).to eq(2)
+        discount_item = invoice.invoice_items.find { |item| item.amount < 0 }
+        expect(discount_item).to be_present
+        expect(discount_item.description).to include('割引')
+        expect(discount_item.amount).to eq(-5000)
+      end
+
+      it '割引が明細として表示される（パーセント）' do
+        company.update!(discount_type: 'percentage', discount_amount: 15)
+
+        base_date = Date.new(2025, 12, 1)
+        wednesday = base_date.beginning_of_month
+        wednesday += 1.day until wednesday.wday == 3
+
+        Order.create!(
+          company: company,
+          restaurant: restaurant,
+          menu: menu,
+          order_type: 'trial',
+          scheduled_date: wednesday,
+          default_meal_count: 20,
+          status: 'completed'
+        )
+
+        invoice = generator.generate_monthly_invoice(company.id, 2025, 12)
+
+        expect(invoice.invoice_items.count).to eq(2)
+        discount_item = invoice.invoice_items.find { |item| item.amount < 0 }
+        expect(discount_item).to be_present
+        expect(discount_item.description).to include('15%')
+        expect(discount_item.amount).to eq(-2400) # 16,000 * 0.15
+      end
+    end
+  end
 end

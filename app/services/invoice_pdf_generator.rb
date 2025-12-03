@@ -14,14 +14,14 @@ class InvoicePdfGenerator
       end
 
       # タイトル
-      pdf.text "請求書", size: 24, style: :bold, align: :center
+      pdf.text "請求書", size: 24, align: :center
       pdf.move_down 30
 
       # 請求書情報と請求先情報を横並び
       pdf.bounding_box([0, pdf.cursor], width: 520, height: 100) do
         # 左側：請求先情報
         pdf.bounding_box([0, pdf.cursor], width: 260) do
-          pdf.text @company.formal_name, size: 14, style: :bold
+          pdf.text @company.formal_name, size: 14
           pdf.move_down 5
           if @company.delivery_address.present?
             pdf.text @company.delivery_address, size: 10
@@ -50,9 +50,9 @@ class InvoicePdfGenerator
       pdf.bounding_box([0, pdf.cursor], width: 520) do
         pdf.stroke_bounds
         pdf.move_down 10
-        pdf.text "ご請求金額", size: 12, style: :bold, align: :center
+        pdf.text "ご請求金額", size: 12, align: :center
         pdf.move_down 5
-        pdf.text "¥ #{number_with_delimiter(@invoice.total_amount)}", size: 20, style: :bold, align: :center
+        pdf.text "¥ #{number_with_delimiter(@invoice.total_amount)}", size: 20, align: :center
         pdf.move_down 5
         pdf.text "(消費税込み)", size: 10, align: :center
         pdf.move_down 10
@@ -61,7 +61,7 @@ class InvoicePdfGenerator
       pdf.move_down 20
 
       # 請求明細
-      pdf.text "請求明細", size: 12, style: :bold
+      pdf.text "請求明細", size: 12
       pdf.move_down 10
 
       # 明細テーブル
@@ -80,7 +80,6 @@ class InvoicePdfGenerator
       end
 
       pdf.table(table_data, width: 520, cell_style: { size: 9, padding: [5, 5] }) do
-        row(0).font_style = :bold
         row(0).background_color = 'EEEEEE'
         column(2..4).align = :right
         cells.borders = [:top, :bottom, :left, :right]
@@ -97,7 +96,6 @@ class InvoicePdfGenerator
 
       pdf.table(summary_data, position: :right, width: 260, cell_style: { size: 10, padding: [5, 10] }) do
         column(1).align = :right
-        row(2).font_style = :bold
         row(2).size = 12
         cells.borders = [:top, :bottom, :left, :right]
       end
@@ -105,7 +103,7 @@ class InvoicePdfGenerator
       pdf.move_down 30
 
       # 振込先情報
-      pdf.text "お振込先", size: 12, style: :bold
+      pdf.text "お振込先", size: 12
       pdf.move_down 10
       pdf.text "銀行名: みんなの社食銀行", size: 10
       pdf.text "支店名: 本店", size: 10
@@ -117,7 +115,7 @@ class InvoicePdfGenerator
 
       # 備考
       if @invoice.notes.present?
-        pdf.text "備考", size: 12, style: :bold
+        pdf.text "備考", size: 12
         pdf.move_down 5
         pdf.text @invoice.notes, size: 9
       end
