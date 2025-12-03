@@ -12,6 +12,11 @@ class Order < ApplicationRecord
   validates :default_meal_count, presence: true
   validates :status, presence: true
 
+  # カスタムバリデーション
+  validate :restaurant_capacity_check, if: -> { restaurant_id.present? && scheduled_date.present? && default_meal_count.present? }
+  validate :restaurant_not_closed, if: -> { restaurant_id.present? && scheduled_date.present? }
+  validate :delivery_time_feasible, if: -> { collection_time.present? && warehouse_pickup_time.present? }
+
   def self.ransackable_attributes(auth_object = nil)
     ["company_id", "confirmed_meal_count", "created_at", "default_meal_count",
      "delivery_company_id", "delivery_company_status", "delivery_group",
@@ -87,5 +92,69 @@ class Order < ApplicationRecord
   # コンフリクトがあるかどうかを返す
   def has_conflicts?
     schedule_conflicts.any?
+  end
+
+  private
+
+  # 飲食店のキャパシティチェック
+  def restaurant_capacity_check
+    return unless restaurant && scheduled_date && default_meal_count
+
+    # 同じ日の同じ飲食店の案件の合計食数を計算
+    same_day_orders = Order.where(
+      restaurant_id: restaurant_id,
+      scheduled_date: scheduled_date
+    ).where.not(id: id).where.not(status: 'cancelled')
+
+    total_meal_count = same_day_orders.sum(:default_meal_count) + default_meal_count
+
+    # capacity_per_dayをチェック
+    if restaurant.capacity_per_day && total_meal_count > restaurant.capacity_per_day
+      errors.add(:default_meal_count,
+                 "この日の合計食数（#{total_meal_count}食）が飲食店のキャパシティ（#{restaurant.capacity_per_day}食）を超えています")
+    end
+
+    # max_lots_per_dayをチェック（同じ日の案件数）
+    if restaurant.max_lots_per_day
+      total_orders = same_day_orders.count + 1
+      if total_orders > restaurant.max_lots_per_day
+        errors.add(:scheduled_date,
+                   "この日の案件数（#{total_orders}件）が飲食店の1日の最大ロット数（#{restaurant.max_lots_per_day}件）を超えています")
+      end
+    end
+  end
+
+  # 定休日チェック
+  def restaurant_not_closed
+    return unless restaurant && scheduled_date
+
+    # closed_days（配列）に曜日が含まれているかチェック
+    day_of_week = scheduled_date.wday # 0=日曜, 1=月曜, ...
+    day_names = %w[sunday monday tuesday wednesday thursday friday saturday]
+    day_name = day_names[day_of_week]
+
+    if restaurant.closed_days&.include?(day_name)
+      errors.add(:scheduled_date,
+                 "#{scheduled_date.strftime('%Y年%m月%d日')}（#{%w[日 月 火 水 木 金 土][day_of_week]}曜日）は飲食店の定休日です")
+    end
+  end
+
+  # 配送時間の妥当性チェック
+  def delivery_time_feasible
+    return unless collection_time && warehouse_pickup_time
+
+    # 倉庫集荷時刻が回収時刻よりも前である必要がある
+    # Time型の比較なので、日付部分は無視される
+    if warehouse_pickup_time >= collection_time
+      errors.add(:warehouse_pickup_time,
+                 "倉庫集荷時刻（#{warehouse_pickup_time.strftime('%H:%M')}）は飲食店回収時刻（#{collection_time.strftime('%H:%M')}）よりも前である必要があります")
+    end
+
+    # 最低でも30分の余裕が必要
+    time_diff = (collection_time.hour * 60 + collection_time.min) - (warehouse_pickup_time.hour * 60 + warehouse_pickup_time.min)
+    if time_diff < 30
+      errors.add(:collection_time,
+                 "倉庫集荷から飲食店回収まで最低30分の余裕が必要です（現在: #{time_diff}分）")
+    end
   end
 end

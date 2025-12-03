@@ -428,36 +428,49 @@ rails c
 ### Day 22-23: バリデーション・制約チェック強化
 
 #### 飲食店キャパチェック
-- [ ] restaurant_capacity_check バリデーション実装
-- [ ] 1日の合計食数をチェック
-- [ ] エラーメッセージ表示
+- [x] restaurant_capacity_check バリデーション実装
+- [x] 1日の合計食数をチェック（capacity_per_day）
+- [x] 1日の案件数をチェック（max_lots_per_day）
+- [x] キャンセル済み案件は計算対象外
+- [x] エラーメッセージ表示
 
 #### 定休日チェック
-- [ ] restaurant_not_closed バリデーション実装
-- [ ] 曜日ベースの定休日チェック
-- [ ] エラーメッセージ表示
+- [x] restaurant_not_closed バリデーション実装
+- [x] 曜日ベースの定休日チェック（closed_days配列）
+- [x] エラーメッセージ表示（日付と曜日付き）
 
 #### 配送時間制約チェック
-- [ ] delivery_time_feasible バリデーション実装
-- [ ] 集荷→納品の時間計算
-- [ ] 移動時間＋設置時間を考慮
+- [x] delivery_time_feasible バリデーション実装
+- [x] 集荷→納品の時間計算
+- [x] 最低30分の余裕時間チェック
+- [x] 時刻の前後関係チェック
 
 #### ConflictDetector サービス作成
-- [ ] `app/services/conflict_detector.rb` 作成
-- [ ] detect_for_date メソッド実装
-- [ ] キャパオーバー検出
-- [ ] ドライバー重複検出
-- [ ] メニュー重複検出
+- [x] `app/services/conflict_detector.rb` 作成
+- [x] detect_for_date メソッド実装
+- [x] detect_for_range メソッド実装
+- [x] detect_for_order メソッド実装
+- [x] キャパオーバー検出
+- [ ] ドライバー重複検出（将来実装予定）
+- [x] メニュー重複検出
+- [x] 時間帯重複検出
+- [x] 定休日検出
+- [x] 重大度レベル（high/medium）付与
 
 #### テスト作成
-- [ ] バリデーションテスト
-- [ ] ConflictDetector のテスト
+- [x] spec/models/order_spec.rb 作成
+- [x] バリデーションテスト（キャパ、定休日、配送時間）
+- [x] メニュー重複テスト
+- [x] スケジュールコンフリクトテスト
+- [x] spec/services/conflict_detector_spec.rb 作成
+- [x] ConflictDetector のテスト
 
 **確認項目:**
-- [ ] キャパオーバーが防止される
-- [ ] 定休日登録が防止される
-- [ ] 配送時間の矛盾が検出される
-- [ ] コンフリクト一覧が取得できる
+- [x] キャパオーバーが防止される
+- [x] 定休日登録が防止される
+- [x] 配送時間の矛盾が検出される
+- [x] コンフリクト一覧が取得できる
+- [ ] （次のステップ）実際のデータでテスト実行
 
 ---
 

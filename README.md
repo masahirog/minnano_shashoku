@@ -151,6 +151,29 @@ docker-compose exec web rails import:all
 
 ## 開発履歴
 
+### Phase 1 Week 4 Day 22-23（2025-12-03）
+**バリデーション・制約チェック強化**
+- Orderモデルにカスタムバリデーション実装
+  - restaurant_capacity_check: 飲食店の1日のキャパシティチェック
+    - capacity_per_day（1日あたりの食数制限）
+    - max_lots_per_day（1日あたりの案件数制限）
+    - キャンセル済み案件は計算対象外
+  - restaurant_not_closed: 定休日チェック
+    - closed_days配列で曜日ベースの定休日チェック
+    - エラーメッセージに日付と曜日を表示
+  - delivery_time_feasible: 配送時間の妥当性チェック
+    - 倉庫集荷時刻 < 飲食店回収時刻
+    - 最低30分の余裕時間を確保
+- ConflictDetectorサービス作成（app/services/conflict_detector.rb）
+  - detect_for_order: 単一案件のコンフリクト検出
+  - detect_for_date: 指定日のすべてのコンフリクト検出
+  - detect_for_range: 指定期間のすべてのコンフリクト検出
+  - 検出項目: キャパオーバー、メニュー重複、時間帯重複、定休日
+  - 重大度レベル（high/medium）付き
+- RSpecテスト作成
+  - spec/models/order_spec.rb: バリデーションテスト
+  - spec/services/conflict_detector_spec.rb: コンフリクト検出テスト
+
 ### Phase 1 Week 3 Day 21（2025-12-03）
 **日本語フォント設定**
 - config/initializers/prawn.rb作成
