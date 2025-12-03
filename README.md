@@ -151,6 +151,30 @@ docker-compose exec web rails import:all
 
 ## 開発履歴
 
+### Phase 1 Week 4 Day 24-25（2025-12-03）
+**統合テスト・パフォーマンステスト**
+- Gemfile更新
+  - capybara: E2Eテスト用
+  - selenium-webdriver: ブラウザテスト用
+  - bullet: N+1クエリ検出用
+- Bullet設定追加（config/initializers/bullet.rb）
+  - 開発環境でN+1クエリを自動検出
+- RSpec/Capybara設定
+  - rails_helper.rbにCapybara設定追加
+  - Deviseヘルパー追加
+- E2Eテスト作成（spec/features/）
+  - recurring_orders_spec.rb: 定期スケジュール登録・編集・削除・自動生成
+  - calendar_spec.rb: カレンダー表示・フィルタリング・表示切替・メニュー重複警告
+  - delivery_sheets_spec.rb: 配送シート一覧・フィルタリング・PDF出力・グループ化
+  - schedule_adjustment_spec.rb: スケジュール調整・一括更新・コンフリクト表示・フィルタリング
+- パフォーマンステスト作成（spec/performance/orders_performance_spec.rb）
+  - カレンダー表示のクエリ数チェック
+  - 配送シート一覧のクエリ数チェック
+  - スケジュール調整画面のクエリ数チェック
+  - PDF生成速度テスト（3秒以内）
+  - ConflictDetector性能テスト
+  - カスタムマッチャー（perform_under）実装
+
 ### Phase 1 Week 4 Day 22-23（2025-12-03）
 **バリデーション・制約チェック強化**
 - Orderモデルにカスタムバリデーション実装

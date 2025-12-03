@@ -85,6 +85,8 @@ group :development, :test do
   gem "rspec-rails", "~> 6.0"
   gem "factory_bot_rails"
   gem "faker"
+  gem "capybara"
+  gem "selenium-webdriver"
 end
 
 group :development do
@@ -96,6 +98,9 @@ group :development do
 
   # Speed up commands on slow machines / big apps [https://github.com/rails/spring]
   # gem "spring"
+
+  # N+1クエリ検出
+  gem "bullet"
 
   gem "error_highlight", ">= 0.4.0", platforms: [:ruby]
 end

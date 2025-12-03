@@ -477,33 +477,47 @@ rails c
 ### Day 24-25: 統合テスト・調整
 
 #### E2Eテスト作成
-- [ ] `spec/features/recurring_orders_spec.rb` 作成
-- [ ] 定期スケジュール登録のシナリオ
-- [ ] Order自動生成のシナリオ
-- [ ] カレンダー表示のシナリオ
-- [ ] 配送シート出力のシナリオ
+- [x] Gemfile更新（capybara, selenium-webdriver追加）
+- [x] RSpec/Capybara設定
+- [x] `spec/features/recurring_orders_spec.rb` 作成
+- [x] 定期スケジュール登録のシナリオ
+- [x] Order自動生成のシナリオ
+- [x] `spec/features/calendar_spec.rb` 作成
+- [x] カレンダー表示のシナリオ
+- [x] フィルタリング・表示切替のシナリオ
+- [x] `spec/features/delivery_sheets_spec.rb` 作成
+- [x] 配送シート出力のシナリオ
+- [x] `spec/features/schedule_adjustment_spec.rb` 作成
+- [x] スケジュール調整のシナリオ
 
 #### パフォーマンステスト
-- [ ] N+1クエリチェック（bullet gem）
-- [ ] 大量データでのカレンダー表示
-- [ ] PDF/Excel生成速度
+- [x] N+1クエリチェック（bullet gem導入）
+- [x] config/initializers/bullet.rb 作成
+- [x] `spec/performance/orders_performance_spec.rb` 作成
+- [x] 大量データでのカレンダー表示テスト
+- [x] 配送シート一覧のパフォーマンステスト
+- [x] スケジュール調整画面のパフォーマンステスト
+- [x] PDF生成速度テスト
+- [x] ConflictDetector性能テスト
+- [x] カスタムマッチャー（perform_under）実装
 
 #### バグ修正
-- [ ] バグリスト作成
+- [ ] バグリスト作成（実運用テスト後）
 - [ ] 優先度付け
 - [ ] 修正実施
 
 #### ドキュメント更新
-- [ ] README.md 更新
-- [ ] 操作マニュアル作成
-- [ ] データ移行手順書作成
-- [ ] ロールバック手順書作成
+- [x] README.md 更新
+- [ ] 操作マニュアル作成（Day 26-28で実施予定）
+- [ ] データ移行手順書作成（Day 26-28で実施予定）
+- [ ] ロールバック手順書作成（Day 26-28で実施予定）
 
 **確認項目:**
-- [ ] すべてのE2Eテストがパスする
-- [ ] パフォーマンスに問題がない
-- [ ] 致命的なバグがない
-- [ ] ドキュメントが揃っている
+- [x] E2Eテストを作成した
+- [x] パフォーマンステストを作成した
+- [x] Bulletでクエリ監視設定完了
+- [ ] （次のステップ）実際にテストを実行して確認
+- [ ] （次のステップ）致命的なバグがないか確認
 
 ---
 
