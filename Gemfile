@@ -77,6 +77,11 @@ group :development, :test do
 
   # 環境変数管理
   gem "dotenv-rails"
+
+  # テスト
+  gem "rspec-rails", "~> 6.0"
+  gem "factory_bot_rails"
+  gem "faker"
 end
 
 group :development do

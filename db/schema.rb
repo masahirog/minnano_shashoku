@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_12_01_222550) do
+ActiveRecord::Schema[7.1].define(version: 2025_12_03_111804) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -110,6 +110,11 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_01_222550) do
     t.integer "delivery_fee_discount"
     t.integer "remote_delivery_fee"
     t.integer "special_delivery_fee"
+    t.time "delivery_time_preferred"
+    t.time "delivery_time_earliest"
+    t.time "delivery_time_latest"
+    t.integer "meal_count_min"
+    t.integer "meal_count_max"
     t.index ["contract_status"], name: "index_companies_on_contract_status"
     t.index ["name"], name: "index_companies_on_name"
     t.index ["staff_id"], name: "index_companies_on_staff_id"
@@ -189,9 +194,20 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_01_222550) do
     t.jsonb "options", default: {}
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "recurring_order_id"
+    t.boolean "menu_confirmed", default: false
+    t.boolean "meal_count_confirmed", default: false
+    t.datetime "confirmation_deadline"
+    t.boolean "is_trial", default: false
+    t.time "collection_time"
+    t.time "warehouse_pickup_time"
+    t.string "return_location"
+    t.text "equipment_notes"
     t.index ["company_id"], name: "index_orders_on_company_id"
     t.index ["delivery_company_id"], name: "index_orders_on_delivery_company_id"
+    t.index ["is_trial"], name: "index_orders_on_is_trial"
     t.index ["menu_id"], name: "index_orders_on_menu_id"
+    t.index ["recurring_order_id"], name: "index_orders_on_recurring_order_id"
     t.index ["restaurant_id"], name: "index_orders_on_restaurant_id"
     t.index ["scheduled_date", "delivery_company_id"], name: "index_orders_on_scheduled_date_and_delivery_company_id"
     t.index ["scheduled_date"], name: "index_orders_on_scheduled_date"
@@ -207,6 +223,38 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_01_222550) do
     t.boolean "is_active"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "recurring_orders", force: :cascade do |t|
+    t.bigint "company_id", null: false
+    t.bigint "restaurant_id", null: false
+    t.bigint "menu_id"
+    t.bigint "delivery_company_id"
+    t.integer "day_of_week", null: false
+    t.string "frequency", default: "weekly", null: false
+    t.date "start_date", null: false
+    t.date "end_date"
+    t.integer "default_meal_count", default: 50, null: false
+    t.time "delivery_time", null: false
+    t.time "pickup_time"
+    t.boolean "is_trial", default: false, null: false
+    t.time "collection_time"
+    t.time "warehouse_pickup_time"
+    t.string "return_location", default: "warehouse"
+    t.text "equipment_notes"
+    t.boolean "is_active", default: true, null: false
+    t.string "status", default: "active", null: false
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["company_id", "day_of_week"], name: "index_recurring_orders_on_company_id_and_day_of_week"
+    t.index ["company_id"], name: "index_recurring_orders_on_company_id"
+    t.index ["delivery_company_id"], name: "index_recurring_orders_on_delivery_company_id"
+    t.index ["is_active"], name: "index_recurring_orders_on_is_active"
+    t.index ["menu_id"], name: "index_recurring_orders_on_menu_id"
+    t.index ["restaurant_id", "day_of_week"], name: "index_recurring_orders_on_restaurant_id_and_day_of_week"
+    t.index ["restaurant_id"], name: "index_recurring_orders_on_restaurant_id"
+    t.index ["start_date"], name: "index_recurring_orders_on_start_date"
   end
 
   create_table "restaurants", force: :cascade do |t|
@@ -231,6 +279,11 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_01_222550) do
     t.boolean "trial_available", default: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "capacity_per_day", default: 100
+    t.integer "max_lots_per_day", default: 2
+    t.time "pickup_time_earliest"
+    t.time "pickup_time_latest"
+    t.string "regular_holiday"
     t.index ["contract_status"], name: "index_restaurants_on_contract_status"
     t.index ["name"], name: "index_restaurants_on_name"
     t.index ["staff_id"], name: "index_restaurants_on_staff_id"
@@ -304,7 +357,12 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_01_222550) do
   add_foreign_key "orders", "delivery_companies"
   add_foreign_key "orders", "menus"
   add_foreign_key "orders", "menus", column: "second_menu_id"
+  add_foreign_key "orders", "recurring_orders"
   add_foreign_key "orders", "restaurants"
+  add_foreign_key "recurring_orders", "companies"
+  add_foreign_key "recurring_orders", "delivery_companies"
+  add_foreign_key "recurring_orders", "menus"
+  add_foreign_key "recurring_orders", "restaurants"
   add_foreign_key "restaurants", "staff"
   add_foreign_key "supply_movements", "supplies"
   add_foreign_key "supply_stocks", "supplies"
