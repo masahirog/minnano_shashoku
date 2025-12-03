@@ -40,6 +40,7 @@ gem "redis", ">= 4.0.1"
 
 # 管理画面
 gem "administrate"
+gem "administrate-field-active_storage"
 gem "sassc-rails"
 gem "devise"
 gem "slim-rails"

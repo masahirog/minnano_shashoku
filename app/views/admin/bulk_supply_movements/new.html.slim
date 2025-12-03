@@ -22,7 +22,7 @@ section.main-content__body.main-content__body--flush
       / 移動元拠点区分
       div#from_location_section style="margin-bottom: 20px;"
         label style="display: block; font-weight: bold; margin-bottom: 5px;" 移動元拠点区分
-        = select_tag :from_location_type, options_for_select([['みんなの食堂', 'OwnLocation'], ['導入企業', 'Company'], ['飲食店', 'Restaurant'], ['配送会社', 'DeliveryCompany']]), style: "width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;", onchange: "updateFromLocationSelect(this.value)"
+        = select_tag :from_location_type, options_for_select([['選択してください', ''], ['みんなの食堂', 'OwnLocation'], ['導入企業', 'Company'], ['飲食店', 'Restaurant'], ['配送会社', 'DeliveryCompany']]), style: "width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;", onchange: "updateFromLocationSelect(this.value)"
 
       / 移動元拠点
       div#from_location_id_container style="margin-bottom: 20px;"
@@ -32,7 +32,7 @@ section.main-content__body.main-content__body--flush
       / 移動先拠点区分
       div#to_location_section style="margin-bottom: 20px;"
         label style="display: block; font-weight: bold; margin-bottom: 5px;" 移動先拠点区分
-        = select_tag :to_location_type, options_for_select([['みんなの食堂', 'OwnLocation'], ['導入企業', 'Company'], ['飲食店', 'Restaurant'], ['配送会社', 'DeliveryCompany']]), style: "width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;", onchange: "updateToLocationSelect(this.value)"
+        = select_tag :to_location_type, options_for_select([['選択してください', ''], ['みんなの食堂', 'OwnLocation'], ['導入企業', 'Company'], ['飲食店', 'Restaurant'], ['配送会社', 'DeliveryCompany']]), style: "width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;", onchange: "updateToLocationSelect(this.value)"
 
       / 移動先拠点
       div#to_location_id_container style="margin-bottom: 20px;"
@@ -225,4 +225,15 @@ javascript:
   // ページ読み込み時の初期化
   document.addEventListener('DOMContentLoaded', function() {
     updateMovementTypeFields('');
+
+    // 初期の拠点セレクトボックスを設定
+    const fromLocationType = document.getElementById('from_location_type').value;
+    const toLocationType = document.getElementById('to_location_type').value;
+
+    if (fromLocationType) {
+      updateFromLocationSelect(fromLocationType);
+    }
+    if (toLocationType) {
+      updateToLocationSelect(toLocationType);
+    }
   });

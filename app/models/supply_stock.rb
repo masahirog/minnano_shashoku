@@ -48,6 +48,16 @@ class SupplyStock < ApplicationRecord
     quantity <= supply.reorder_point
   end
 
+  # この在庫に関連する備品移動履歴を取得
+  def related_movements
+    SupplyMovement.where(supply_id: supply_id)
+                  .where(
+                    "(from_location_type = ? AND from_location_id = ?) OR (to_location_type = ? AND to_location_id = ?)",
+                    location_type, location_id, location_type, location_id
+                  )
+                  .order(movement_date: :desc, created_at: :desc)
+  end
+
   private
 
   def update_last_updated_at

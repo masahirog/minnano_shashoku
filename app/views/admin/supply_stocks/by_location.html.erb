@@ -1,12 +1,16 @@
 <% content_for(:title) do %>
-  <% if @supply %>
+  <% if @location %>
+    <%= @location.name %> の在庫一覧
+  <% elsif @supply %>
     <%= @supply.name %> の拠点別在庫
   <% else %>
     拠点別在庫一覧
   <% end %>
 <% end %>
 
-<% if @supply %>
+<% if @location %>
+  <% breadcrumb :admin_supply_stocks_by_location %>
+<% elsif @supply %>
   <% breadcrumb :admin_supply_stocks_by_location_with_supply, @supply %>
 <% else %>
   <% breadcrumb :admin_supply_stocks_by_location %>
@@ -17,24 +21,36 @@
 
   <div style="margin-left: auto; display: flex; gap: 10px;">
     <%= link_to(
-      "備品移動登録",
+      "備品の移動",
       new_admin_bulk_supply_movement_path,
-      class: "button",
-      style: "background-color: #007bff; color: white;"
+      class: "btn btn-primary btn-sm"
     ) %>
 
-    <%= link_to "戻る", admin_supply_stocks_path, class: "button" %>
+    <% if @location %>
+      <%= link_to "戻る", by_location_admin_supplies_path, class: "btn btn-secondary btn-sm" %>
+    <% else %>
+      <%= link_to "戻る", admin_supply_stocks_path, class: "btn btn-secondary btn-sm" %>
+    <% end %>
   </div>
 </header>
 
 <section class="main-content__body main-content__body--flush">
-  <div style="padding: 15px; background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; margin: 20px;">
-    <p style="margin: 0; color: #856404;">
-      <strong>注意:</strong> 在庫の直接編集はできません。在庫を調整する場合は「備品移動登録」から入荷・消費・移動の操作を行ってください。
-    </p>
-  </div>
-
-  <% if @supply %>
+  <% if @location %>
+    <div style="padding: 20px; background-color: #f9f9f9; margin-bottom: 20px; border-radius: 4px;">
+      <h2 style="margin: 0 0 10px 0; font-size: 18px;"><%= @location.name %></h2>
+      <p style="margin: 0; color: #666;">
+        拠点区分:
+        <% if @location_type == 'OwnLocation' %>
+          自社拠点
+        <% elsif @location_type == 'Company' %>
+          企業
+        <% elsif @location_type == 'Restaurant' %>
+          飲食店
+        <% end %> |
+        在庫品目数: <strong><%= @stocks.size %> 品目</strong>
+      </p>
+    </div>
+  <% elsif @supply %>
     <div style="padding: 20px; background-color: #f9f9f9; margin-bottom: 20px; border-radius: 4px;">
       <h2 style="margin: 0 0 10px 0; font-size: 18px;"><%= @supply.name %> (<%= @supply.sku %>)</h2>
       <p style="margin: 0; color: #666;">
@@ -48,11 +64,18 @@
   <table class="table" style="width: 100%; border-collapse: collapse;">
     <thead>
       <tr style="background-color: #f5f5f5;">
-        <% unless @supply %>
+        <% unless @supply || @location %>
           <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">備品名</th>
         <% end %>
-        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">拠点区分</th>
-        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">拠点名</th>
+        <% if @supply && !@location %>
+          <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">拠点区分</th>
+          <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">拠点名</th>
+        <% elsif !@supply && !@location %>
+          <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">拠点区分</th>
+          <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">拠点名</th>
+        <% else %>
+          <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">備品名</th>
+        <% end %>
         <th style="padding: 12px; text-align: right; border-bottom: 2px solid #ddd;">在庫数</th>
         <th style="padding: 12px; text-align: right; border-bottom: 2px solid #ddd;">実地棚卸数</th>
         <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">最終更新</th>
@@ -63,15 +86,19 @@
       <% if @stocks.any? %>
         <% @stocks.each do |stock| %>
           <tr style="border-bottom: 1px solid #eee;">
-            <% unless @supply %>
+            <% if @location %>
               <td style="padding: 12px;"><%= stock.supply.name %></td>
+            <% else %>
+              <% unless @supply %>
+                <td style="padding: 12px;"><%= stock.supply.name %></td>
+              <% end %>
+              <td style="padding: 12px;">
+                <%= stock.location_type_japanese %>
+              </td>
+              <td style="padding: 12px;">
+                <%= stock.location_display_name %>
+              </td>
             <% end %>
-            <td style="padding: 12px;">
-              <%= stock.location_type_japanese %>
-            </td>
-            <td style="padding: 12px;">
-              <%= stock.location_display_name %>
-            </td>
             <td style="padding: 12px; text-align: right; font-weight: bold;">
               <%= stock.quantity %> <%= stock.supply.unit %>
             </td>
@@ -88,7 +115,7 @@
         <% end %>
       <% else %>
         <tr>
-          <td colspan="<%= @supply ? 6 : 7 %>" style="padding: 20px; text-align: center; color: #999;">
+          <td colspan="<%= @location ? 5 : (@supply ? 6 : 7) %>" style="padding: 20px; text-align: center; color: #999;">
             在庫データがありません
           </td>
         </tr>

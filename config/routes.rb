@@ -13,6 +13,9 @@ Rails.application.routes.draw do
         collection do
           get :by_location
         end
+        member do
+          get :stocks_by_location
+        end
       end
       resources :supply_movements
       resources :supply_stocks do

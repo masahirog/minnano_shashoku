@@ -11,25 +11,18 @@
     <%= link_to(
       "拠点別在庫一覧",
       by_location_admin_supply_stocks_path,
-      class: "button",
-      style: "background-color: #28a745; color: white; margin-right: 10px;"
+      class: "btn btn-sm btn-success"
     ) %>
 
     <%= link_to(
       "備品移動登録",
       new_admin_bulk_supply_movement_path,
-      class: "button",
-      style: "background-color: #007bff; color: white;"
+      class: "btn btn-sm btn-primary"
     ) %>
   </div>
 </header>
 
 <section class="main-content__body main-content__body--flush">
-  <div style="padding: 15px; background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; margin: 20px;">
-    <p style="margin: 0; color: #856404;">
-      <strong>注意:</strong> 在庫の直接編集はできません。在庫を調整する場合は「備品移動登録」から入荷・消費・移動の操作を行ってください。
-    </p>
-  </div>
 
   <table class="table" style="width: 100%; border-collapse: collapse;">
     <thead>

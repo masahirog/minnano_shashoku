@@ -59,7 +59,7 @@
                     <span class="badge badge-secondary"><%= supply.supply_stocks.count %> 拠点</span>
                   </td>
                   <td class="text-center">
-                    <%= link_to "拠点別詳細", by_location_admin_supplies_path(supply_id: supply.id), class: "btn btn-sm btn-outline-primary mr-1" %>
+                    <%= link_to "拠点別詳細", stocks_by_location_admin_supply_path(supply), class: "btn btn-sm btn-outline-primary mr-1" %>
                     <%= link_to "編集", edit_admin_supply_path(supply), class: "btn btn-sm btn-outline-secondary" %>
                   </td>
                 </tr>

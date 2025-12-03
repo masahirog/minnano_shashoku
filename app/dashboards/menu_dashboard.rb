@@ -13,9 +13,7 @@ class MenuDashboard < Administrate::BaseDashboard
     is_active: Field::Boolean,
     name: Field::String,
     orders: Field::HasMany,
-    photo_attachment: Field::HasOne,
-    photo_blob: Field::HasOne,
-    photo_url: Field::String,
+    photo: Field::ActiveStorage,
     price_per_meal: Field::Number,
     restaurant: Field::BelongsTo,
     created_at: Field::DateTime,
@@ -43,9 +41,7 @@ class MenuDashboard < Administrate::BaseDashboard
     price_per_meal
     is_active
     description
-    photo_url
-    photo_attachment
-    photo_blob
+    photo
     orders
     created_at
     updated_at
@@ -60,7 +56,7 @@ class MenuDashboard < Administrate::BaseDashboard
     price_per_meal
     is_active
     description
-    photo_url
+    photo
   ].freeze
 
   # COLLECTION_FILTERS
