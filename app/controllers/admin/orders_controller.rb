@@ -29,6 +29,14 @@ module Admin
     #   end
     # end
 
+    # カレンダー表示アクション
+    def calendar
+      start_date = params.fetch(:start_date, Date.today).to_date
+      @orders = Order.includes(:company, :restaurant, :menu)
+                     .where(scheduled_date: start_date.beginning_of_month..start_date.end_of_month)
+                     .order(:scheduled_date, :delivery_time)
+    end
+
     # Override `resource_params` if you want to transform the submitted
     # data before it's persisted. For example, the following would turn all
     # empty values into nil values. It uses other APIs such as `resource_class`

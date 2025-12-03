@@ -6,7 +6,11 @@ Rails.application.routes.draw do
       resources :delivery_sheet_items
       resources :drivers
       resources :menus
-      resources :orders
+      resources :orders do
+        collection do
+          get :calendar
+        end
+      end
       resources :recurring_orders do
         collection do
           post :bulk_generate

@@ -354,6 +354,8 @@ GEM
     sidekiq-scheduler (6.0.1)
       rufus-scheduler (~> 3.2)
       sidekiq (>= 7.3, < 9)
+    simple_calendar (3.1.0)
+      rails (>= 6.1)
     slim (5.2.1)
       temple (~> 0.10.0)
       tilt (>= 2.1.0)
@@ -436,6 +438,7 @@ DEPENDENCIES
   sassc-rails
   sidekiq
   sidekiq-scheduler
+  simple_calendar (~> 3.0)
   slim-rails
   sprockets-rails
   stimulus-rails
