@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_12_03_135345) do
+ActiveRecord::Schema[7.1].define(version: 2025_12_04_000828) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -261,6 +261,20 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_03_135345) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "payments", force: :cascade do |t|
+    t.bigint "invoice_id", null: false
+    t.date "payment_date", null: false
+    t.integer "amount", null: false
+    t.string "payment_method"
+    t.string "reference_number"
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["invoice_id"], name: "index_payments_on_invoice_id"
+    t.index ["payment_date"], name: "index_payments_on_payment_date"
+    t.index ["payment_method"], name: "index_payments_on_payment_method"
+  end
+
   create_table "recurring_orders", force: :cascade do |t|
     t.bigint "company_id", null: false
     t.bigint "restaurant_id", null: false
@@ -398,6 +412,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_03_135345) do
   add_foreign_key "orders", "menus", column: "second_menu_id"
   add_foreign_key "orders", "recurring_orders"
   add_foreign_key "orders", "restaurants"
+  add_foreign_key "payments", "invoices"
   add_foreign_key "recurring_orders", "companies"
   add_foreign_key "recurring_orders", "delivery_companies"
   add_foreign_key "recurring_orders", "menus"

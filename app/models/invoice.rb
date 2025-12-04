@@ -3,6 +3,7 @@ class Invoice < ApplicationRecord
   belongs_to :company
   has_many :invoice_items, dependent: :destroy
   has_many :orders, through: :invoice_items
+  has_many :payments, dependent: :destroy
 
   # バリデーション
   validates :invoice_number, presence: true, uniqueness: true
@@ -97,5 +98,40 @@ class Invoice < ApplicationRecord
   def days_overdue
     return 0 unless overdue?
     (Date.today - payment_due_date).to_i
+  end
+
+  # 入金済み金額
+  def paid_amount
+    payments.sum(:amount)
+  end
+
+  # 残高（未払い金額）
+  def remaining_balance
+    total_amount - paid_amount
+  end
+
+  # 支払状況を更新
+  def update_payment_status
+    reload # paymentsの最新状態を取得
+
+    new_payment_status = if remaining_balance <= 0
+                          'paid'
+                        elsif paid_amount > 0
+                          'partial'
+                        elsif overdue?
+                          'overdue'
+                        else
+                          'unpaid'
+                        end
+
+    # 支払状況が変わった場合のみ更新
+    if payment_status != new_payment_status
+      update_column(:payment_status, new_payment_status)
+
+      # 全額支払済みの場合はステータスも更新
+      if new_payment_status == 'paid' && status != 'paid'
+        update_column(:status, 'paid')
+      end
+    end
   end
 end
