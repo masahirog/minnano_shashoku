@@ -47,6 +47,7 @@ RSpec.feature "RecurringOrders", type: :feature do
       day_of_week: 1, # 月曜日（0=日曜、1=月曜、...、6=土曜）
       frequency: 'weekly',
       default_meal_count: 20,
+      delivery_time: '12:00',
       start_date: Date.today,
       end_date: Date.today + 3.months
     )
@@ -72,6 +73,7 @@ RSpec.feature "RecurringOrders", type: :feature do
       day_of_week: 1, # 月曜日（0=日曜、1=月曜、...、6=土曜）
       frequency: 'weekly',
       default_meal_count: 20,
+      delivery_time: '12:00',
       start_date: Date.today,
       end_date: Date.today + 3.months
     )
@@ -97,6 +99,7 @@ RSpec.feature "RecurringOrders", type: :feature do
       day_of_week: 1, # 月曜日（0=日曜、1=月曜、...、6=土曜）
       frequency: 'weekly',
       default_meal_count: 20,
+      delivery_time: '12:00',
       start_date: Date.today,
       end_date: Date.today + 3.months
     )
