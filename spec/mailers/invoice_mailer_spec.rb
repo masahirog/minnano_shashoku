@@ -16,7 +16,9 @@ RSpec.describe InvoiceMailer, type: :mailer do
       company: company,
       invoice_number: 'INV-202412-0001',
       issue_date: Date.today,
-      due_date: Date.today - 10.days, # 期限超過
+      payment_due_date: Date.today - 10.days, # 期限超過
+      billing_period_start: Date.today - 30.days,
+      billing_period_end: Date.today,
       subtotal: 10000,
       tax_amount: 1000,
       total_amount: 11000,
@@ -46,7 +48,9 @@ RSpec.describe InvoiceMailer, type: :mailer do
         company: company,
         invoice_number: 'INV-202412-0002',
         issue_date: Date.today,
-        due_date: Date.today + 5.days, # 期限間近
+        payment_due_date: Date.today + 5.days, # 期限間近
+        billing_period_start: Date.today - 30.days,
+        billing_period_end: Date.today,
         subtotal: 10000,
         tax_amount: 1000,
         total_amount: 11000,
