@@ -409,6 +409,44 @@ docker-compose exec web rails import:all
   - フォントファイルがある場合は自動的に適用
   - フォントファイルがない場合はデフォルトフォント使用
 
+### Phase 2 Week 7-8 Day 33-34（2025-12-05）
+**テスト失敗修正（Part 4-5）**
+- テスト成功率を86.3%から94.5%に改善
+- 失敗数を40件から16件に削減（60%削減）
+
+**主な修正内容：**
+
+1. rails_helper.rb
+   - seedデータクリア設定追加
+   - before(:suite)で全テーブルをTRUNCATE
+
+2. order_spec.rb / conflict_detector_spec.rb
+   - closed_daysを空配列に変更
+   - 定休日テストは専用のrestaurantを作成
+
+3. orders_performance_spec.rb
+   - capacity_per_dayを50→5000に増加
+   - 全Order作成でsave(validate: false)を使用
+   - カスタムマッチャーの.queries削除
+
+4. unpaid_invoice_checker_spec.rb
+   - 期限超過の請求書を直接作成（update_columns使用削減）
+   - company_id null制約違反を修正
+
+5. recurring_orders_spec.rb
+   - delivery_timeフィールドを追加
+
+**修正結果：**
+- 総テスト数: 293
+- 成功: 277（94.5%）
+- 失敗: 16（Feature specs UI関連が主）
+- コミット: 2件（Part 4, Part 5）
+
+**残りの課題：**
+- Feature specs: 11件（Calendar、DeliverySheets、RecurringOrders、ScheduleAdjustment）
+- Performance tests: 2件
+- UnpaidInvoiceChecker: 3件
+
 ### Phase 1 Week 3 Day 19-20（2025-12-03）
 **配送シートUI画面**
 - 配送シート一覧画面を実装（/admin/orders/delivery_sheets）
