@@ -16,6 +16,7 @@ RSpec.describe UnpaidInvoiceChecker do
       # 期限超過の請求書（未払い）
       Invoice.create!(
         company: company1,
+        invoice_number: 'INV-TEST-0001',
         issue_date: Date.today - 40.days,
         payment_due_date: Date.today - 10.days,
         billing_period_start: Date.today - 60.days,
@@ -30,6 +31,7 @@ RSpec.describe UnpaidInvoiceChecker do
       # 期限超過の請求書（一部入金）
       invoice2 = Invoice.create!(
         company: company2,
+        invoice_number: 'INV-TEST-0002',
         issue_date: Date.today - 40.days,
         payment_due_date: Date.today - 5.days,
         billing_period_start: Date.today - 60.days,
@@ -45,6 +47,7 @@ RSpec.describe UnpaidInvoiceChecker do
       # 期限内の請求書（未払い）- 検出されないはず
       Invoice.create!(
         company: company1,
+        invoice_number: 'INV-TEST-0003',
         issue_date: Date.today,
         payment_due_date: Date.today + 30.days,
         billing_period_start: Date.today,
@@ -59,6 +62,7 @@ RSpec.describe UnpaidInvoiceChecker do
       # 支払済み（期限超過日付だが）- 検出されないはず
       Invoice.create!(
         company: company2,
+        invoice_number: 'INV-TEST-0004',
         issue_date: Date.today - 40.days,
         payment_due_date: Date.today - 10.days,
         billing_period_start: Date.today - 60.days,
@@ -79,6 +83,7 @@ RSpec.describe UnpaidInvoiceChecker do
     it '請求書のステータスをoverdueに更新する' do
       invoice = Invoice.create!(
         company: company1,
+        invoice_number: 'INV-TEST-0005',
         issue_date: Date.today - 40.days,
         payment_due_date: Date.today - 10.days,
         billing_period_start: Date.today - 60.days,
@@ -102,6 +107,7 @@ RSpec.describe UnpaidInvoiceChecker do
       # 期限5日前（検出されるはず）
       Invoice.create!(
         company: company1,
+        invoice_number: 'INV-TEST-0006',
         issue_date: Date.today - 25.days,
         payment_due_date: Date.today + 5.days,
         billing_period_start: Date.today - 60.days,
@@ -116,6 +122,7 @@ RSpec.describe UnpaidInvoiceChecker do
       # 期限3日前（検出されるはず）
       Invoice.create!(
         company: company2,
+        invoice_number: 'INV-TEST-0007',
         issue_date: Date.today - 27.days,
         payment_due_date: Date.today + 3.days,
         billing_period_start: Date.today - 60.days,
@@ -130,6 +137,7 @@ RSpec.describe UnpaidInvoiceChecker do
       # 期限10日前（検出されないはず）
       Invoice.create!(
         company: company1,
+        invoice_number: 'INV-TEST-0008',
         issue_date: Date.today - 20.days,
         payment_due_date: Date.today + 10.days,
         billing_period_start: Date.today,
@@ -144,6 +152,7 @@ RSpec.describe UnpaidInvoiceChecker do
       # 支払済み（検出されないはず）
       Invoice.create!(
         company: company2,
+        invoice_number: 'INV-TEST-0009',
         issue_date: Date.today - 27.days,
         payment_due_date: Date.today + 3.days,
         billing_period_start: Date.today - 60.days,
@@ -164,6 +173,7 @@ RSpec.describe UnpaidInvoiceChecker do
       # 期限10日前
       Invoice.create!(
         company: company1,
+        invoice_number: 'INV-TEST-0010',
         issue_date: Date.today - 20.days,
         payment_due_date: Date.today + 10.days,
         billing_period_start: Date.today,
@@ -178,6 +188,7 @@ RSpec.describe UnpaidInvoiceChecker do
       # 期限15日前
       Invoice.create!(
         company: company2,
+        invoice_number: 'INV-TEST-0011',
         issue_date: Date.today - 15.days,
         payment_due_date: Date.today + 15.days,
         billing_period_start: Date.today,
@@ -201,6 +212,7 @@ RSpec.describe UnpaidInvoiceChecker do
       # 期限超過
       Invoice.create!(
         company: company1,
+        invoice_number: 'INV-TEST-0012',
         issue_date: Date.today - 40.days,
         payment_due_date: Date.today - 10.days,
         billing_period_start: Date.today - 60.days,
@@ -215,6 +227,7 @@ RSpec.describe UnpaidInvoiceChecker do
       # 期限間近
       Invoice.create!(
         company: company2,
+        invoice_number: 'INV-TEST-0013',
         issue_date: Date.today - 25.days,
         payment_due_date: Date.today + 5.days,
         billing_period_start: Date.today - 60.days,
@@ -239,6 +252,7 @@ RSpec.describe UnpaidInvoiceChecker do
     it '期限超過の請求書に対してアラートメールを送信する' do
       invoice = Invoice.create!(
         company: company1,
+        invoice_number: 'INV-TEST-0014',
         issue_date: Date.today - 40.days,
         payment_due_date: Date.today - 10.days,
         billing_period_start: Date.today - 60.days,
@@ -261,6 +275,7 @@ RSpec.describe UnpaidInvoiceChecker do
     it '期限間近の請求書に対してリマインダーメールを送信する' do
       invoice = Invoice.create!(
         company: company1,
+        invoice_number: 'INV-TEST-0015',
         issue_date: Date.today - 25.days,
         payment_due_date: Date.today + 5.days,
         billing_period_start: Date.today - 60.days,

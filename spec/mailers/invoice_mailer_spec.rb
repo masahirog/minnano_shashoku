@@ -1,31 +1,71 @@
 require "rails_helper"
 
 RSpec.describe InvoiceMailer, type: :mailer do
+  let(:company) do
+    Company.create!(
+      name: 'テスト企業',
+      formal_name: 'テスト企業株式会社',
+      contact_email: 'test@example.com',
+      billing_email: 'billing@example.com',
+      contract_status: 'active'
+    )
+  end
+
+  let(:invoice) do
+    Invoice.create!(
+      company: company,
+      invoice_number: 'INV-202412-0001',
+      issue_date: Date.today,
+      due_date: Date.today - 10.days, # 期限超過
+      subtotal: 10000,
+      tax_amount: 1000,
+      total_amount: 11000,
+      status: 'sent'
+    )
+  end
+
   describe "overdue_notice" do
-    let(:mail) { InvoiceMailer.overdue_notice }
+    let(:mail) { InvoiceMailer.overdue_notice(invoice) }
 
     it "renders the headers" do
-      expect(mail.subject).to eq("Overdue notice")
-      expect(mail.to).to eq(["to@example.org"])
-      expect(mail.from).to eq(["from@example.com"])
+      expect(mail.subject).to include("請求書の支払期限が過ぎています")
+      expect(mail.subject).to include(invoice.invoice_number)
+      expect(mail.to).to eq([company.billing_email])
+      expect(mail.from).to eq(['noreply@minnano-shashoku.com'])
     end
 
     it "renders the body" do
-      expect(mail.body.encoded).to match("Hi")
+      expect(mail.body.encoded).to match(company.name)
+      expect(mail.body.encoded).to match(invoice.invoice_number)
     end
   end
 
   describe "payment_reminder" do
-    let(:mail) { InvoiceMailer.payment_reminder }
+    let(:upcoming_invoice) do
+      Invoice.create!(
+        company: company,
+        invoice_number: 'INV-202412-0002',
+        issue_date: Date.today,
+        due_date: Date.today + 5.days, # 期限間近
+        subtotal: 10000,
+        tax_amount: 1000,
+        total_amount: 11000,
+        status: 'sent'
+      )
+    end
+
+    let(:mail) { InvoiceMailer.payment_reminder(upcoming_invoice) }
 
     it "renders the headers" do
-      expect(mail.subject).to eq("Payment reminder")
-      expect(mail.to).to eq(["to@example.org"])
-      expect(mail.from).to eq(["from@example.com"])
+      expect(mail.subject).to include("請求書の支払期限が近づいています")
+      expect(mail.subject).to include(upcoming_invoice.invoice_number)
+      expect(mail.to).to eq([company.billing_email])
+      expect(mail.from).to eq(['noreply@minnano-shashoku.com'])
     end
 
     it "renders the body" do
-      expect(mail.body.encoded).to match("Hi")
+      expect(mail.body.encoded).to match(company.name)
+      expect(mail.body.encoded).to match(upcoming_invoice.invoice_number)
     end
   end
 

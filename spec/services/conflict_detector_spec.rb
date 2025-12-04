@@ -17,7 +17,7 @@ RSpec.describe ConflictDetector do
   describe '.detect_for_order' do
     it 'キャパシティオーバーを検出する' do
       # 既存案件（30食）
-      Order.create!(
+      existing_order = Order.new(
         company: company,
         restaurant: restaurant,
         menu: menu,
@@ -26,9 +26,10 @@ RSpec.describe ConflictDetector do
         default_meal_count: 30,
         status: 'confirmed'
       )
+      existing_order.save(validate: false)
 
       # 新規案件（25食） -> 合計55食でオーバー
-      order = Order.create!(
+      order = Order.new(
         company: company,
         restaurant: restaurant,
         menu: menu,
@@ -37,6 +38,7 @@ RSpec.describe ConflictDetector do
         default_meal_count: 25,
         status: 'pending'
       )
+      order.save(validate: false)
 
       conflicts = ConflictDetector.detect_for_order(order)
       capacity_conflict = conflicts.find { |c| c[:type] == :capacity_over }
@@ -115,7 +117,7 @@ RSpec.describe ConflictDetector do
       # 日曜日（定休日）
       sunday = Date.today.beginning_of_week(:sunday)
 
-      order = Order.create!(
+      order = Order.new(
         company: company,
         restaurant: restaurant,
         menu: menu,
@@ -124,6 +126,7 @@ RSpec.describe ConflictDetector do
         default_meal_count: 10,
         status: 'pending'
       )
+      order.save(validate: false)
 
       conflicts = ConflictDetector.detect_for_order(order)
       closed_day_conflict = conflicts.find { |c| c[:type] == :closed_day }
@@ -138,7 +141,7 @@ RSpec.describe ConflictDetector do
       target_date = Date.today + 2.days
 
       # 案件1（30食）
-      order1 = Order.create!(
+      order1 = Order.new(
         company: company,
         restaurant: restaurant,
         menu: menu,
@@ -147,9 +150,10 @@ RSpec.describe ConflictDetector do
         default_meal_count: 30,
         status: 'confirmed'
       )
+      order1.save(validate: false)
 
       # 案件2（25食） -> キャパシティオーバー
-      order2 = Order.create!(
+      order2 = Order.new(
         company: company,
         restaurant: restaurant,
         menu: menu,
@@ -158,6 +162,7 @@ RSpec.describe ConflictDetector do
         default_meal_count: 25,
         status: 'pending'
       )
+      order2.save(validate: false)
 
       conflicts = ConflictDetector.detect_for_date(target_date)
 
@@ -195,7 +200,7 @@ RSpec.describe ConflictDetector do
       (start_date..end_date).each_with_index do |date, i|
         next if date.wday == 0 # 日曜日はスキップ
 
-        Order.create!(
+        order = Order.new(
           company: company,
           restaurant: restaurant,
           menu: menu,
@@ -204,6 +209,7 @@ RSpec.describe ConflictDetector do
           default_meal_count: 30 + i * 5, # 徐々に増やしてキャパオーバーさせる
           status: 'confirmed'
         )
+        order.save(validate: false)
       end
 
       conflicts = ConflictDetector.detect_for_range(start_date, end_date)
