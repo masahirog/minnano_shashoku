@@ -1,0 +1,238 @@
+<header class="main-content__header">
+  <h1 class="main-content__page-title">支払状況レポート</h1>
+</header>
+
+<section class="main-content__body main-content__body--flush">
+  <div style="padding: 20px;">
+    <!-- 期間選択フォーム -->
+    <div style="background: white; padding: 20px; margin-bottom: 20px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+      <%= form_with url: admin_reports_path, method: :get, local: true, style: "display: flex; align-items: center; gap: 10px;" do |f| %>
+        <label>対象期間:</label>
+        <%= f.select :year, (2020..Date.today.year + 1).to_a.reverse, { selected: @year }, { style: "padding: 5px 10px;" } %>
+        <span>年</span>
+        <%= f.select :month, (1..12).to_a, { selected: @month }, { style: "padding: 5px 10px;" } %>
+        <span>月</span>
+        <%= f.submit "表示", style: "padding: 5px 20px; background: #0074D9; color: white; border: none; border-radius: 4px; cursor: pointer;" %>
+        <%= link_to "PDFダウンロード", export_pdf_admin_reports_path(year: @year, month: @month), style: "padding: 5px 20px; background: #FF4136; color: white; text-decoration: none; border-radius: 4px; display: inline-block;" %>
+        <%= link_to "CSVダウンロード", export_csv_admin_reports_path(year: @year, month: @month), style: "padding: 5px 20px; background: #2ECC40; color: white; text-decoration: none; border-radius: 4px; display: inline-block;" %>
+      <% end %>
+    </div>
+
+    <!-- サマリーカード -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
+      <div style="background: white; padding: 20px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div style="color: #666; font-size: 14px; margin-bottom: 5px;">総請求書数</div>
+        <div style="font-size: 28px; font-weight: bold; color: #333;"><%= @report_data[:summary][:total_invoices] %> 件</div>
+      </div>
+      <div style="background: white; padding: 20px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div style="color: #666; font-size: 14px; margin-bottom: 5px;">総請求額</div>
+        <div style="font-size: 28px; font-weight: bold; color: #333;">¥<%= number_with_delimiter(@report_data[:summary][:total_amount]) %></div>
+      </div>
+      <div style="background: white; padding: 20px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div style="color: #666; font-size: 14px; margin-bottom: 5px;">支払済み額</div>
+        <div style="font-size: 28px; font-weight: bold; color: #4CAF50;">¥<%= number_with_delimiter(@report_data[:summary][:paid_amount]) %></div>
+      </div>
+      <div style="background: white; padding: 20px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div style="color: #666; font-size: 14px; margin-bottom: 5px;">未払い額</div>
+        <div style="font-size: 28px; font-weight: bold; color: #F44336;">¥<%= number_with_delimiter(@report_data[:summary][:unpaid_amount]) %></div>
+      </div>
+      <div style="background: white; padding: 20px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div style="color: #666; font-size: 14px; margin-bottom: 5px;">支払率</div>
+        <div style="font-size: 28px; font-weight: bold; color: #2196F3;"><%= @report_data[:summary][:payment_rate] %>%</div>
+      </div>
+    </div>
+
+    <!-- グラフエリア -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+      <div style="background: white; padding: 20px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h3 style="margin-top: 0; margin-bottom: 20px;">支払ステータス別集計</h3>
+        <canvas id="statusChart" style="max-height: 300px;"></canvas>
+      </div>
+      <div style="background: white; padding: 20px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h3 style="margin-top: 0; margin-bottom: 20px;">企業別支払状況（上位10社）</h3>
+        <canvas id="companyChart" style="max-height: 300px;"></canvas>
+      </div>
+    </div>
+
+    <!-- 支払ステータス別詳細 -->
+    <div style="background: white; padding: 20px; margin-bottom: 20px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+      <h3 style="margin-top: 0;">支払ステータス別詳細</h3>
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="background: #f5f5f5; border-bottom: 2px solid #ddd;">
+            <th style="padding: 12px; text-align: left;">ステータス</th>
+            <th style="padding: 12px; text-align: right;">件数</th>
+            <th style="padding: 12px; text-align: right;">金額</th>
+            <th style="padding: 12px; text-align: right;">割合</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom: 1px solid #eee;">
+            <td style="padding: 12px;"><span style="display: inline-block; width: 12px; height: 12px; background: #4CAF50; border-radius: 2px; margin-right: 8px;"></span>支払済み</td>
+            <td style="padding: 12px; text-align: right;"><%= @report_data[:by_status][:paid][:count] %> 件</td>
+            <td style="padding: 12px; text-align: right;">¥<%= number_with_delimiter(@report_data[:by_status][:paid][:amount]) %></td>
+            <td style="padding: 12px; text-align: right;"><%= @report_data[:summary][:total_amount] > 0 ? ((@report_data[:by_status][:paid][:amount].to_f / @report_data[:summary][:total_amount] * 100).round(1)) : 0 %>%</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #eee;">
+            <td style="padding: 12px;"><span style="display: inline-block; width: 12px; height: 12px; background: #FF9800; border-radius: 2px; margin-right: 8px;"></span>一部支払</td>
+            <td style="padding: 12px; text-align: right;"><%= @report_data[:by_status][:partial][:count] %> 件</td>
+            <td style="padding: 12px; text-align: right;">¥<%= number_with_delimiter(@report_data[:by_status][:partial][:amount]) %></td>
+            <td style="padding: 12px; text-align: right;"><%= @report_data[:summary][:total_amount] > 0 ? ((@report_data[:by_status][:partial][:amount].to_f / @report_data[:summary][:total_amount] * 100).round(1)) : 0 %>%</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #eee;">
+            <td style="padding: 12px;"><span style="display: inline-block; width: 12px; height: 12px; background: #2196F3; border-radius: 2px; margin-right: 8px;"></span>未払い</td>
+            <td style="padding: 12px; text-align: right;"><%= @report_data[:by_status][:unpaid][:count] %> 件</td>
+            <td style="padding: 12px; text-align: right;">¥<%= number_with_delimiter(@report_data[:by_status][:unpaid][:amount]) %></td>
+            <td style="padding: 12px; text-align: right;"><%= @report_data[:summary][:total_amount] > 0 ? ((@report_data[:by_status][:unpaid][:amount].to_f / @report_data[:summary][:total_amount] * 100).round(1)) : 0 %>%</td>
+          </tr>
+          <tr>
+            <td style="padding: 12px;"><span style="display: inline-block; width: 12px; height: 12px; background: #F44336; border-radius: 2px; margin-right: 8px;"></span>期限超過</td>
+            <td style="padding: 12px; text-align: right;"><%= @report_data[:by_status][:overdue][:count] %> 件</td>
+            <td style="padding: 12px; text-align: right;">¥<%= number_with_delimiter(@report_data[:by_status][:overdue][:amount]) %></td>
+            <td style="padding: 12px; text-align: right;"><%= @report_data[:summary][:total_amount] > 0 ? ((@report_data[:by_status][:overdue][:amount].to_f / @report_data[:summary][:total_amount] * 100).round(1)) : 0 %>%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 期限超過請求書一覧 -->
+    <% if @report_data[:overdue][:count] > 0 %>
+      <div style="background: white; padding: 20px; margin-bottom: 20px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h3 style="margin-top: 0; color: #F44336;">期限超過請求書（<%= @report_data[:overdue][:count] %>件 / 合計: ¥<%= number_with_delimiter(@report_data[:overdue][:total_unpaid]) %>）</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="background: #f5f5f5; border-bottom: 2px solid #ddd;">
+              <th style="padding: 12px; text-align: left;">請求書番号</th>
+              <th style="padding: 12px; text-align: left;">企業名</th>
+              <th style="padding: 12px; text-align: right;">支払期限</th>
+              <th style="padding: 12px; text-align: right;">請求額</th>
+              <th style="padding: 12px; text-align: right;">残高</th>
+              <th style="padding: 12px; text-align: right;">超過日数</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @report_data[:overdue][:invoices].each do |invoice| %>
+              <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 12px;"><%= link_to invoice[:invoice_number], admin_invoice_path(invoice[:id]) %></td>
+                <td style="padding: 12px;"><%= invoice[:company_name] %></td>
+                <td style="padding: 12px; text-align: right;"><%= invoice[:payment_due_date].strftime('%Y/%m/%d') %></td>
+                <td style="padding: 12px; text-align: right;">¥<%= number_with_delimiter(invoice[:total_amount]) %></td>
+                <td style="padding: 12px; text-align: right; color: #F44336; font-weight: bold;">¥<%= number_with_delimiter(invoice[:remaining_balance]) %></td>
+                <td style="padding: 12px; text-align: right; color: #F44336;"><%= invoice[:days_overdue] %>日</td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+
+    <!-- 企業別支払状況 -->
+    <div style="background: white; padding: 20px; margin-bottom: 20px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+      <h3 style="margin-top: 0;">企業別支払状況</h3>
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="background: #f5f5f5; border-bottom: 2px solid #ddd;">
+            <th style="padding: 12px; text-align: left;">企業名</th>
+            <th style="padding: 12px; text-align: right;">請求書数</th>
+            <th style="padding: 12px; text-align: right;">総請求額</th>
+            <th style="padding: 12px; text-align: right;">支払済み額</th>
+            <th style="padding: 12px; text-align: right;">未払い額</th>
+            <th style="padding: 12px; text-align: right;">支払率</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @report_data[:by_company].each do |company| %>
+            <tr style="border-bottom: 1px solid #eee;">
+              <td style="padding: 12px;"><%= link_to company[:company_name], admin_company_path(company[:company_id]) %></td>
+              <td style="padding: 12px; text-align: right;"><%= company[:invoice_count] %> 件</td>
+              <td style="padding: 12px; text-align: right;">¥<%= number_with_delimiter(company[:total_amount]) %></td>
+              <td style="padding: 12px; text-align: right; color: #4CAF50;">¥<%= number_with_delimiter(company[:paid_amount]) %></td>
+              <td style="padding: 12px; text-align: right; color: #F44336;">¥<%= number_with_delimiter(company[:unpaid_amount]) %></td>
+              <td style="padding: 12px; text-align: right;"><%= company[:total_amount] > 0 ? ((company[:paid_amount].to_f / company[:total_amount] * 100).round(1)) : 0 %>%</td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 最近の入金 -->
+    <div style="background: white; padding: 20px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+      <h3 style="margin-top: 0;">最近の入金（<%= @report_data[:recent_payments][:count] %>件 / 合計: ¥<%= number_with_delimiter(@report_data[:recent_payments][:total_amount]) %>）</h3>
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="background: #f5f5f5; border-bottom: 2px solid #ddd;">
+            <th style="padding: 12px; text-align: left;">入金日</th>
+            <th style="padding: 12px; text-align: left;">企業名</th>
+            <th style="padding: 12px; text-align: left;">請求書番号</th>
+            <th style="padding: 12px; text-align: right;">入金額</th>
+            <th style="padding: 12px; text-align: left;">支払方法</th>
+            <th style="padding: 12px; text-align: left;">参照番号</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @report_data[:recent_payments][:payments].each do |payment| %>
+            <tr style="border-bottom: 1px solid #eee;">
+              <td style="padding: 12px;"><%= payment[:payment_date].strftime('%Y/%m/%d') %></td>
+              <td style="padding: 12px;"><%= payment[:company_name] %></td>
+              <td style="padding: 12px;"><%= payment[:invoice_number] %></td>
+              <td style="padding: 12px; text-align: right;">¥<%= number_with_delimiter(payment[:amount]) %></td>
+              <td style="padding: 12px;"><%= payment[:payment_method] %></td>
+              <td style="padding: 12px;"><%= payment[:reference_number] %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Chart.jsでグラフを描画
+    fetch('/admin/reports/chart_data?year=<%= @year %>&month=<%= @month %>')
+      .then(response => response.json())
+      .then(data => {
+        // 支払ステータス別の円グラフ
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        new Chart(statusCtx, {
+          type: 'pie',
+          data: data.by_status,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom'
+              }
+            }
+          }
+        });
+
+        // 企業別の棒グラフ
+        const companyCtx = document.getElementById('companyChart').getContext('2d');
+        new Chart(companyCtx, {
+          type: 'bar',
+          data: data.by_company,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom'
+              }
+            },
+            scales: {
+              x: {
+                stacked: true
+              },
+              y: {
+                stacked: true,
+                beginAtZero: true
+              }
+            }
+          }
+        });
+      });
+  });
+</script>

@@ -25,6 +25,13 @@ Rails.application.routes.draw do
       resources :payments
       resources :invoice_pdfs, only: [:show]
       resources :invoice_generations, only: [:create]
+      resources :reports, only: [:index] do
+        collection do
+          get :chart_data
+          get :export_pdf
+          get :export_csv
+        end
+      end
       resources :restaurants
       resources :staffs
       resources :supplies do
