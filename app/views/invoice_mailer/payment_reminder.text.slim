@@ -1,0 +1,21 @@
+| 【お知らせ】請求書の支払期限が近づいています
+= "\r\n" * 2
+| #{@company.name} 御中
+= "\r\n" * 2
+| いつもお世話になっております。みんなの社食です。
+= "\r\n" * 2
+| 以下の請求書の支払期限が#{@days_until_due}日後に迫っております。
+| お忘れのないよう、お支払いのご準備をお願いいたします。
+= "\r\n" * 2
+| ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+| 請求書番号: #{@invoice.invoice_number}
+| 発行日: #{@invoice.issue_date.strftime('%Y年%m月%d日')}
+| 支払期限: #{@invoice.payment_due_date.strftime('%Y年%m月%d日')}
+| 請求金額: #{number_to_currency(@invoice.total_amount, unit: '¥', precision: 0)}
+| 入金済み: #{number_to_currency(@invoice.paid_amount, unit: '¥', precision: 0)}
+| 残高: #{number_to_currency(@remaining_balance, unit: '¥', precision: 0)}
+| ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+= "\r\n" * 2
+| ご不明な点がございましたら、お気軽にお問い合わせください。
+= "\r\n"
+| 引き続きよろしくお願いいたします。

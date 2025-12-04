@@ -151,4 +151,45 @@ namespace :invoices do
     puts ""
     puts "=" * 80
   end
+
+  desc '期限超過の請求書をチェックしてアラートメールを送信'
+  task :check_overdue => :environment do
+    puts "=" * 80
+    puts "期限超過チェックタスク"
+    puts "=" * 80
+    puts ""
+
+    checker = UnpaidInvoiceChecker.new
+    result = checker.check_all
+
+    overdue_amount = result[:total_overdue_amount].to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse
+    reminder_amount = result[:total_reminder_amount].to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse
+
+    puts "期限超過: #{result[:overdue_count]}件 (合計: ¥#{overdue_amount})"
+    puts "期限間近: #{result[:reminder_count]}件 (合計: ¥#{reminder_amount})"
+    puts ""
+
+    if result[:overdue_count] > 0
+      puts "期限超過アラートメールを送信中..."
+      sent_count = checker.send_overdue_alerts
+      puts "✅ #{sent_count}件のアラートメールを送信しました"
+      puts ""
+    end
+
+    if result[:reminder_count] > 0
+      puts "支払リマインダーメールを送信中..."
+      sent_count = checker.send_payment_reminders
+      puts "✅ #{sent_count}件のリマインダーメールを送信しました"
+      puts ""
+    end
+
+    if result[:overdue_count] == 0 && result[:reminder_count] == 0
+      puts "✅ 期限超過・期限間近の請求書はありません"
+      puts ""
+    end
+
+    puts "=" * 80
+    puts "完了"
+    puts "=" * 80
+  end
 end

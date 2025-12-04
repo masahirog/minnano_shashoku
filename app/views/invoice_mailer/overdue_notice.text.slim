@@ -1,0 +1,21 @@
+| 【重要】請求書の支払期限が過ぎています
+= "\r\n" * 2
+| #{@company.name} 御中
+= "\r\n" * 2
+| お世話になっております。みんなの社食です。
+= "\r\n" * 2
+| 以下の請求書につきまして、支払期限を#{@days_overdue}日過ぎております。
+| お早めのお支払いをお願い申し上げます。
+= "\r\n" * 2
+| ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+| 請求書番号: #{@invoice.invoice_number}
+| 発行日: #{@invoice.issue_date.strftime('%Y年%m月%d日')}
+| 支払期限: #{@invoice.payment_due_date.strftime('%Y年%m月%d日')} ※期限超過
+| 請求金額: #{number_to_currency(@invoice.total_amount, unit: '¥', precision: 0)}
+| 入金済み: #{number_to_currency(@invoice.paid_amount, unit: '¥', precision: 0)}
+| 残高: #{number_to_currency(@remaining_balance, unit: '¥', precision: 0)}
+| ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+= "\r\n" * 2
+| ご不明な点がございましたら、お気軽にお問い合わせください。
+= "\r\n"
+| よろしくお願いいたします。
