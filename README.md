@@ -133,6 +133,7 @@ docker-compose exec web rails import:all
 
 ## データベース構成
 
+### Phase 1: 案件管理・配送シート
 - staff（スタッフ）
 - companies（導入企業）
 - restaurants（飲食店）
@@ -140,7 +141,16 @@ docker-compose exec web rails import:all
 - delivery_companies（配送会社）
 - drivers（ドライバー）
 - orders（案件）
+- recurring_orders（定期注文）
 - delivery_sheet_items（配送シート明細）
+
+### Phase 2: 請求・支払い・在庫管理
+- invoices（請求書）
+- invoice_items（請求明細）
+- payments（入金）
+- supplies（備品）
+- supply_stocks（拠点別在庫）
+- supply_movements（入出庫履歴）
 
 ## MVP スコープ（Phase 1）
 
@@ -150,6 +160,84 @@ docker-compose exec web rails import:all
 - 配送会社向け閲覧画面
 
 ## 開発履歴
+
+### Phase 2 Week 5-6 Day 25-26（2025-12-04）
+**在庫補充アラート機能実装**
+- LowStockCheckerサービス作成
+  - check_low_stock: 在庫不足（発注点以下）を検出
+  - check_out_of_stock: 在庫切れを検出
+  - send_low_stock_alerts/send_out_of_stock_alerts: アラートメール送信
+- SupplyMailer作成
+  - low_stock_alert: 在庫不足通知メール
+  - out_of_stock_alert: 在庫切れ通知メール（緊急）
+  - HTML/テキスト両形式のメールテンプレート
+- supplies.rakeタスク作成
+  - supplies:check_stock: 在庫チェックと自動メール送信
+  - supplies:list: 在庫状況一覧表示
+  - supplies:low_stock: 在庫不足・在庫切れ一覧表示
+
+### Phase 2 Week 3-4 Day 17-18（2025-12-04）
+**支払状況レポート機能実装**
+- ReportGeneratorService作成
+  - 月次支払状況レポート生成
+  - 支払ステータス別・企業別集計
+  - Chart.js用グラフデータ生成
+- Admin::ReportsController作成
+  - レポート表示画面
+  - PDF/CSVエクスポート機能
+- ReportPdfGenerator作成
+  - Prawnを使用したPDFレポート生成
+  - 日本語フォント対応（Noto Sans JP）
+- レポート画面作成
+  - Chart.js CDNによるグラフ表示（円グラフ・棒グラフ）
+  - 期間選択機能、PDF/CSVダウンロードボタン
+
+### Phase 2 Week 3-4 Day 15-16（2025-12-04）
+**未払い請求書アラート機能実装**
+- UnpaidInvoiceCheckerサービス作成
+  - 期限超過請求書の検出機能
+  - 支払期限が近い請求書のリマインダー機能
+- InvoiceMailer作成
+  - overdue_notice: 期限超過通知メール
+  - payment_reminder: 支払リマインダーメール
+  - HTML/テキスト両形式のメールテンプレート
+- invoices:check_overdue rakeタスク追加
+  - 期限超過チェックと自動メール送信
+
+### Phase 2 Week 3-4 Day 13-14（2025-12-04）
+**入金管理画面実装**
+- PaymentDashboard、Admin::PaymentsController作成
+- 入金一覧・登録・編集・削除機能
+- Administrateデフォルト機能を使用
+
+### Phase 2 Week 3-4 Day 11-12（2025-12-04）
+**Paymentモデル実装**
+- Paymentモデル作成（invoice_id, payment_date, amount, payment_method, reference_number）
+- バリデーション追加（金額が残高を超えないチェック）
+- コールバック追加（after_create/after_destroy: update_invoice_payment_status）
+- Invoice#update_payment_status実装（paid/partial/unpaid/overdue自動更新）
+
+### Phase 2 Week 1-2 Day 7-10（2025-12-03）
+**請求書PDF出力・管理画面実装**
+- InvoicePdfGenerator作成（Prawn使用、A4縦向き、日本語フォント対応）
+- InvoiceDashboard、Admin::InvoicesController作成
+- 請求書一覧・詳細・PDF出力機能
+- Administrateデフォルト機能を使用
+
+### Phase 2 Week 1-2 Day 5-6（2025-12-03）
+**請求書自動生成機能実装**
+- InvoiceGenerator作成（月次請求書自動生成）
+- invoices:generate_monthly rakeタスク作成
+- GenerateInvoicesJob作成（バックグラウンドジョブ）
+- 企業別・月別集計、消費税計算、割引適用
+
+### Phase 2 Week 1-2 Day 1-4（2025-12-03）
+**Invoice/InvoiceItemモデル実装**
+- Invoice/InvoiceItemモデル作成
+- アソシエーション・バリデーション・コールバック追加
+- 請求書番号自動生成（INV-YYYYMM-XXXX）
+- 金額計算ロジック（小計・消費税・合計）
+- ステータス管理（draft/sent/paid/cancelled、unpaid/partial/paid/overdue）
 
 ### Phase 1 Week 4 Day 26-28（2025-12-03）
 **実運用テスト準備・ドキュメント整備**

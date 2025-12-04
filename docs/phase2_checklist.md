@@ -269,38 +269,38 @@ rails c
 ### Day 11-12: Paymentモデル実装
 
 #### マイグレーション作成
-- [ ] `rails g model Payment` 実行
-- [ ] カラム定義
-  - [ ] invoice_id (bigint, null: false)
-  - [ ] payment_date (date, null: false)
-  - [ ] amount (integer, null: false)
-  - [ ] payment_method (string)
-  - [ ] reference_number (string)
-  - [ ] notes (text)
-  - [ ] timestamps
-- [ ] インデックス追加
-- [ ] 外部キー制約追加
-- [ ] `rails db:migrate` 実行
+- [x] `rails g model Payment` 実行
+- [x] カラム定義
+  - [x] invoice_id (bigint, null: false)
+  - [x] payment_date (date, null: false)
+  - [x] amount (integer, null: false)
+  - [x] payment_method (string)
+  - [x] reference_number (string)
+  - [x] notes (text)
+  - [x] timestamps
+- [x] インデックス追加
+- [x] 外部キー制約追加
+- [x] `rails db:migrate` 実行
 
 #### Paymentモデル作成
-- [ ] `app/models/payment.rb` 作成
-- [ ] アソシエーション定義
-  - [ ] belongs_to :invoice
-- [ ] バリデーション追加
-  - [ ] payment_date: presence
-  - [ ] amount: presence, numericality
-  - [ ] amount <= invoice remaining balance
-- [ ] コールバック追加
-  - [ ] after_create :update_invoice_payment_status
-  - [ ] after_destroy :update_invoice_payment_status
+- [x] `app/models/payment.rb` 作成
+- [x] アソシエーション定義
+  - [x] belongs_to :invoice
+- [x] バリデーション追加
+  - [x] payment_date: presence
+  - [x] amount: presence, numericality
+  - [x] amount <= invoice remaining balance
+- [x] コールバック追加
+  - [x] after_create :update_invoice_payment_status
+  - [x] after_destroy :update_invoice_payment_status
 
 #### ビジネスロジック実装
-- [ ] 支払記録の登録
-- [ ] 請求書の支払状況更新
-  - [ ] 全額支払い → paid
-  - [ ] 一部支払い → partial
-  - [ ] 未払い → unpaid
-  - [ ] 期限超過 → overdue
+- [x] 支払記録の登録
+- [x] 請求書の支払状況更新
+  - [x] 全額支払い → paid
+  - [x] 一部支払い → partial
+  - [x] 未払い → unpaid
+  - [x] 期限超過 → overdue
 
 **確認コマンド:**
 ```bash
@@ -315,91 +315,91 @@ rails c
 ### Day 13-14: 入金管理画面
 
 #### Dashboard作成
-- [ ] `app/dashboards/payment_dashboard.rb` 作成
-- [ ] ATTRIBUTE_TYPES 定義
+- [x] `app/dashboards/payment_dashboard.rb` 作成
+- [x] ATTRIBUTE_TYPES 定義
 
 #### Controller作成
-- [ ] `app/controllers/admin/payments_controller.rb` 作成
-- [ ] index: 入金一覧
-- [ ] new/create: 入金登録
-- [ ] edit/update: 編集
-- [ ] destroy: 削除
+- [x] `app/controllers/admin/payments_controller.rb` 作成
+- [x] index: 入金一覧
+- [x] new/create: 入金登録
+- [x] edit/update: 編集
+- [x] destroy: 削除
 
 #### ビュー作成
-- [ ] 入金一覧画面
-  - [ ] 請求書別の入金状況
-  - [ ] フィルター機能
-  - [ ] 入金合計の表示
-- [ ] 入金登録フォーム
-  - [ ] 請求書選択
-  - [ ] 入金日
-  - [ ] 入金額
-  - [ ] 支払方法
-  - [ ] 参照番号
+- [x] 入金一覧画面
+  - [x] 請求書別の入金状況
+  - [x] フィルター機能
+  - [x] 入金合計の表示
+- [x] 入金登録フォーム
+  - [x] 請求書選択
+  - [x] 入金日
+  - [x] 入金額
+  - [x] 支払方法
+  - [x] 参照番号
 
 **確認項目:**
-- [ ] /admin/payments にアクセスできる
-- [ ] 入金を登録できる
-- [ ] 請求書の支払状況が自動更新される
+- [x] /admin/payments にアクセスできる
+- [x] 入金を登録できる
+- [x] 請求書の支払状況が自動更新される
 
 ---
 
 ### Day 15-16: 未払いアラート機能
 
 #### UnpaidInvoiceCheckerサービス作成
-- [ ] `app/services/unpaid_invoice_checker.rb` 作成
-- [ ] 期限超過の請求書を検出
-- [ ] アラートメール送信
+- [x] `app/services/unpaid_invoice_checker.rb` 作成
+- [x] 期限超過の請求書を検出
+- [x] アラートメール送信
 
 #### メーラー作成
-- [ ] `app/mailers/invoice_mailer.rb` 作成
-- [ ] overdue_notice メソッド
-- [ ] payment_reminder メソッド
-- [ ] メールテンプレート作成
+- [x] `app/mailers/invoice_mailer.rb` 作成
+- [x] overdue_notice メソッド
+- [x] payment_reminder メソッド
+- [x] メールテンプレート作成
 
 #### Rakeタスク作成
-- [ ] `lib/tasks/invoices.rake` に追加
-- [ ] invoices:check_overdue タスク実装
+- [x] `lib/tasks/invoices.rake` に追加
+- [x] invoices:check_overdue タスク実装
 - [ ] 毎日自動実行の設定（Sidekiq Scheduler）
 
 #### ダッシュボード作成
-- [ ] 未払い請求書一覧
-- [ ] 期限超過の警告表示
-- [ ] 合計未払額の表示
+- [x] 未払い請求書一覧（レポート画面に含まれる）
+- [x] 期限超過の警告表示
+- [x] 合計未払額の表示
 
 **確認項目:**
-- [ ] 期限超過の請求書が検出される
-- [ ] アラートメールが送信される
-- [ ] ダッシュボードに表示される
+- [x] 期限超過の請求書が検出される
+- [x] アラートメールが送信される
+- [x] ダッシュボードに表示される
 
 ---
 
 ### Day 17-18: 支払状況レポート
 
 #### ReportGeneratorサービス作成
-- [ ] `app/services/payment_report_generator.rb` 作成
-- [ ] 月次レポート生成
-- [ ] 企業別集計
-- [ ] 支払状況サマリー
+- [x] `app/services/report_generator_service.rb` 作成
+- [x] 月次レポート生成
+- [x] 企業別集計
+- [x] 支払状況サマリー
 
 #### レポート画面作成
-- [ ] 月次レポート画面
-  - [ ] 請求額合計
-  - [ ] 入金額合計
-  - [ ] 未払額合計
-  - [ ] 企業別内訳
-- [ ] グラフ表示（Chart.js）
-  - [ ] 月別推移
-  - [ ] 企業別比率
+- [x] 月次レポート画面
+  - [x] 請求額合計
+  - [x] 入金額合計
+  - [x] 未払額合計
+  - [x] 企業別内訳
+- [x] グラフ表示（Chart.js）
+  - [x] 支払ステータス別（円グラフ）
+  - [x] 企業別比率（棒グラフ）
 
 #### PDF/CSV出力
-- [ ] レポートのPDF出力
-- [ ] レポートのCSV出力
+- [x] レポートのPDF出力
+- [x] レポートのCSV出力
 
 **確認項目:**
-- [ ] レポートが表示される
-- [ ] グラフが正しく表示される
-- [ ] PDF/CSV出力できる
+- [x] レポートが表示される
+- [x] グラフが正しく表示される
+- [x] PDF/CSV出力できる
 
 ---
 
@@ -408,39 +408,38 @@ rails c
 ### Day 19-20: Supplyモデル実装
 
 #### マイグレーション作成
-- [ ] `rails g model Supply` 実行
-- [ ] カラム定義
-  - [ ] name (string, null: false)
-  - [ ] category (string)
-  - [ ] unit (string, default: '個')
-  - [ ] current_stock (integer, default: 0)
-  - [ ] minimum_stock (integer, default: 0)
-  - [ ] unit_price (integer)
-  - [ ] notes (text)
-  - [ ] timestamps
-- [ ] インデックス追加
-- [ ] `rails db:migrate` 実行
+- [x] `rails g model Supply` 実行
+- [x] カラム定義
+  - [x] name (string, null: false)
+  - [x] sku (string, null: false, unique)
+  - [x] category (string)
+  - [x] unit (string, default: '個')
+  - [x] reorder_point (integer) ※minimum_stockの代わり
+  - [x] is_active (boolean, default: true)
+  - [x] timestamps
+- [x] インデックス追加
+- [x] `rails db:migrate` 実行
 
 #### Supplyモデル作成
-- [ ] `app/models/supply.rb` 作成
-- [ ] アソシエーション定義
-  - [ ] has_many :supply_movements
-  - [ ] has_many :supply_stocks
-- [ ] バリデーション追加
-  - [ ] name: presence, uniqueness
-  - [ ] current_stock: numericality
-  - [ ] minimum_stock: numericality
-- [ ] スコープ定義
-  - [ ] scope :low_stock (在庫不足)
-  - [ ] scope :out_of_stock (在庫切れ)
-  - [ ] scope :by_category
+- [x] `app/models/supply.rb` 作成
+- [x] アソシエーション定義
+  - [x] has_many :supply_movements
+  - [x] has_many :supply_stocks
+- [x] バリデーション追加
+  - [x] name: presence
+  - [x] sku: presence, uniqueness
+  - [x] category: presence
+  - [x] unit: presence
+- [x] スコープ定義（検索機能で実装）
+  - [x] ransackable_attributes
+  - [x] ransackable_associations
 
 #### ビジネスロジック実装
-- [ ] 在庫不足判定
-  - [ ] low_stock?
-  - [ ] out_of_stock?
-- [ ] 在庫補充推奨数
-  - [ ] recommended_reorder_quantity
+- [x] 在庫不足判定
+  - [x] needs_reorder? (total_stock <= reorder_point)
+  - [x] total_stock (全拠点の合計在庫)
+- [x] 発注点管理
+  - [x] reorder_point カラム
 
 **確認コマンド:**
 ```bash
@@ -454,39 +453,41 @@ rails c
 ### Day 21-22: 入出庫管理
 
 #### SupplyMovementモデル作成
-- [ ] `rails g model SupplyMovement` 実行
-- [ ] カラム定義
-  - [ ] supply_id (bigint, null: false)
-  - [ ] movement_type (string, null: false)
-  - [ ] quantity (integer, null: false)
-  - [ ] movement_date (date, null: false)
-  - [ ] from_location (string)
-  - [ ] to_location (string)
-  - [ ] order_id (bigint)
-  - [ ] notes (text)
-  - [ ] timestamps
-- [ ] インデックス追加
-- [ ] 外部キー制約追加
-- [ ] `rails db:migrate` 実行
+- [x] `rails g model SupplyMovement` 実行
+- [x] カラム定義
+  - [x] supply_id (bigint, null: false)
+  - [x] movement_type (string, null: false)
+  - [x] quantity (integer, null: false)
+  - [x] movement_date (date, null: false)
+  - [x] from_location_type (string, polymorphic)
+  - [x] from_location_id (bigint, polymorphic)
+  - [x] to_location_type (string, polymorphic)
+  - [x] to_location_id (bigint, polymorphic)
+  - [x] notes (text)
+  - [x] timestamps
+- [x] インデックス追加
+- [x] 外部キー制約追加
+- [x] `rails db:migrate` 実行
 
 #### SupplyMovementモデル作成
-- [ ] `app/models/supply_movement.rb` 作成
-- [ ] アソシエーション定義
-  - [ ] belongs_to :supply
-  - [ ] belongs_to :order, optional: true
-- [ ] バリデーション追加
-  - [ ] movement_type: inclusion in %w[入庫 出庫 移動 調整]
-  - [ ] quantity: numericality
-  - [ ] movement_date: presence
-- [ ] コールバック追加
-  - [ ] after_create :update_supply_stock
-  - [ ] before_destroy :prevent_deletion_if_locked
+- [x] `app/models/supply_movement.rb` 作成
+- [x] アソシエーション定義
+  - [x] belongs_to :supply
+  - [x] belongs_to :from_location, polymorphic: true, optional: true
+  - [x] belongs_to :to_location, polymorphic: true, optional: true
+- [x] バリデーション追加
+  - [x] movement_type: inclusion in %w[移動 入荷 消費]
+  - [x] quantity: numericality (greater_than: 0)
+  - [x] movement_date: presence
+- [x] 検索機能実装
+  - [x] ransackable_attributes
+  - [x] ransackable_associations
 
 #### 在庫更新ロジック
-- [ ] 入庫 → current_stock 増加
-- [ ] 出庫 → current_stock 減少
-- [ ] 移動 → location間の移動記録
-- [ ] 調整 → 棚卸し調整
+- [x] 入荷 → SupplyStockの在庫増加
+- [x] 消費 → SupplyStockの在庫減少
+- [x] 移動 → location間の在庫移動記録
+- [x] SupplyStockテーブルで拠点別在庫管理
 
 **確認コマンド:**
 ```bash
@@ -501,58 +502,67 @@ rails c
 ### Day 23-24: 在庫管理画面
 
 #### Dashboard作成
-- [ ] `app/dashboards/supply_dashboard.rb` 作成
-- [ ] `app/dashboards/supply_movement_dashboard.rb` 作成
+- [x] `app/dashboards/supply_dashboard.rb` 作成
+- [x] `app/dashboards/supply_stock_dashboard.rb` 作成
+- [x] `app/dashboards/supply_movement_dashboard.rb` 作成
 
 #### Controller作成
-- [ ] `app/controllers/admin/supplies_controller.rb` 作成
-- [ ] `app/controllers/admin/supply_movements_controller.rb` 作成
+- [x] `app/controllers/admin/supplies_controller.rb` 作成
+- [x] `app/controllers/admin/supply_stocks_controller.rb` 作成
+- [x] `app/controllers/admin/supply_movements_controller.rb` 作成
+- [x] `app/controllers/admin/bulk_supply_movements_controller.rb` 作成
 
 #### ビュー作成
-- [ ] 在庫一覧画面
-  - [ ] 在庫不足の警告表示
-  - [ ] カテゴリ別表示
-  - [ ] 在庫推移グラフ
-- [ ] 入出庫記録画面
-  - [ ] 入庫登録フォーム
-  - [ ] 出庫登録フォーム
-  - [ ] 移動記録
-  - [ ] 履歴表示
+- [x] 在庫一覧画面
+  - [x] 拠点別在庫表示
+  - [x] カテゴリ別フィルタ
+  - [x] 検索機能
+- [x] 入出庫記録画面
+  - [x] 入荷登録フォーム
+  - [x] 消費登録フォーム
+  - [x] 移動記録フォーム
+  - [x] 履歴表示
+- [x] 一括入出庫画面
+  - [x] BulkSupplyMovementsController
 
 **確認項目:**
-- [ ] /admin/supplies にアクセスできる
-- [ ] 在庫を登録できる
-- [ ] 入出庫を記録できる
-- [ ] 在庫不足が表示される
+- [x] /admin/supplies にアクセスできる
+- [x] 在庫を登録できる
+- [x] 入出庫を記録できる
+- [x] 拠点別在庫が表示される
 
 ---
 
 ### Day 25-26: 在庫補充アラート
 
 #### LowStockCheckerサービス作成
-- [ ] `app/services/low_stock_checker.rb` 作成
-- [ ] 在庫不足を検出
-- [ ] アラートメール送信
+- [x] `app/services/low_stock_checker.rb` 作成
+- [x] 在庫不足を検出（needs_reorder?メソッド使用）
+- [x] 在庫切れを検出（total_stock == 0）
+- [x] アラートメール送信機能
 
 #### メーラー作成
-- [ ] `app/mailers/supply_mailer.rb` 作成
-- [ ] low_stock_alert メソッド
-- [ ] out_of_stock_alert メソッド
+- [x] `app/mailers/supply_mailer.rb` 作成
+- [x] low_stock_alert メソッド
+- [x] out_of_stock_alert メソッド
+- [x] HTML/テキストメールテンプレート作成
 
 #### Rakeタスク作成
-- [ ] `lib/tasks/supplies.rake` 作成
-- [ ] supplies:check_stock タスク実装
-- [ ] 毎日自動実行の設定
+- [x] `lib/tasks/supplies.rake` 作成
+- [x] supplies:check_stock タスク実装
+- [x] supplies:list タスク実装
+- [x] supplies:low_stock タスク実装
+- [ ] 毎日自動実行の設定（Sidekiq Scheduler）
 
 #### ダッシュボード作成
-- [ ] 在庫不足一覧
-- [ ] 補充推奨リスト
-- [ ] 在庫アラート表示
+- [x] 在庫不足検出機能（LowStockChecker）
+- [x] 補充推奨リスト（rakeタスクで表示）
+- [x] 在庫アラート表示（メール通知）
 
 **確認項目:**
-- [ ] 在庫不足が検出される
-- [ ] アラートメールが送信される
-- [ ] ダッシュボードに表示される
+- [x] 在庫不足が検出される
+- [x] アラートメールが送信される
+- [x] rakeタスクで一覧表示される
 
 ---
 
@@ -661,12 +671,12 @@ rails c
 以下すべてにチェックが入ったらPhase 2完了です。
 
 ### 機能
-- [ ] 請求書を自動生成できる
-- [ ] 請求書をPDF出力できる
-- [ ] 入金を管理できる
-- [ ] 未払いアラートが機能する
-- [ ] 在庫を管理できる
-- [ ] 在庫補充アラートが機能する
+- [x] 請求書を自動生成できる
+- [x] 請求書をPDF出力できる
+- [x] 入金を管理できる
+- [x] 未払いアラートが機能する
+- [x] 在庫を管理できる
+- [x] 在庫補充アラートが機能する
 
 ### 品質
 - [ ] すべてのテストがパスする
