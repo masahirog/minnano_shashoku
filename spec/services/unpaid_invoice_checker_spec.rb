@@ -221,11 +221,11 @@ RSpec.describe UnpaidInvoiceChecker do
   describe '#check_all' do
     it '期限超過と期限間近の両方をチェックする' do
       # 期限超過
-      Invoice.create!(
+      invoice_overdue = Invoice.create!(
         company: company1,
         invoice_number: 'INV-TEST-0012',
         issue_date: Date.today - 40.days,
-        payment_due_date: Date.today - 10.days,
+        payment_due_date: Date.today + 10.days, # 一旦期限内で作成
         billing_period_start: Date.today - 60.days,
         billing_period_end: Date.today - 30.days,
         subtotal: 9091,
@@ -234,6 +234,8 @@ RSpec.describe UnpaidInvoiceChecker do
         status: 'sent',
         payment_status: 'unpaid'
       )
+      # 期限超過に変更
+      invoice_overdue.update_columns(payment_due_date: Date.today - 10.days)
 
       # 期限間近
       Invoice.create!(
@@ -265,7 +267,7 @@ RSpec.describe UnpaidInvoiceChecker do
         company: company1,
         invoice_number: 'INV-TEST-0014',
         issue_date: Date.today - 40.days,
-        payment_due_date: Date.today - 10.days,
+        payment_due_date: Date.today + 10.days, # 一旦期限内で作成
         billing_period_start: Date.today - 60.days,
         billing_period_end: Date.today - 30.days,
         subtotal: 9091,
@@ -274,6 +276,8 @@ RSpec.describe UnpaidInvoiceChecker do
         status: 'sent',
         payment_status: 'unpaid'
       )
+      # 期限超過に変更
+      invoice.update_columns(payment_due_date: Date.today - 10.days)
 
       expect(InvoiceMailer).to receive(:overdue_notice).with(invoice).and_call_original
       sent_count = checker.send_overdue_alerts

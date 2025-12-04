@@ -37,8 +37,10 @@ RSpec.describe InvoiceMailer, type: :mailer do
     end
 
     it "renders the body" do
-      expect(mail.body.encoded).to match(company.name)
-      expect(mail.body.encoded).to match(invoice.invoice_number)
+      # マルチパートメールの場合、text_partまたはhtml_partを使用
+      body_content = mail.text_part ? mail.text_part.body.decoded : mail.body.decoded
+      expect(body_content).to match(company.name)
+      expect(body_content).to match(invoice.invoice_number)
     end
   end
 
@@ -68,8 +70,10 @@ RSpec.describe InvoiceMailer, type: :mailer do
     end
 
     it "renders the body" do
-      expect(mail.body.encoded).to match(company.name)
-      expect(mail.body.encoded).to match(upcoming_invoice.invoice_number)
+      # マルチパートメールの場合、text_partまたはhtml_partを使用
+      body_content = mail.text_part ? mail.text_part.body.decoded : mail.body.decoded
+      expect(body_content).to match(company.name)
+      expect(body_content).to match(upcoming_invoice.invoice_number)
     end
   end
 
