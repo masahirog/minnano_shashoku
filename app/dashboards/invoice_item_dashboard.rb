@@ -1,6 +1,6 @@
 require "administrate/base_dashboard"
 
-class InvoiceDashboard < Administrate::BaseDashboard
+class InvoiceItemDashboard < Administrate::BaseDashboard
   # ATTRIBUTE_TYPES
   # a hash that describes the type of each of the model's fields.
   #
@@ -9,20 +9,12 @@ class InvoiceDashboard < Administrate::BaseDashboard
   # on pages throughout the dashboard.
   ATTRIBUTE_TYPES = {
     id: Field::Number,
-    billing_period_end: Field::Date,
-    billing_period_start: Field::Date,
-    company: Field::BelongsTo,
-    invoice_items: Field::HasMany,
-    invoice_number: Field::String,
-    issue_date: Field::Date,
-    notes: Field::Text,
-    orders: Field::HasMany,
-    payment_due_date: Field::Date,
-    payment_status: Field::String,
-    status: Field::String,
-    subtotal: Field::Number,
-    tax_amount: Field::Number,
-    total_amount: Field::Number,
+    amount: Field::Number,
+    description: Field::String,
+    invoice: Field::BelongsTo,
+    order: Field::BelongsTo,
+    quantity: Field::Number,
+    unit_price: Field::Number,
     created_at: Field::DateTime,
     updated_at: Field::DateTime,
   }.freeze
@@ -33,32 +25,22 @@ class InvoiceDashboard < Administrate::BaseDashboard
   # By default, it's limited to four items to reduce clutter on index pages.
   # Feel free to add, remove, or rearrange items.
   COLLECTION_ATTRIBUTES = %i[
-    invoice_number
-    company
-    issue_date
-    total_amount
-    status
-    payment_status
+    id
+    amount
+    description
+    invoice
   ].freeze
 
   # SHOW_PAGE_ATTRIBUTES
   # an array of attributes that will be displayed on the model's show page.
   SHOW_PAGE_ATTRIBUTES = %i[
     id
-    billing_period_end
-    billing_period_start
-    company
-    invoice_items
-    invoice_number
-    issue_date
-    notes
-    orders
-    payment_due_date
-    payment_status
-    status
-    subtotal
-    tax_amount
-    total_amount
+    amount
+    description
+    invoice
+    order
+    quantity
+    unit_price
     created_at
     updated_at
   ].freeze
@@ -67,18 +49,12 @@ class InvoiceDashboard < Administrate::BaseDashboard
   # an array of attributes that will be displayed
   # on the model's form (`new` and `edit`) pages.
   FORM_ATTRIBUTES = %i[
-    billing_period_end
-    billing_period_start
-    company
-    invoice_number
-    issue_date
-    notes
-    payment_due_date
-    payment_status
-    status
-    subtotal
-    tax_amount
-    total_amount
+    amount
+    description
+    invoice
+    order
+    quantity
+    unit_price
   ].freeze
 
   # COLLECTION_FILTERS
@@ -93,10 +69,10 @@ class InvoiceDashboard < Administrate::BaseDashboard
   #   }.freeze
   COLLECTION_FILTERS = {}.freeze
 
-  # Overwrite this method to customize how invoices are displayed
+  # Overwrite this method to customize how invoice items are displayed
   # across all pages of the admin dashboard.
   #
-  def display_resource(invoice)
-    "請求書 #{invoice.invoice_number}"
-  end
+  # def display_resource(invoice_item)
+  #   "InvoiceItem ##{invoice_item.id}"
+  # end
 end

@@ -13,6 +13,22 @@ module Admin
       authenticate_admin_user!
     end
 
+    # Administrateの認可をオーバーライド
+    # 認証されたadmin_userは全てのリソースにアクセス可能
+    def authorize_resource(resource)
+      # 何もしない = 全て許可
+    end
+
+    def valid_action?(name, resource = resource_class)
+      # 全てのアクションを許可
+      true
+    end
+
+    def show_action?(action, resource)
+      # 全てのアクションを表示
+      true
+    end
+
     # Override this value to specify the number of elements to display at a time
     # on index pages. Defaults to 20.
     # def records_per_page

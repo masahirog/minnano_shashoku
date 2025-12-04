@@ -1,14 +1,8 @@
 module Admin
   class InvoicesController < Admin::ApplicationController
-    def show_pdf
-      invoice = Invoice.includes(:company, invoice_items: :order).find(params[:id])
-
-      pdf = InvoicePdfGenerator.new(invoice).generate
-
-      send_data pdf,
-                filename: "invoice_#{invoice.invoice_number}_#{Date.today.strftime('%Y%m%d')}.pdf",
-                type: 'application/pdf',
-                disposition: 'inline'
-    end
+    # Administrate標準のRESTfulアクションのみを提供
+    # カスタムアクションは以下の専用コントローラーに移動:
+    # - InvoicePdfsController (PDF表示)
+    # - InvoiceGenerationsController (一括生成)
   end
 end

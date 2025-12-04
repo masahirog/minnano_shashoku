@@ -3,7 +3,6 @@ class Invoice < ApplicationRecord
   belongs_to :company
   has_many :invoice_items, dependent: :destroy
   has_many :orders, through: :invoice_items
-  has_many :payments, dependent: :destroy
 
   # バリデーション
   validates :invoice_number, presence: true, uniqueness: true

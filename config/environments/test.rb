@@ -8,6 +8,12 @@ require "active_support/core_ext/integer/time"
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
+  # Host Authorization を完全に無効化（Rails 7.1推奨）
+  config.hosts = nil
+
+  # テスト環境ではCSRF保護を無効化
+  config.action_controller.allow_forgery_protection = false
+
   # While tests run files are not watched, reloading is not necessary.
   config.enable_reloading = false
 

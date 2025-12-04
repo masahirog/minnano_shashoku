@@ -20,11 +20,10 @@ Rails.application.routes.draw do
           post :bulk_generate
         end
       end
-      resources :invoices do
-        member do
-          get :show_pdf
-        end
-      end
+      resources :invoices
+      resources :invoice_items
+      resources :invoice_pdfs, only: [:show]
+      resources :invoice_generations, only: [:create]
       resources :restaurants
       resources :staffs
       resources :supplies do

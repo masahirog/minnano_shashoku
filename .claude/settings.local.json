@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(RAILS_ENV=test bin/rails runner:*)",
+      "Bash(bin/rails generate:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

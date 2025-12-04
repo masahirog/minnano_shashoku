@@ -1,0 +1,14 @@
+<%#
+# Collection Header Actions
+
+This partial is used on the `show` page to add custom action buttons
+in the header next to Edit/Destroy buttons.
+%>
+
+<%= link_to(
+  admin_invoice_pdf_path(page.resource),
+  class: "button button--success",
+  target: "_blank"
+) do %>
+  PDFダウンロード
+<% end %>
