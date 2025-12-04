@@ -1,0 +1,35 @@
+h1 在庫不足アラート
+
+p お世話になっております。みんなの社食です。
+
+p
+  | 以下の備品の在庫が発注点を下回っています。
+  br
+  | 在庫補充のご検討をお願いいたします。
+
+table border="1" cellpadding="10" style="border-collapse: collapse; margin: 20px 0;"
+  tr
+    th SKU
+    th 備品名
+    th カテゴリ
+    th 現在庫数
+    th 発注点
+    th 単位
+  - @supplies.each do |supply|
+    tr
+      td = supply.sku
+      td = supply.name
+      td = supply.category
+      td
+        strong style="color: #ff9800;" = supply.total_stock
+      td = supply.reorder_point
+      td = supply.unit
+
+p style="margin-top: 30px;"
+  | アラート日時: #{@alert_date.strftime('%Y年%m月%d日')}
+
+p
+  | 在庫管理画面から詳細をご確認ください。
+
+p
+  | よろしくお願いいたします。
