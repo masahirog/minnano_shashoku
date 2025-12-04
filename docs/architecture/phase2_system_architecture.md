@@ -276,13 +276,13 @@ lib/
 
 ## 主要コンポーネント
 
-### 1. 請求書生成サービス（InvoiceGeneratorService）
+### 1. 請求書生成サービス（InvoiceGenerator）
 
 **責務**: 月次請求書の自動生成
 
 **主要メソッド**:
 ```ruby
-class InvoiceGeneratorService
+class InvoiceGenerator
   def initialize(year:, month:)
     @year = year
     @month = month

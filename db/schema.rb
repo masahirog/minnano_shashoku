@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_12_04_013456) do
+ActiveRecord::Schema[7.1].define(version: 2025_12_04_041119) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -376,6 +376,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_04_013456) do
     t.text "notes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "from_location_name"
+    t.string "to_location_name"
     t.index ["from_location_type", "from_location_id"], name: "index_supply_movements_on_from_location"
     t.index ["movement_date"], name: "index_supply_movements_on_movement_date"
     t.index ["movement_type"], name: "index_supply_movements_on_movement_type"
