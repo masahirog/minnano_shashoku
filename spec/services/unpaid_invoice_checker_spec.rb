@@ -18,12 +18,11 @@ RSpec.describe UnpaidInvoiceChecker do
       c2 = company2
 
       # 期限超過の請求書（未払い）
-      # 期限内の日付で作成してから、期限超過の日付に変更
       invoice1 = Invoice.create!(
         company: c1,
         invoice_number: 'INV-TEST-0001',
         issue_date: Date.today - 40.days,
-        payment_due_date: Date.today + 10.days, # 一旦期限内で作成
+        payment_due_date: Date.today - 10.days, # 期限超過の日付で直接作成
         billing_period_start: Date.today - 60.days,
         billing_period_end: Date.today - 30.days,
         subtotal: 9091,
@@ -32,15 +31,13 @@ RSpec.describe UnpaidInvoiceChecker do
         status: 'sent',
         payment_status: 'unpaid'
       )
-      # 期限超過の日付に変更（コールバックをスキップ）
-      invoice1.update_columns(payment_due_date: Date.today - 10.days)
 
       # 期限超過の請求書（一部入金）
       invoice2 = Invoice.create!(
         company: c2,
         invoice_number: 'INV-TEST-0002',
         issue_date: Date.today - 40.days,
-        payment_due_date: Date.today + 5.days, # 一旦期限内で作成
+        payment_due_date: Date.today - 5.days, # 期限超過の日付で直接作成
         billing_period_start: Date.today - 60.days,
         billing_period_end: Date.today - 30.days,
         subtotal: 18182,
@@ -50,10 +47,9 @@ RSpec.describe UnpaidInvoiceChecker do
         payment_status: 'unpaid'
       )
       # Paymentを作成（after_createでupdate_payment_statusが呼ばれる）
+      # payment_statusは'partial'に自動更新される
       payment = Payment.new(invoice: invoice2, payment_date: Date.today - 3.days, amount: 10000)
       payment.save(validate: false) # バリデーションをスキップ
-      # 期限超過の日付に変更し、payment_statusを'partial'に設定（コールバックをスキップ）
-      invoice2.update_columns(payment_due_date: Date.today - 5.days, payment_status: 'partial')
 
       # 期限内の請求書（未払い）- 検出されないはず
       Invoice.create!(
@@ -225,7 +221,7 @@ RSpec.describe UnpaidInvoiceChecker do
         company: company1,
         invoice_number: 'INV-TEST-0012',
         issue_date: Date.today - 40.days,
-        payment_due_date: Date.today + 10.days, # 一旦期限内で作成
+        payment_due_date: Date.today - 10.days, # 期限超過の日付で直接作成
         billing_period_start: Date.today - 60.days,
         billing_period_end: Date.today - 30.days,
         subtotal: 9091,
@@ -234,8 +230,6 @@ RSpec.describe UnpaidInvoiceChecker do
         status: 'sent',
         payment_status: 'unpaid'
       )
-      # 期限超過に変更
-      invoice_overdue.update_columns(payment_due_date: Date.today - 10.days)
 
       # 期限間近
       Invoice.create!(
@@ -267,7 +261,7 @@ RSpec.describe UnpaidInvoiceChecker do
         company: company1,
         invoice_number: 'INV-TEST-0014',
         issue_date: Date.today - 40.days,
-        payment_due_date: Date.today + 10.days, # 一旦期限内で作成
+        payment_due_date: Date.today - 10.days, # 期限超過の日付で直接作成
         billing_period_start: Date.today - 60.days,
         billing_period_end: Date.today - 30.days,
         subtotal: 9091,
@@ -276,8 +270,6 @@ RSpec.describe UnpaidInvoiceChecker do
         status: 'sent',
         payment_status: 'unpaid'
       )
-      # 期限超過に変更
-      invoice.update_columns(payment_due_date: Date.today - 10.days)
 
       expect(InvoiceMailer).to receive(:overdue_notice).with(invoice).and_call_original
       sent_count = checker.send_overdue_alerts
@@ -288,8 +280,11 @@ RSpec.describe UnpaidInvoiceChecker do
 
   describe '#send_payment_reminders' do
     it '期限間近の請求書に対してリマインダーメールを送信する' do
+      # 企業を明示的に作成
+      c1 = company1
+
       invoice = Invoice.create!(
-        company: company1,
+        company: c1,
         invoice_number: 'INV-TEST-0015',
         issue_date: Date.today - 25.days,
         payment_due_date: Date.today + 5.days,

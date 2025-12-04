@@ -9,7 +9,7 @@ RSpec.describe ConflictDetector do
       max_capacity: 100,
       capacity_per_day: 50,
       max_lots_per_day: 2,
-      closed_days: ['sunday']
+      closed_days: []
     )
   end
   let(:menu) { Menu.create!(name: 'テストメニュー', restaurant: restaurant) }
@@ -114,13 +114,24 @@ RSpec.describe ConflictDetector do
     end
 
     it '定休日を検出する' do
+      # 日曜日が定休日のrestaurantを作成
+      restaurant_with_closed_days = Restaurant.create!(
+        name: 'テスト飲食店（定休日あり）',
+        contract_status: 'active',
+        max_capacity: 100,
+        capacity_per_day: 50,
+        max_lots_per_day: 2,
+        closed_days: ['sunday']
+      )
+      menu_for_closed = Menu.create!(name: 'テストメニュー', restaurant: restaurant_with_closed_days)
+
       # 日曜日（定休日）
       sunday = Date.today.beginning_of_week(:sunday)
 
       order = Order.new(
         company: company,
-        restaurant: restaurant,
-        menu: menu,
+        restaurant: restaurant_with_closed_days,
+        menu: menu_for_closed,
         order_type: 'trial',
         scheduled_date: sunday,
         default_meal_count: 10,

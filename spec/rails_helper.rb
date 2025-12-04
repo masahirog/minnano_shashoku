@@ -43,6 +43,15 @@ RSpec.configure do |config|
   Capybara.default_driver = :rack_test
   Capybara.javascript_driver = :selenium_chrome_headless
 
+  # テストスイート開始前にseedデータをクリア
+  config.before(:suite) do
+    # 全テーブルのデータを削除（seedデータをクリア）
+    ActiveRecord::Base.connection.tables.each do |table|
+      next if table == 'schema_migrations' || table == 'ar_internal_metadata'
+      ActiveRecord::Base.connection.execute("TRUNCATE TABLE #{table} RESTART IDENTITY CASCADE")
+    end
+  end
+
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_paths = [
     Rails.root.join('spec/fixtures')

@@ -9,7 +9,7 @@ RSpec.describe Order, type: :model do
       max_capacity: 100,
       capacity_per_day: 50,
       max_lots_per_day: 2,
-      closed_days: ['sunday', 'monday']
+      closed_days: []
     )
   end
   let(:menu) { Menu.create!(name: 'テストメニュー', restaurant: restaurant) }
@@ -101,13 +101,24 @@ RSpec.describe Order, type: :model do
 
     describe '#restaurant_not_closed' do
       it '定休日の場合、エラーになる' do
+        # 日曜日が定休日のrestaurantを作成
+        restaurant_with_closed_days = Restaurant.create!(
+          name: 'テスト飲食店（定休日あり）',
+          contract_status: 'active',
+          max_capacity: 100,
+          capacity_per_day: 50,
+          max_lots_per_day: 2,
+          closed_days: ['sunday']
+        )
+        menu_for_closed = Menu.create!(name: 'テストメニュー', restaurant: restaurant_with_closed_days)
+
         # 日曜日（closed_daysに含まれる）
         sunday = Date.today.beginning_of_week(:sunday) # 日曜日
 
         order = Order.new(
           company: company,
-          restaurant: restaurant,
-          menu: menu,
+          restaurant: restaurant_with_closed_days,
+          menu: menu_for_closed,
           order_type: 'trial',
           scheduled_date: sunday,
           default_meal_count: 10,
