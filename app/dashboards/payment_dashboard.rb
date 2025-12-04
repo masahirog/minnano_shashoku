@@ -77,6 +77,12 @@ class PaymentDashboard < Administrate::BaseDashboard
     "入金 #{payment.payment_date.strftime('%Y/%m/%d')} - #{number_to_currency(payment.amount, unit: '¥', precision: 0)}"
   end
 
+  # Override this method to specify includes for the index action
+  # to avoid N+1 queries
+  def self.collection_includes
+    [invoice: :company]
+  end
+
   private
 
   def number_to_currency(number, options = {})

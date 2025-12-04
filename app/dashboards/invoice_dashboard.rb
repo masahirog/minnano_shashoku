@@ -101,4 +101,10 @@ class InvoiceDashboard < Administrate::BaseDashboard
   def display_resource(invoice)
     "請求書 #{invoice.invoice_number}"
   end
+
+  # Override this method to specify includes for the index action
+  # to avoid N+1 queries
+  def self.collection_includes
+    [:company, :invoice_items, :payments]
+  end
 end

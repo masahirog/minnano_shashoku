@@ -172,4 +172,70 @@ RSpec.describe Invoice, type: :model do
       expect(invoice.days_overdue).to eq(0)
     end
   end
+
+  describe '#paid_amount' do
+    it '入金済み金額の合計を返す' do
+      invoice.payments.create!(payment_date: Date.today, amount: 3000)
+      invoice.payments.create!(payment_date: Date.today, amount: 2000)
+
+      expect(invoice.paid_amount).to eq(5000)
+    end
+
+    it '入金がない場合、0を返す' do
+      expect(invoice.paid_amount).to eq(0)
+    end
+  end
+
+  describe '#remaining_balance' do
+    it '残高（未払い金額）を返す' do
+      invoice.update(total_amount: 11000)
+      invoice.payments.create!(payment_date: Date.today, amount: 5000)
+
+      expect(invoice.remaining_balance).to eq(6000)
+    end
+
+    it '全額入金済みの場合、0を返す' do
+      invoice.update(total_amount: 11000)
+      invoice.payments.create!(payment_date: Date.today, amount: 11000)
+
+      expect(invoice.remaining_balance).to eq(0)
+    end
+  end
+
+  describe '#update_payment_status' do
+    it '全額入金済みの場合、payment_statusがpaidになる' do
+      invoice.update(total_amount: 11000, payment_status: 'unpaid')
+      invoice.payments.create!(payment_date: Date.today, amount: 11000)
+
+      invoice.update_payment_status
+
+      expect(invoice.payment_status).to eq('paid')
+      expect(invoice.status).to eq('paid')
+    end
+
+    it '一部入金の場合、payment_statusがpartialになる' do
+      invoice.update(total_amount: 11000, payment_status: 'unpaid')
+      invoice.payments.create!(payment_date: Date.today, amount: 5000)
+
+      invoice.update_payment_status
+
+      expect(invoice.payment_status).to eq('partial')
+    end
+
+    it '入金なしで期限超過の場合、payment_statusがoverdueになる' do
+      invoice.update(total_amount: 11000, payment_status: 'unpaid', payment_due_date: Date.today - 1.day)
+
+      invoice.update_payment_status
+
+      expect(invoice.payment_status).to eq('overdue')
+    end
+
+    it '入金なしで期限内の場合、payment_statusがunpaidのまま' do
+      invoice.update(total_amount: 11000, payment_status: 'unpaid', payment_due_date: Date.today + 10.days)
+
+      invoice.update_payment_status
+
+      expect(invoice.payment_status).to eq('unpaid')
+    end
+  end
 end

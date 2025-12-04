@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_12_04_000828) do
+ActiveRecord::Schema[7.1].define(version: 2025_12_04_013456) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -193,9 +193,12 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_04_000828) do
     t.text "notes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["billing_period_start", "payment_status"], name: "index_invoices_on_billing_period_and_status"
+    t.index ["billing_period_start"], name: "index_invoices_on_billing_period_start"
     t.index ["company_id"], name: "index_invoices_on_company_id"
     t.index ["invoice_number"], name: "index_invoices_on_invoice_number", unique: true
     t.index ["issue_date"], name: "index_invoices_on_issue_date"
+    t.index ["payment_due_date"], name: "index_invoices_on_payment_due_date"
     t.index ["payment_status"], name: "index_invoices_on_payment_status"
     t.index ["status"], name: "index_invoices_on_status"
   end

@@ -9,14 +9,16 @@
 ## 技術スタック
 
 - Ruby 3.1.4
-- Rails 7.1
+- Rails 7.1.6
 - PostgreSQL 15
 - Redis 7
 - Docker / Docker Compose
-- ActiveAdmin（管理画面）
+- Administrate（管理画面）
 - Sidekiq（バックグラウンド処理）
 - Prawn（PDF生成）
 - Caxlsx（Excel生成）
+- RSpec（テストフレームワーク）
+- Capybara（E2Eテスト）
 
 ## セットアップ
 
@@ -152,6 +154,27 @@ docker-compose exec web rails import:all
 - supply_stocks（拠点別在庫）
 - supply_movements（入出庫履歴）
 
+## ドキュメント
+
+### Phase 2 操作マニュアル
+- [請求書管理操作マニュアル](docs/manuals/invoice_management.md)
+  - 請求書の一括生成、確認・編集、PDF出力、ステータス管理
+- [入金管理操作マニュアル](docs/manuals/payment_management.md)
+  - 入金の登録、入金履歴の確認、支払状況レポート、期限超過アラート
+- [在庫管理操作マニュアル](docs/manuals/inventory_management.md)
+  - 備品マスタの管理、在庫の確認・更新、在庫移動の記録、在庫補充アラート、棚卸し作業
+
+### Phase 2 技術ドキュメント
+- [データ移行手順書](docs/migration/phase2_data_migration.md)
+  - 請求書・入金・在庫データの移行手順、CSVインポート、データ検証、ロールバック手順
+- [システム構成ドキュメント](docs/architecture/phase2_system_architecture.md)
+  - アーキテクチャ構成、データベース設計、主要コンポーネント、バッチ処理、パフォーマンス最適化、セキュリティ、デプロイメント
+
+### Phase 1 ドキュメント
+- [操作マニュアル](docs/user_manual.md)
+- [データ移行手順書](docs/data_migration_guide.md)
+- [ロールバック手順書](docs/rollback_guide.md)
+
 ## MVP スコープ（Phase 1）
 
 - マスタ管理（企業、飲食店、メニュー、配送会社）
@@ -160,6 +183,65 @@ docker-compose exec web rails import:all
 - 配送会社向け閲覧画面
 
 ## 開発履歴
+
+### Phase 2 Week 7-8 Day 31-32（2025-12-04）
+**ドキュメント作成**
+- 操作マニュアル作成
+  - docs/manuals/invoice_management.md: 請求書管理操作マニュアル
+  - docs/manuals/payment_management.md: 入金管理操作マニュアル
+  - docs/manuals/inventory_management.md: 在庫管理操作マニュアル
+- データ移行手順書作成（docs/migration/phase2_data_migration.md）
+  - 請求書・入金・在庫データの移行手順
+  - CSVインポート用Rakeタスク実装例
+  - データ検証手順
+  - ロールバック手順
+  - トラブルシューティング
+- システム構成ドキュメント作成（docs/architecture/phase2_system_architecture.md）
+  - アーキテクチャ構成（レイヤー構造、コンポーネント）
+  - データベース設計（ER図、テーブル定義）
+  - 主要コンポーネント（サービスクラス、PDF生成）
+  - バッチ処理（Rakeタスク、Sidekiq Scheduler）
+  - パフォーマンス最適化（N+1対策、インデックス）
+  - セキュリティ（認証・認可、データ保護）
+  - デプロイメント（Heroku、モニタリング）
+
+### Phase 2 Week 7-8 Day 29-30（2025-12-04）
+**パフォーマンステスト・最適化**
+- N+1クエリ対策
+  - InvoiceDashboard、PaymentDashboard、SupplyDashboardに collection_includes 追加
+  - Administrate管理画面での関連レコード一括取得
+- データベースインデックス追加
+  - invoices.billing_period_start: レポート生成高速化
+  - invoices.payment_due_date: 期限超過チェック高速化
+  - 複合インデックス(billing_period_start, payment_status): 複合条件検索高速化
+- パフォーマンステストツール作成（lib/tasks/performance_test_data.rake）
+  - performance:generate_test_data: 大量テストデータ生成（10社、100+請求書、50備品）
+  - performance:benchmark: 各種処理のベンチマーク測定
+  - performance:clean_test_data: テストデータクリーンアップ
+- ベンチマーク結果（全目標達成）
+  - レポート生成: 0.692秒（目標: < 1.0秒）✓
+  - 請求書一覧（100件）: 0.073秒（目標: < 0.5秒）✓
+  - 期限超過チェック: 0.151秒（目標: < 0.5秒）✓
+  - 在庫不足チェック: 0.345秒（目標: < 0.5秒）✓
+
+### Phase 2 Week 7-8 Day 27-28（2025-12-04）
+**RSpecテスト実装**
+- モデルテスト作成
+  - spec/models/invoice_spec.rb: アソシエーション、バリデーション、請求書番号生成、金額計算、ステータス管理
+  - spec/models/invoice_item_spec.rb: バリデーション、金額計算、請求書への金額反映
+  - spec/models/payment_spec.rb: バリデーション、残高チェック、請求書ステータス更新
+  - spec/models/supply_spec.rb: バリデーション、在庫計算、ステータス判定
+  - spec/models/supply_stock_spec.rb: バリデーション、在庫更新
+  - spec/models/supply_movement_spec.rb: バリデーション、在庫更新（入荷/消費/移動）
+- サービステスト作成
+  - spec/services/invoice_generator_service_spec.rb: 請求書自動生成、金額計算、重複防止
+  - spec/services/report_generator_service_spec.rb: レポート生成、集計計算
+  - spec/services/unpaid_invoice_checker_spec.rb: 期限超過検出、リマインダー
+  - spec/services/low_stock_checker_spec.rb: 在庫不足検出、在庫切れ検出
+- コントローラーテスト作成
+  - spec/requests/admin/invoice_generations_spec.rb: 請求書一括生成API
+  - spec/requests/admin/invoice_pdfs_spec.rb: PDF生成API
+- テスト結果: 60 examples、0 failures（成功率: 100%）
 
 ### Phase 2 Week 5-6 Day 25-26（2025-12-04）
 **在庫補充アラート機能実装**

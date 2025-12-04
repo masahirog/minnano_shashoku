@@ -81,4 +81,10 @@ class SupplyDashboard < Administrate::BaseDashboard
   def display_resource(supply)
     supply.name
   end
+
+  # Override this method to specify includes for the index action
+  # to avoid N+1 queries
+  def self.collection_includes
+    [:supply_stocks]
+  end
 end
