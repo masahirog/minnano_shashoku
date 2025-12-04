@@ -22,6 +22,7 @@ Rails.application.routes.draw do
       end
       resources :invoices
       resources :invoice_items
+      resources :payments
       resources :invoice_pdfs, only: [:show]
       resources :invoice_generations, only: [:create]
       resources :restaurants
