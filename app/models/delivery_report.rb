@@ -4,7 +4,7 @@ class DeliveryReport < ApplicationRecord
   belongs_to :delivery_user
 
   # ActiveStorage for photos
-  # has_many_attached :photos # Will be configured when ActiveStorage is set up for photos
+  has_many_attached :photos
 
   # Validations
   validates :delivery_assignment_id, presence: true, uniqueness: true
@@ -19,6 +19,30 @@ class DeliveryReport < ApplicationRecord
     in: %w[absent address_unknown damaged other],
     message: "%{value} is not a valid issue type"
   }, if: -> { report_type == 'issue' || report_type == 'failed' }
+
+  # Photo validations
+  validate :photos_content_type
+  validate :photos_size
+
+  private
+
+  def photos_content_type
+    photos.each do |photo|
+      unless photo.content_type.in?(%w[image/jpeg image/jpg image/png image/gif])
+        errors.add(:photos, '画像ファイル（JPEG, PNG, GIF）のみアップロード可能です')
+      end
+    end
+  end
+
+  def photos_size
+    photos.each do |photo|
+      if photo.byte_size > 10.megabytes
+        errors.add(:photos, 'ファイルサイズは10MB以下にしてください')
+      end
+    end
+  end
+
+  public
 
   # Scopes
   scope :completed, -> { where(report_type: 'completed') }
@@ -46,7 +70,7 @@ class DeliveryReport < ApplicationRecord
   end
 
   def has_photos?
-    photos.present? && photos.is_a?(Array) && photos.any?
+    photos.attached?
   end
 
   def delivery_duration

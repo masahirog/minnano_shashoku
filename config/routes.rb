@@ -84,8 +84,9 @@ Rails.application.routes.draw do
       member do
         patch :update_status
       end
+      resource :report, only: [:new, :create]
     end
-    resources :reports, only: [:new, :create, :show]
+    resources :reports, only: [:show]
     resources :histories, only: [:index]
     resource :profile, only: [:show, :edit, :update]
   end

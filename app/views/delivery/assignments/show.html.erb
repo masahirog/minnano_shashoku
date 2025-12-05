@@ -233,17 +233,8 @@
           class: "w-full bg-blue-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-blue-700 transition-colors" %>
 
     <% when 'in_transit' %>
-      <%= button_to "✅ 配送を完了する", update_status_delivery_assignment_path(@delivery_assignment),
-          method: :patch,
-          params: { status: 'completed' },
-          data: { confirm: '配送を完了としてマークしますか？' },
-          class: "w-full bg-green-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-green-700 transition-colors" %>
-
-      <%= button_to "⚠️ 問題を報告", update_status_delivery_assignment_path(@delivery_assignment),
-          method: :patch,
-          params: { status: 'failed' },
-          data: { confirm: '配送を失敗としてマークしますか？' },
-          class: "w-full bg-red-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-red-700 transition-colors" %>
+      <%= link_to "✅ 配送報告を作成", new_delivery_assignment_report_path(@delivery_assignment),
+          class: "block w-full text-center bg-green-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-green-700 transition-colors" %>
 
     <% when 'completed' %>
       <div class="text-center py-8">
