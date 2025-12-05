@@ -80,6 +80,17 @@ crumb :admin_driver do |driver|
   parent :admin_drivers
 end
 
+# 配送担当者
+crumb :admin_delivery_users do
+  link "配送担当者", admin_delivery_users_path
+  parent :root
+end
+
+crumb :admin_delivery_user do |delivery_user|
+  link "ID:#{delivery_user.id} #{delivery_user.name}", admin_delivery_user_path(delivery_user)
+  parent :admin_delivery_users
+end
+
 # メニュー
 crumb :admin_menus do
   link "メニュー", admin_menus_path

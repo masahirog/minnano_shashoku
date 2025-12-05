@@ -131,41 +131,58 @@
 
 ---
 
-### Day 5-7: 管理画面（配送担当者管理）
+### Day 5-7: 管理画面（配送担当者管理） ✅
 
 #### Administrate設定
-- [ ] DeliveryUserDashboard作成
+- [x] DeliveryUserDashboard作成
   - 表示項目: email, name, phone, role, delivery_company, is_active, last_sign_in_at
   - 検索項目: name, email
-  - フィルター: delivery_company, role, is_active
-- [ ] Admin::DeliveryUsersController作成
+  - フィルター: delivery_company, role, is_active (active, inactive, drivers, admins)
+- [x] Admin::DeliveryUsersController作成
   - index, new, create, edit, update, destroy
+  - パスワード処理カスタマイズ（空の場合は更新しない）
+  - 削除前確認（配送割当がある場合は削除不可）
+- [x] DeliveryAssignmentDashboard作成（関連表示用）
+- [x] DeliveryReportDashboard作成（関連表示用）
 
 #### 管理画面機能
-- [ ] 配送担当者一覧表示
-  - ページネーション
-  - 検索機能
-  - フィルター機能
-- [ ] 配送担当者新規作成
-  - フォーム入力
+- [x] 配送担当者一覧表示
+  - ページネーション（Administrate標準）
+  - 検索機能（Administrate標準）
+  - フィルター機能（active, inactive, drivers, admins）
+- [x] 配送担当者新規作成
+  - フォーム入力（email, password, name, phone, role, delivery_company, is_active）
   - バリデーションエラー表示
-- [ ] 配送担当者編集
+- [x] 配送担当者編集
   - 既存データ表示
   - 更新機能
-- [ ] 配送担当者削除
-  - 確認ダイアログ
+  - パスワード変更機能（任意）
+- [x] 配送担当者削除
+  - 確認ダイアログ（Administrate標準）
   - 削除実行
-- [ ] ステータス管理
-  - 有効/無効切替
+  - 配送割当がある場合は削除不可（エラーメッセージ表示）
+- [x] ステータス管理
+  - 有効/無効切替（is_activeフィールド）
+
+#### パンくずリスト設定
+- [x] config/breadcrumbs.rb に配送担当者設定追加
+
+#### Factory作成
+- [x] spec/factories/delivery_assignments.rb
+- [x] spec/factories/delivery_reports.rb
 
 #### テスト作成
-- [ ] spec/requests/admin/delivery_users_spec.rb
-  - CRUD操作テスト
+- [x] spec/requests/admin/delivery_users_spec.rb
+  - CRUD操作テスト（21 examples, 0 failures）
+  - パスワード変更テスト
+  - 配送割当がある場合の削除制限テスト
 
 **確認項目:**
-- [ ] 管理者が配送担当者を管理できる
-- [ ] 配送会社との紐付けが正しく動作する
-- [ ] バリデーションエラーが適切に表示される
+- [x] 管理者が配送担当者を管理できる（テスト通過）
+- [x] 配送会社との紐付けが正しく動作する（テスト通過）
+- [x] バリデーションエラーが適切に表示される（テスト通過）
+- [x] パスワード変更が正しく動作する（テスト通過）
+- [x] 配送割当がある場合の削除制限が動作する（テスト通過）
 
 ---
 

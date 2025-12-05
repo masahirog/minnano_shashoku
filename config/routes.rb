@@ -5,6 +5,7 @@ Rails.application.routes.draw do
       resources :delivery_companies
       resources :delivery_sheet_items
       resources :drivers
+      resources :delivery_users
       resources :menus
       resources :orders do
         collection do
