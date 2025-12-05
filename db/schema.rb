@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_12_04_041119) do
+ActiveRecord::Schema[7.1].define(version: 2025_12_05_005417) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -121,6 +121,25 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_04_041119) do
     t.index ["staff_id"], name: "index_companies_on_staff_id"
   end
 
+  create_table "delivery_assignments", force: :cascade do |t|
+    t.bigint "order_id", null: false
+    t.bigint "delivery_user_id", null: false
+    t.bigint "delivery_company_id", null: false
+    t.date "scheduled_date", null: false
+    t.time "scheduled_time"
+    t.integer "sequence_number"
+    t.string "status", default: "pending", null: false
+    t.datetime "assigned_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["delivery_company_id"], name: "index_delivery_assignments_on_delivery_company_id"
+    t.index ["delivery_user_id", "scheduled_date", "status"], name: "index_delivery_assignments_on_user_date_status"
+    t.index ["delivery_user_id"], name: "index_delivery_assignments_on_delivery_user_id"
+    t.index ["order_id"], name: "index_delivery_assignments_on_order_id", unique: true
+    t.index ["scheduled_date"], name: "index_delivery_assignments_on_scheduled_date"
+    t.index ["status"], name: "index_delivery_assignments_on_status"
+  end
+
   create_table "delivery_companies", force: :cascade do |t|
     t.string "name", null: false
     t.string "contact_person"
@@ -129,6 +148,45 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_04_041119) do
     t.boolean "is_active", default: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "api_enabled", default: false, null: false
+    t.string "api_key"
+    t.json "service_area"
+    t.index ["api_key"], name: "index_delivery_companies_on_api_key", unique: true
+  end
+
+  create_table "delivery_reports", force: :cascade do |t|
+    t.bigint "delivery_assignment_id", null: false
+    t.bigint "delivery_user_id", null: false
+    t.string "report_type", default: "completed", null: false
+    t.datetime "started_at"
+    t.datetime "completed_at"
+    t.decimal "latitude", precision: 10, scale: 7
+    t.decimal "longitude", precision: 10, scale: 7
+    t.text "notes"
+    t.string "issue_type"
+    t.json "photos"
+    t.text "signature_data"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["completed_at"], name: "index_delivery_reports_on_completed_at"
+    t.index ["delivery_assignment_id"], name: "index_delivery_reports_on_delivery_assignment_id", unique: true
+    t.index ["delivery_user_id"], name: "index_delivery_reports_on_delivery_user_id"
+    t.index ["report_type"], name: "index_delivery_reports_on_report_type"
+  end
+
+  create_table "delivery_routes", force: :cascade do |t|
+    t.bigint "delivery_assignment_id", null: false
+    t.bigint "delivery_user_id", null: false
+    t.datetime "recorded_at", null: false
+    t.decimal "latitude", precision: 10, scale: 7, null: false
+    t.decimal "longitude", precision: 10, scale: 7, null: false
+    t.decimal "accuracy", precision: 5, scale: 2
+    t.decimal "speed", precision: 5, scale: 2
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["delivery_assignment_id"], name: "index_delivery_routes_on_delivery_assignment_id"
+    t.index ["delivery_user_id"], name: "index_delivery_routes_on_delivery_user_id"
+    t.index ["recorded_at"], name: "index_delivery_routes_on_recorded_at"
   end
 
   create_table "delivery_sheet_items", force: :cascade do |t|
@@ -153,6 +211,30 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_04_041119) do
     t.index ["delivery_date", "sequence"], name: "index_delivery_sheet_items_on_delivery_date_and_sequence"
     t.index ["driver_id"], name: "index_delivery_sheet_items_on_driver_id"
     t.index ["order_id"], name: "index_delivery_sheet_items_on_order_id"
+  end
+
+  create_table "delivery_users", force: :cascade do |t|
+    t.string "email", null: false
+    t.string "encrypted_password", default: "", null: false
+    t.string "name", null: false
+    t.string "phone"
+    t.string "role", default: "driver", null: false
+    t.bigint "delivery_company_id", null: false
+    t.boolean "is_active", default: true, null: false
+    t.datetime "last_sign_in_at"
+    t.integer "sign_in_count", default: 0, null: false
+    t.datetime "current_sign_in_at"
+    t.string "current_sign_in_ip"
+    t.string "last_sign_in_ip"
+    t.string "reset_password_token"
+    t.datetime "reset_password_sent_at"
+    t.datetime "remember_created_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["delivery_company_id"], name: "index_delivery_users_on_delivery_company_id"
+    t.index ["email"], name: "index_delivery_users_on_email", unique: true
+    t.index ["is_active"], name: "index_delivery_users_on_is_active"
+    t.index ["reset_password_token"], name: "index_delivery_users_on_reset_password_token", unique: true
   end
 
   create_table "drivers", force: :cascade do |t|
@@ -242,6 +324,10 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_04_041119) do
     t.time "warehouse_pickup_time"
     t.string "return_location"
     t.text "equipment_notes"
+    t.text "delivery_notes"
+    t.string "recipient_name"
+    t.string "recipient_phone"
+    t.text "delivery_address"
     t.index ["company_id"], name: "index_orders_on_company_id"
     t.index ["delivery_company_id"], name: "index_orders_on_delivery_company_id"
     t.index ["is_trial"], name: "index_orders_on_is_trial"
@@ -276,6 +362,21 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_04_041119) do
     t.index ["invoice_id"], name: "index_payments_on_invoice_id"
     t.index ["payment_date"], name: "index_payments_on_payment_date"
     t.index ["payment_method"], name: "index_payments_on_payment_method"
+  end
+
+  create_table "push_subscriptions", force: :cascade do |t|
+    t.string "subscribable_type", null: false
+    t.bigint "subscribable_id", null: false
+    t.text "endpoint", null: false
+    t.string "p256dh_key", null: false
+    t.string "auth_key", null: false
+    t.text "user_agent"
+    t.boolean "is_active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["endpoint"], name: "index_push_subscriptions_on_endpoint", unique: true
+    t.index ["is_active"], name: "index_push_subscriptions_on_is_active"
+    t.index ["subscribable_type", "subscribable_id"], name: "index_push_subscriptions_on_subscribable"
   end
 
   create_table "recurring_orders", force: :cascade do |t|
@@ -404,8 +505,16 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_04_041119) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "companies", "staff"
+  add_foreign_key "delivery_assignments", "delivery_companies"
+  add_foreign_key "delivery_assignments", "delivery_users"
+  add_foreign_key "delivery_assignments", "orders"
+  add_foreign_key "delivery_reports", "delivery_assignments"
+  add_foreign_key "delivery_reports", "delivery_users"
+  add_foreign_key "delivery_routes", "delivery_assignments"
+  add_foreign_key "delivery_routes", "delivery_users"
   add_foreign_key "delivery_sheet_items", "drivers"
   add_foreign_key "delivery_sheet_items", "orders"
+  add_foreign_key "delivery_users", "delivery_companies"
   add_foreign_key "drivers", "delivery_companies"
   add_foreign_key "invoice_items", "invoices"
   add_foreign_key "invoice_items", "orders"

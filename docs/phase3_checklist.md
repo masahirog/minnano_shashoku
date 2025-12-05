@@ -10,7 +10,7 @@
 
 | Week | 内容 | ステータス |
 |------|------|-----------|
-| Week 1-2 | 基盤構築 | 🔲 未着手 |
+| Week 1-2 | 基盤構築 | 🔄 進行中 |
 | Week 3-4 | 配送予定管理 | 🔲 未着手 |
 | Week 5-6 | 配送報告機能 | 🔲 未着手 |
 | Week 7 | モバイル対応・PWA | 🔲 未着手 |
@@ -20,54 +20,54 @@
 
 ## Week 1-2: 基盤構築
 
-### Day 1-2: データベース設計・マイグレーション
+### Day 1-2: データベース設計・マイグレーション ✅
 
 #### マイグレーション作成
-- [ ] delivery_users テーブル作成
+- [x] delivery_users テーブル作成
   - email, encrypted_password, name, phone, role
   - delivery_company_id（外部キー）
   - is_active, last_sign_in_at
-- [ ] delivery_assignments テーブル作成
+- [x] delivery_assignments テーブル作成
   - order_id, delivery_user_id, delivery_company_id（外部キー）
   - scheduled_date, scheduled_time, sequence_number
   - status (pending/preparing/in_transit/completed/failed)
   - assigned_at
-- [ ] delivery_reports テーブル作成
+- [x] delivery_reports テーブル作成
   - delivery_assignment_id, delivery_user_id（外部キー）
   - report_type (completed/failed/issue)
   - started_at, completed_at, latitude, longitude
   - notes, issue_type, photos (json), signature_data
-- [ ] delivery_routes テーブル作成
+- [x] delivery_routes テーブル作成
   - delivery_assignment_id, delivery_user_id（外部キー）
   - recorded_at, latitude, longitude, accuracy, speed
-- [ ] push_subscriptions テーブル作成
+- [x] push_subscriptions テーブル作成
   - subscribable_type, subscribable_id（ポリモーフィック）
   - endpoint, p256dh_key, auth_key
   - user_agent, is_active
 
 #### 既存テーブル変更
-- [ ] orders テーブルにカラム追加
+- [x] orders テーブルにカラム追加
   - delivery_notes (text)
   - recipient_name (string)
   - recipient_phone (string)
   - delivery_address (text)
-- [ ] delivery_companies テーブルにカラム追加
+- [x] delivery_companies テーブルにカラム追加
   - api_enabled (boolean, default: false)
   - api_key (string)
   - service_area (json)
 
 #### インデックス追加
-- [ ] delivery_users: email (UNIQUE), delivery_company_id, is_active
-- [ ] delivery_assignments: order_id (UNIQUE), delivery_user_id, delivery_company_id, scheduled_date, status
-- [ ] delivery_assignments: 複合インデックス (delivery_user_id, scheduled_date, status)
-- [ ] delivery_reports: delivery_assignment_id, delivery_user_id, report_type, completed_at
-- [ ] delivery_routes: delivery_assignment_id, delivery_user_id, recorded_at
-- [ ] push_subscriptions: (subscribable_type, subscribable_id), endpoint (UNIQUE), is_active
+- [x] delivery_users: email (UNIQUE), delivery_company_id, is_active
+- [x] delivery_assignments: order_id (UNIQUE), delivery_user_id, delivery_company_id, scheduled_date, status
+- [x] delivery_assignments: 複合インデックス (delivery_user_id, scheduled_date, status)
+- [x] delivery_reports: delivery_assignment_id, delivery_user_id, report_type, completed_at
+- [x] delivery_routes: delivery_assignment_id, delivery_user_id, recorded_at
+- [x] push_subscriptions: (subscribable_type, subscribable_id), endpoint (UNIQUE), is_active
 
 **確認項目:**
-- [ ] マイグレーションがエラーなく実行できる
-- [ ] ロールバックが正常に動作する
-- [ ] インデックスが適切に作成されている
+- [x] マイグレーションがエラーなく実行できる
+- [x] ロールバックが正常に動作する
+- [x] インデックスが適切に作成されている
 
 ---
 
