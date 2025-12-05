@@ -7,6 +7,7 @@ class Order < ApplicationRecord
   belongs_to :recurring_order, optional: true
   has_many :delivery_sheet_items
   has_many :invoice_items
+  has_one :delivery_assignment, dependent: :destroy
 
   validates :order_type, presence: true
   validates :scheduled_date, presence: true

@@ -71,52 +71,63 @@
 
 ---
 
-### Day 3-4: 配送担当者認証機能
+### Day 3-4: 配送担当者認証機能 ✅
 
 #### DeliveryUserモデル作成
-- [ ] Deviseセットアップ（DeliveryUser用）
+- [x] Deviseセットアップ（DeliveryUser用）
   - database_authenticatable, recoverable, rememberable, trackable
-- [ ] バリデーション追加
+- [x] バリデーション追加
   - email: presence, uniqueness, email format
   - name: presence
   - role: inclusion in ['admin', 'driver']
   - delivery_company: presence
-- [ ] アソシエーション追加
+- [x] アソシエーション追加
   - belongs_to :delivery_company
   - has_many :delivery_assignments
   - has_many :delivery_reports
-- [ ] スコープ追加
+  - has_many :delivery_routes
+  - has_many :push_subscriptions
+- [x] スコープ追加
   - active: where(is_active: true)
   - drivers: where(role: 'driver')
   - admins: where(role: 'admin')
 
 #### 配送担当者認証機能
-- [ ] ログイン画面 (/delivery/login)
+- [x] ログイン画面 (/delivery/login)
   - メールアドレス入力
   - パスワード入力
   - ログインボタン
-- [ ] パスワードリセット機能
+- [x] パスワードリセット機能
   - パスワードリセット依頼画面
   - リセットメール送信
   - 新パスワード設定画面
-- [ ] セッション管理
+- [x] セッション管理
   - ログイン状態の維持
   - ログアウト機能
   - 認証チェック（before_action）
+- [x] ダッシュボード画面作成
+
+#### 関連モデル作成
+- [x] DeliveryAssignmentモデル作成（バリデーション、アソシエーション、スコープ）
+- [x] DeliveryReportモデル作成（バリデーション、アソシエーション、スコープ）
+- [x] DeliveryRouteモデル作成（バリデーション、アソシエーション、スコープ）
+- [x] PushSubscriptionモデル作成（バリデーション、アソシエーション、スコープ）
 
 #### テスト作成
-- [ ] spec/models/delivery_user_spec.rb
+- [x] spec/models/delivery_user_spec.rb
   - バリデーションテスト
   - アソシエーションテスト
   - スコープテスト
-- [ ] spec/requests/delivery/sessions_spec.rb
+- [x] spec/requests/delivery/sessions_spec.rb
   - ログインAPIテスト
   - ログアウトAPIテスト
+- [x] spec/factories/delivery_users.rb
 
 **確認項目:**
-- [ ] 配送担当者がログインできる
-- [ ] パスワードリセットが正常に動作する
-- [ ] 未認証時に適切にリダイレクトされる
+- [x] DeliveryUserモデルテストが全て通る（21 examples, 0 failures）
+- [x] 配送担当者がログインできる（ビュー実装完了）
+- [x] パスワードリセット機能実装（ビュー実装完了）
+- [x] 未認証時に適切にリダイレクトされる（コントローラー実装完了）
 
 ---
 

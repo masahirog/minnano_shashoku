@@ -7,7 +7,19 @@
       "Bash(git commit:*)",
       "Bash(RAILS_ENV=test bin/rails generate:*)",
       "Bash(bin/rails db:migrate:*)",
-      "Bash(bin/rails runner:*)"
+      "Bash(bin/rails runner:*)",
+      "Bash(bin/rails invoices:check_overdue:*)",
+      "Bash(RAILS_ENV=development bin/rails runner:*)",
+      "Bash(RAILS_ENV=development bin/rails:*)",
+      "Bash(RAILS_ENV=test bundle exec rspec:*)",
+      "Bash(bin/rails performance:generate_test_data:*)",
+      "Bash(awk:*)",
+      "Bash(RAILS_ENV=test bin/rails db:migrate:status:*)",
+      "Bash(bin/rails db:migrate:status:*)",
+      "Bash(git reset:*)",
+      "Bash(RAILS_ENV=test bin/rails db:migrate:*)",
+      "Bash(git rm:*)",
+      "Bash(RAILS_ENV=test bin/rails:*)"
     ],
     "deny": [],
     "ask": []

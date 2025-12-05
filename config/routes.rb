@@ -64,6 +64,25 @@ Rails.application.routes.draw do
     put 'admin_users' => 'devise/registrations#update'
     delete 'admin_users' => 'devise/registrations#destroy'
   end
+
+  # Delivery users authentication
+  devise_for :delivery_users, path: 'delivery', skip: [:registrations], controllers: {
+    sessions: 'delivery/sessions',
+    passwords: 'delivery/passwords'
+  }
+
+  # Delivery namespace
+  namespace :delivery do
+    root to: 'dashboard#index'
+    resources :assignments, only: [:index, :show] do
+      member do
+        patch :update_status
+      end
+    end
+    resources :reports, only: [:new, :create, :show]
+    resources :histories, only: [:index]
+    resource :profile, only: [:show, :edit, :update]
+  end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
