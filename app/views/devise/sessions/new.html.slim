@@ -1,0 +1,26 @@
+.login-container
+  .card
+    .card-body
+      .text-center.mb-4
+        h2.fw-bold みんなの社食
+        p.text-muted 管理画面ログイン
+
+      = form_for(resource, as: resource_name, url: session_path(resource_name)) do |f|
+        .mb-3
+          = f.label :email, "メールアドレス", class: "form-label"
+          = f.email_field :email, autofocus: true, autocomplete: "email", class: "form-control", placeholder: "example@example.com"
+
+        .mb-3
+          = f.label :password, "パスワード", class: "form-label"
+          = f.password_field :password, autocomplete: "current-password", class: "form-control", placeholder: "パスワードを入力"
+
+        - if devise_mapping.rememberable?
+          .mb-3.form-check
+            = f.check_box :remember_me, class: "form-check-input"
+            = f.label :remember_me, "ログイン状態を保持", class: "form-check-label"
+
+        .d-grid
+          = f.submit "ログイン", class: "btn btn-primary btn-lg"
+
+      .mt-3.text-center
+        = render "devise/shared/links"

@@ -1,0 +1,55 @@
+- content_for(:title) do
+  = display_resource_name(:supply)
+
+- breadcrumb :admin_supplies
+
+/ Content Header
+.content-header
+  .container-fluid
+    .row.mb-2
+      .col-sm-6
+        h1.m-0 備品管理
+      .col-sm-6
+        ol.breadcrumb.float-sm-right
+          = breadcrumbs separator: " / ", autoroot: false
+
+/ Main content
+.container-fluid
+  .row
+    .col-12
+      .card
+        .card-header
+          h3.card-title 備品一覧
+          .card-tools
+            = link_to "拠点別在庫一覧", by_location_admin_supplies_path, class: "btn btn-success btn-sm mr-1"
+            = link_to "備品移動登録", new_admin_bulk_supply_movement_path, class: "btn btn-primary btn-sm mr-1"
+            = link_to t("administrate.actions.new_resource"), new_admin_supply_path, class: "btn btn-info btn-sm"
+
+        .card-body.p-0
+          table.table.table-striped.table-hover
+            thead
+              tr
+                th 備品名
+                th SKU
+                th カテゴリ
+                th.text-right 合計在庫数
+                th.text-center 拠点数
+                th.text-center 操作
+            tbody
+              - Supply.includes(:supply_stocks).order(:name).each do |supply|
+                tr
+                  td = supply.name
+                  td = supply.sku
+                  td
+                    span.badge.badge-info = supply.category
+                  td.text-right
+                    strong = supply.supply_stocks.sum(:quantity)
+                    = " "
+                    = supply.unit
+                  td.text-center
+                    span.badge.badge-secondary
+                      = supply.supply_stocks.count
+                      |  拠点
+                  td.text-center
+                    = link_to "拠点別詳細", stocks_by_location_admin_supply_path(supply), class: "btn btn-sm btn-outline-primary mr-1"
+                    = link_to "編集", edit_admin_supply_path(supply), class: "btn btn-sm btn-outline-secondary"

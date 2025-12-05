@@ -1,0 +1,19 @@
+.login-container
+  .card
+    .card-body
+      .text-center.mb-4
+        h2.fw-bold パスワード再設定
+        p.text-muted 登録したメールアドレスを入力してください
+
+      = form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f|
+        = render "devise/shared/error_messages", resource: resource
+
+        .mb-3
+          = f.label :email, "メールアドレス", class: "form-label"
+          = f.email_field :email, autofocus: true, autocomplete: "email", class: "form-control", placeholder: "example@example.com"
+
+        .d-grid
+          = f.submit "パスワード再設定メールを送信", class: "btn btn-primary btn-lg"
+
+      .mt-3.text-center
+        = render "devise/shared/links"

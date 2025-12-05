@@ -1,0 +1,102 @@
+/ Content Header (Page header)
+section.content-header
+  .container-fluid
+    .row.mb-2
+      .col-sm-6
+        h1 配送割当作成
+      .col-sm-6
+        ol.breadcrumb.float-sm-right
+          = breadcrumbs separator: ' / '
+
+/ Main content
+section.content
+  .container-fluid
+    .row
+      .col-md-8
+        .card
+          .card-header
+            h3.card-title 配送割当情報入力
+          = form_with model: @delivery_assignment, url: admin_delivery_assignments_path, local: true do |f|
+            .card-body
+              - if flash[:alert]
+                .alert.alert-danger.alert-dismissible
+                  button.close type="button" data-dismiss="alert" aria-hidden="true" &times;
+                  i.icon.fas.fa-ban
+                  = flash[:alert]
+
+              .form-group
+                = f.label :order_id, '案件', class: 'required'
+                = f.select :order_id, options_from_collection_for_select(@orders, :id, ->(o) { "Order ##{o.id} - #{o.company&.name} - #{o.scheduled_date.strftime('%Y/%m/%d')} - #{o.menu&.name} (#{o.default_meal_count}食)" }), { include_blank: '案件を選択してください' }, class: 'form-control select2', required: true
+                small.form-text.text-muted
+                  | 未割当の案件のみ表示されます。
+
+              .form-group
+                = f.label :delivery_user_id, '配送担当者', class: 'required'
+                = f.select :delivery_user_id, options_from_collection_for_select(@delivery_users, :id, ->(du) { "#{du.delivery_company&.name} - #{du.name}" }), { include_blank: '配送担当者を選択してください' }, class: 'form-control select2', required: true
+                small.form-text.text-muted
+                  | 有効な配送担当者のみ表示されます。
+
+              .row
+                .col-md-6
+                  .form-group
+                    = f.label :scheduled_time, '配送時刻（任意）'
+                    = f.time_field :scheduled_time, class: 'form-control'
+                    small.form-text.text-muted
+                      | 指定した時刻に配送します（任意）
+                .col-md-6
+                  .form-group
+                    = f.label :sequence_number, '順序番号（任意）'
+                    = f.number_field :sequence_number, class: 'form-control', min: 1
+                    small.form-text.text-muted
+                      | 未入力の場合は自動採番されます
+
+              .alert.alert-info
+                i.fas.fa-info-circle.mr-2
+                strong 注意事項
+                ul.mb-0.mt-2
+                  li 案件の配送会社と配送担当者の所属会社が一致している必要があります
+                  li 既に配送割当されている案件には割り当てできません
+                  li 無効な配送担当者には割り当てできません
+            .card-footer
+              = f.submit '配送割当を作成', class: 'btn btn-success'
+              = link_to 'キャンセル', admin_delivery_assignments_path, class: 'btn btn-default ml-2'
+
+      .col-md-4
+        .card.card-secondary
+          .card-header
+            h3.card-title ヘルプ
+          .card-body
+            h6 配送割当とは
+            p.text-sm
+              | 案件を配送担当者に割り当てる機能です。割り当てられた案件は配送担当者の配送予定一覧に表示されます。
+
+            h6 順序番号について
+            p.text-sm
+              | 配送の順序を指定できます。未入力の場合は、その配送担当者の当日の最後の順序に自動で追加されます。
+
+            h6 配送時刻について
+            p.text-sm
+              | 配送予定時刻を指定できます（任意）。案件の回収時刻や倉庫集荷時刻とは別に管理されます。
+
+            h6 一括割当について
+            p.text-sm
+              | 複数の案件を一度に同じ配送担当者に割り当てたい場合は、一覧画面から一括割当機能をご利用ください。
+
+        .card.card-warning
+          .card-header
+            h3.card-title 制約事項
+          .card-body
+            ul.mb-0.text-sm
+              li 案件に配送会社が設定されている必要があります
+              li 配送担当者の所属会社と案件の配送会社が一致している必要があります
+              li 配送担当者が有効（is_active = true）である必要があります
+              li 既に配送割当されている案件には重複して割り当てできません
+
+javascript:
+  $(document).ready(function() {
+    // Select2の初期化
+    $('.select2').select2({
+      theme: 'bootstrap4',
+      width: '100%'
+    });
+  });

@@ -1,0 +1,381 @@
+/ Content Header (Page header)
+section.content-header
+  .container-fluid
+    .row.mb-2
+      .col-sm-6
+        h1 案件カレンダー
+      .col-sm-6
+        ol.breadcrumb.float-sm-right
+          li.breadcrumb-item
+            = link_to 'ホーム', admin_root_path
+          li.breadcrumb-item
+            = link_to '案件', admin_orders_path
+          li.breadcrumb-item.active カレンダー
+
+/ Main content
+section.content.calendar-content
+  .container-fluid
+    / Filter Card
+    .card.card-secondary.collapsed-card
+      .card-header
+        h3.card-title
+          i.fas.fa-filter.mr-2
+          | フィルター
+        .card-tools
+          button.btn.btn-tool type="button" data-card-widget="collapse"
+            i.fas.fa-plus
+      .card-body style="display: none;"
+        = form_with url: calendar_admin_orders_path, method: :get, local: true, class: "form-horizontal" do |f|
+          .row
+            .col-md-4
+              .form-group
+                = f.label :company_id, '企業', class: 'control-label'
+                = f.select :company_id, options_from_collection_for_select(Company.order(:name), :id, :name, params[:company_id]), { include_blank: '全て' }, class: 'form-control'
+            .col-md-4
+              .form-group
+                = f.label :restaurant_id, '飲食店', class: 'control-label'
+                = f.select :restaurant_id, options_from_collection_for_select(Restaurant.order(:name), :id, :name, params[:restaurant_id]), { include_blank: '全て' }, class: 'form-control'
+            .col-md-4
+              .form-group
+                = f.label :status, 'ステータス', class: 'control-label'
+                = f.select :status, options_for_select([['全て', ''], ['保留', 'pending'], ['確定', 'confirmed'], ['完了', 'completed'], ['キャンセル', 'cancelled']], params[:status]), {}, class: 'form-control'
+          .row
+            .col-md-12
+              = f.hidden_field :view, value: params[:view]
+              = f.hidden_field :start_date, value: params[:start_date]
+              = f.submit 'フィルター適用', class: 'btn btn-primary'
+              = link_to 'リセット', calendar_admin_orders_path(view: params[:view], start_date: params[:start_date]), class: 'btn btn-default ml-2'
+
+    / Calendar Card
+    .card
+      .card-header
+        .card-tools
+          - if params[:view] == 'week'
+            = link_to '月間表示に切替', calendar_admin_orders_path(start_date: params[:start_date], view: 'month', company_id: params[:company_id], restaurant_id: params[:restaurant_id], status: params[:status]), class: 'btn btn-sm btn-secondary'
+          - else
+            = link_to '週間表示に切替', calendar_admin_orders_path(start_date: params[:start_date], view: 'week', company_id: params[:company_id], restaurant_id: params[:restaurant_id], status: params[:status]), class: 'btn btn-sm btn-secondary'
+          = link_to '配送シート', delivery_sheets_admin_orders_path, class: 'btn btn-sm btn-success ml-2'
+          = link_to '一覧に戻る', admin_orders_path, class: 'btn btn-sm btn-default ml-2'
+      .card-body.p-0
+        .calendar-container.p-3
+          - if params[:view] == 'week'
+            = week_calendar(events: @orders, attribute: :scheduled_date, end_attribute: :scheduled_date) do |date, orders|
+              .calendar-day-header
+                = date.strftime('%m/%d (%a)')
+              .calendar-events
+                - orders.each do |order|
+                  - has_duplicate = order.duplicate_menu_in_week?
+                  .calendar-event data-order-id=order.id style="background-color: #{order.company&.color || '#2196f3'}20; border-left-color: #{order.company&.color || '#2196f3'};" data-toggle="tooltip" data-html="true" title="<strong>#{order.company&.name}</strong><br>#{order.restaurant&.name}<br>#{'メニュー: ' + order.menu.name + '<br>' if order.menu}食数: #{order.default_meal_count}食<br>ステータス: #{order.status}#{has_duplicate ? '<br><span class=\'text-warning\'><strong>注意: 同じ週に同じメニューが重複しています</strong></span>' : ''}"
+                    = link_to admin_order_path(order), class: 'calendar-event-link' do
+                      .event-time
+                        = order.collection_time&.strftime('%H:%M')
+                        - if has_duplicate
+                          i.fas.fa-exclamation-triangle.text-warning.ml-1 title="メニュー重複"
+                      .event-company
+                        = order.company&.name
+                      .event-restaurant
+                        = order.restaurant&.name
+                      - if order.menu
+                        .event-menu.text-muted.small
+                          = order.menu.name
+          - else
+            = month_calendar(events: @orders, attribute: :scheduled_date, end_attribute: :scheduled_date) do |date, orders|
+              .calendar-day-header
+                = date.day
+              .calendar-events
+                - orders.each do |order|
+                  - has_duplicate = order.duplicate_menu_in_week?
+                  .calendar-event.calendar-event-small data-order-id=order.id style="background-color: #{order.company&.color || '#2196f3'}20; border-left-color: #{order.company&.color || '#2196f3'};" data-toggle="tooltip" data-html="true" title="<strong>#{order.company&.name}</strong><br>#{order.restaurant&.name}<br>#{'メニュー: ' + order.menu.name + '<br>' if order.menu}食数: #{order.default_meal_count}食<br>ステータス: #{order.status}#{has_duplicate ? '<br><span class=\'text-warning\'><strong>注意: 同じ週に同じメニューが重複しています</strong></span>' : ''}"
+                    = link_to admin_order_path(order), class: 'calendar-event-link' do
+                      .event-time.small
+                        = order.collection_time&.strftime('%H:%M')
+                        - if has_duplicate
+                          i.fas.fa-exclamation-triangle.text-warning.ml-1 title="メニュー重複"
+                      .event-company.small
+                        = truncate(order.company&.name, length: 15)
+
+css:
+  /* コンテンツエリアの余白削減 - カレンダーページ専用 */
+  body .content-wrapper {
+    padding: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .content-wrapper .container-fluid {
+    max-width: none !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100% !important;
+  }
+
+  .content {
+    padding: 0 !important;
+  }
+
+  .content-header {
+    padding: 10px !important;
+  }
+
+  .content-header .container-fluid {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  .calendar-content {
+    padding: 5px !important;
+  }
+
+  .calendar-content .container-fluid {
+    padding-left: 5px;
+    padding-right: 5px;
+    max-width: none !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+
+  .calendar-content .card {
+    margin-bottom: 10px;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .calendar-container {
+    min-height: 600px;
+    padding: 5px !important;
+  }
+
+  .simple-calendar {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  .simple-calendar table {
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  .simple-calendar .day {
+    height: 130px;
+    border: 1px solid #e8e8e8;
+    vertical-align: top;
+    padding: 8px;
+    background-color: #ffffff;
+    width: 14.28%; /* 7日分で均等 */
+    transition: background-color 0.2s ease;
+  }
+
+  .simple-calendar .day:hover {
+    background-color: #f8f9fa;
+  }
+
+  .simple-calendar .wday-0 {
+    background-color: #fff5f5;
+  }
+
+  .simple-calendar .wday-0 .calendar-day-header {
+    color: #e53e3e;
+    font-weight: 700;
+  }
+
+  .simple-calendar .wday-6 .calendar-day-header {
+    color: #2d3748;
+    font-weight: 700;
+  }
+
+  .simple-calendar .today {
+    background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
+    border: 2px solid #667eea;
+    box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+  }
+
+  .simple-calendar .prev-month,
+  .simple-calendar .next-month {
+    background-color: #fafafa;
+    opacity: 0.6;
+  }
+
+  .simple-calendar .prev-month .calendar-day-header,
+  .simple-calendar .next-month .calendar-day-header {
+    color: #999;
+  }
+
+  .calendar-day-header {
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 15px;
+    color: #2d3748;
+  }
+
+  .calendar-events {
+    max-height: 90px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e0 #f7fafc;
+  }
+
+  .calendar-events::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .calendar-events::-webkit-scrollbar-track {
+    background: #f7fafc;
+    border-radius: 3px;
+  }
+
+  .calendar-events::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 3px;
+  }
+
+  .calendar-events::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
+  }
+
+  .calendar-event {
+    background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
+    border-left: 4px solid #2196f3;
+    padding: 6px 8px;
+    margin-bottom: 4px;
+    border-radius: 6px;
+    font-size: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .calendar-event::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: inherit;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .calendar-event:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-left-width: 5px;
+  }
+
+  .calendar-event:hover::before {
+    opacity: 0.1;
+  }
+
+  .calendar-event-link {
+    color: inherit;
+    text-decoration: none;
+    display: block;
+  }
+
+  .calendar-event-link:hover {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .calendar-event-small {
+    font-size: 11px;
+    padding: 4px 6px;
+  }
+
+  .event-time {
+    font-weight: 700;
+    color: #2c5282;
+    font-size: 11px;
+    letter-spacing: 0.3px;
+  }
+
+  .event-company {
+    font-weight: 600;
+    color: #1a202c;
+    margin-top: 2px;
+  }
+
+  .event-restaurant {
+    color: #4a5568;
+    font-size: 11px;
+    margin-top: 1px;
+  }
+
+  .event-menu {
+    font-style: italic;
+    color: #718096;
+    font-size: 10px;
+  }
+
+  .simple-calendar .calendar-heading {
+    background: linear-gradient(135deg, #5fa3e6 0%, #4a90e2 100%);
+    color: #fff;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+
+  .simple-calendar .calendar-title {
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  .simple-calendar .calendar-nav {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+  }
+
+  .simple-calendar .calendar-nav-link {
+    color: #fff;
+    text-decoration: none;
+    opacity: 0.95;
+    transition: all 0.2s ease;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .simple-calendar .calendar-nav-link:hover {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .simple-calendar thead th {
+    background-color: #e8eaed;
+    color: #2d3748;
+    text-align: center;
+    padding: 12px 8px;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    border: 1px solid #d0d3d6;
+  }
+
+  /* メニュー重複警告アイコン */
+  .fa-exclamation-triangle.text-warning {
+    color: #f59e0b !important;
+    font-size: 12px;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+    animation: pulse-warning 2s infinite;
+  }
+
+  @keyframes pulse-warning {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.7;
+      transform: scale(1.1);
+    }
+  }

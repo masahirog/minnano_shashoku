@@ -1,0 +1,125 @@
+- content_for(:title) do
+  - if @location
+    = @location.name
+    |  の在庫一覧
+  - elsif @supply
+    = @supply.name
+    |  の拠点別在庫
+  - else
+    | 拠点別在庫一覧
+
+- if @location
+  - breadcrumb :admin_supply_stocks_by_location
+- elsif @supply
+  - breadcrumb :admin_supply_stocks_by_location_with_supply, @supply
+- else
+  - breadcrumb :admin_supply_stocks_by_location
+
+header.main-content__header style="display: flex; align-items: center;"
+  = breadcrumbs separator: " ＞ ".html_safe, autoroot: false, class: "breadcrumbs"
+
+  div style="margin-left: auto; display: flex; gap: 10px;"
+    = link_to "備品の移動", new_admin_bulk_supply_movement_path, class: "btn btn-primary btn-sm"
+
+    - if @location
+      = link_to "戻る", by_location_admin_supplies_path, class: "btn btn-secondary btn-sm"
+    - else
+      = link_to "戻る", admin_supply_stocks_path, class: "btn btn-secondary btn-sm"
+
+section.main-content__body.main-content__body--flush
+  - if @location
+    div style="padding: 20px; background-color: #f9f9f9; margin-bottom: 20px; border-radius: 4px;"
+      h2 style="margin: 0 0 10px 0; font-size: 18px;" = @location.name
+      p style="margin: 0; color: #666;"
+        | 拠点区分:
+        = " "
+        - if @location_type == 'OwnLocation'
+          | 自社拠点
+        - elsif @location_type == 'Company'
+          | 企業
+        - elsif @location_type == 'Restaurant'
+          | 飲食店
+        |  |
+        = " "
+        | 在庫品目数:
+        = " "
+        strong
+          = @stocks.size
+          |  品目
+  - elsif @supply
+    div style="padding: 20px; background-color: #f9f9f9; margin-bottom: 20px; border-radius: 4px;"
+      h2 style="margin: 0 0 10px 0; font-size: 18px;"
+        = @supply.name
+        |  (
+        = @supply.sku
+        | )
+      p style="margin: 0; color: #666;"
+        | カテゴリ:
+        = " "
+        = @supply.category
+        |  |
+        = " "
+        | 単位:
+        = " "
+        = @supply.unit
+        |  |
+        = " "
+        | 合計在庫:
+        = " "
+        strong
+          = @stocks.sum(:quantity)
+          = " "
+          = @supply.unit
+
+  table.table style="width: 100%; border-collapse: collapse;"
+    thead
+      tr style="background-color: #f5f5f5;"
+        - unless @supply || @location
+          th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;" 備品名
+        - if @supply && !@location
+          th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;" 拠点区分
+          th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;" 拠点名
+        - elsif !@supply && !@location
+          th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;" 拠点区分
+          th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;" 拠点名
+        - else
+          th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;" 備品名
+        th style="padding: 12px; text-align: right; border-bottom: 2px solid #ddd;" 在庫数
+        th style="padding: 12px; text-align: right; border-bottom: 2px solid #ddd;" 実地棚卸数
+        th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;" 最終更新
+        th style="padding: 12px; text-align: center; border-bottom: 2px solid #ddd;" 操作
+    tbody
+      - if @stocks.any?
+        - @stocks.each do |stock|
+          tr style="border-bottom: 1px solid #eee;"
+            - if @location
+              td style="padding: 12px;" = stock.supply.name
+            - else
+              - unless @supply
+                td style="padding: 12px;" = stock.supply.name
+              td style="padding: 12px;"
+                = stock.location_type_japanese
+              td style="padding: 12px;"
+                = stock.location_display_name
+            td style="padding: 12px; text-align: right; font-weight: bold;"
+              = stock.quantity
+              = " "
+              = stock.supply.unit
+            td style="padding: 12px; text-align: right;"
+              - if stock.physical_count
+                = stock.physical_count
+                = " "
+                = stock.supply.unit
+              - else
+                | -
+            td style="padding: 12px;"
+              - if stock.last_updated_at
+                = l(stock.last_updated_at, format: :long)
+              - else
+                | -
+            td style="padding: 12px; text-align: center;"
+              = link_to "詳細", admin_supply_stock_path(stock)
+      - else
+        tr
+          td colspan=(@location ? 5 : (@supply ? 6 : 7)) style="padding: 20px; text-align: center; color: #999;"
+            | 在庫データがありません

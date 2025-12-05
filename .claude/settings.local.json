@@ -19,7 +19,14 @@
       "Bash(git reset:*)",
       "Bash(RAILS_ENV=test bin/rails db:migrate:*)",
       "Bash(git rm:*)",
-      "Bash(RAILS_ENV=test bin/rails:*)"
+      "Bash(RAILS_ENV=test bin/rails:*)",
+      "Bash(cat:*)",
+      "Bash(for file in app/views/devise/mailer/*.html.erb app/views/admin_users/mailer/*.html.erb)",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(done)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(git log:*)"
     ],
     "deny": [],
     "ask": []

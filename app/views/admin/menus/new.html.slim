@@ -1,0 +1,20 @@
+- content_for(:title) do
+  | 新規メニュー作成
+
+- breadcrumb :admin_menus
+
+/ Content Header
+.content-header
+  .container-fluid
+    .row.mb-2
+      .col-sm-6
+        h1.m-0 新規メニュー作成
+      .col-sm-6
+        ol.breadcrumb.float-sm-right
+          = breadcrumbs separator: " / ", autoroot: false
+
+/ Main content
+.container-fluid
+  .row
+    .col-12
+      = render "form", page: page

@@ -1,0 +1,101 @@
+.container.mx-auto.px-4.py-6
+  .mb-6
+    h1.text-2xl.font-bold.text-gray-800 配送予定
+    p.text-gray-600.mt-1
+      | 全
+      = @assignments.count
+      |  件
+
+  / フィルターボタン
+  .bg-white.rounded-lg.shadow-md.p-4.mb-6
+    .flex.flex-wrap.gap-2.mb-4
+      = link_to "今日", delivery_assignments_path(filter: 'today'), class: "px-4 py-2 rounded-lg text-sm font-semibold transition-colors #{params[:filter] == 'today' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}"
+      = link_to "今週", delivery_assignments_path(filter: 'week'), class: "px-4 py-2 rounded-lg text-sm font-semibold transition-colors #{params[:filter] == 'week' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}"
+      = link_to "すべて", delivery_assignments_path, class: "px-4 py-2 rounded-lg text-sm font-semibold transition-colors #{params[:filter].blank? && params[:status].blank? && params[:date].blank? ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}"
+
+    / ステータスフィルター
+    .border-t.pt-4
+      p.text-xs.text-gray-600.mb-2 ステータス
+      .flex.flex-wrap.gap-2
+        = link_to "すべて", delivery_assignments_path(filter: params[:filter]), class: "px-3 py-1 rounded-full text-xs font-semibold transition-colors #{params[:status].blank? ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}"
+        = link_to "待機中", delivery_assignments_path(filter: params[:filter], status: 'pending'), class: "px-3 py-1 rounded-full text-xs font-semibold transition-colors #{params[:status] == 'pending' ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}"
+        = link_to "準備中", delivery_assignments_path(filter: params[:filter], status: 'preparing'), class: "px-3 py-1 rounded-full text-xs font-semibold transition-colors #{params[:status] == 'preparing' ? 'bg-yellow-600 text-white' : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'}"
+        = link_to "配送中", delivery_assignments_path(filter: params[:filter], status: 'in_transit'), class: "px-3 py-1 rounded-full text-xs font-semibold transition-colors #{params[:status] == 'in_transit' ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-800 hover:bg-blue-200'}"
+        = link_to "完了", delivery_assignments_path(filter: params[:filter], status: 'completed'), class: "px-3 py-1 rounded-full text-xs font-semibold transition-colors #{params[:status] == 'completed' ? 'bg-green-600 text-white' : 'bg-green-100 text-green-800 hover:bg-green-200'}"
+        = link_to "失敗", delivery_assignments_path(filter: params[:filter], status: 'failed'), class: "px-3 py-1 rounded-full text-xs font-semibold transition-colors #{params[:status] == 'failed' ? 'bg-red-600 text-white' : 'bg-red-100 text-red-800 hover:bg-red-200'}"
+
+  / 配送リスト
+  - if @assignments.any?
+    .space-y-4
+      - @assignments.group_by { |a| a.scheduled_date }.each do |date, daily_assignments|
+        / 日付ヘッダー
+        .bg-gray-100.rounded-lg.p-3.sticky.top-16.z-10
+          h2.text-lg.font-bold.text-gray-800
+            = l(date, format: :long)
+            span.text-sm.font-normal.text-gray-600
+              | (
+              = daily_assignments.count
+              | 件)
+
+        / 配送カード
+        .space-y-3
+          - daily_assignments.each do |assignment|
+            .bg-white.rounded-lg.shadow-md.hover:shadow-lg.transition-shadow
+              = link_to delivery_assignment_path(assignment), class: "block p-4" do
+                .flex.justify-between.items-start.mb-3
+                  .flex-1
+                    .flex.items-center.gap-2.mb-1
+                      h3.font-bold.text-gray-900.text-lg = assignment.order.company.name
+                      span class="px-2 py-1 rounded-full text-xs font-semibold #{case assignment.status when 'pending' then 'bg-gray-100 text-gray-800' when 'preparing' then 'bg-yellow-100 text-yellow-800' when 'in_transit' then 'bg-blue-100 text-blue-800' when 'completed' then 'bg-green-100 text-green-800' when 'failed' then 'bg-red-100 text-red-800' end}"
+                        = case assignment.status when 'pending' then '待機中' when 'preparing' then '準備中' when 'in_transit' then '配送中' when 'completed' then '完了' when 'failed' then '失敗' end
+
+                    - if assignment.order.delivery_address.present?
+                      p.text-sm.text-gray-600.mb-2
+                        svg.w-4.h-4.inline.mr-1 fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                          path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                          path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                        = assignment.order.delivery_address
+
+                    .flex.items-center.flex-wrap.gap-3.text-sm.text-gray-600
+                      .flex.items-center
+                        svg.w-4.h-4.mr-1 fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                          path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        - if assignment.scheduled_time
+                          span.font-semibold = assignment.scheduled_time.strftime('%H:%M')
+                        - else
+                          span.text-gray-400 時刻未定
+
+                      .flex.items-center
+                        svg.w-4.h-4.mr-1 fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                          path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                        span
+                          = assignment.order.confirmed_meal_count || assignment.order.default_meal_count
+                          | 食
+
+                      - if assignment.order.restaurant.present?
+                        .flex.items-center
+                          svg.w-4.h-4.mr-1 fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                          span.text-xs = assignment.order.restaurant.name
+
+                    - if assignment.order.menu.present?
+                      p.text-xs.text-gray-500.mt-2
+                        svg.w-3.h-3.inline.mr-1 fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                          path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                        = assignment.order.menu.name
+
+                  svg.w-6.h-6.text-gray-400.flex-shrink-0.ml-2 fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"
+
+                / 順序番号
+                - if assignment.sequence_number.present?
+                  .text-xs.text-gray-500
+                    span.inline-block.bg-gray-100.px-2.py-1.rounded
+                      | 順序:
+                      = assignment.sequence_number
+  - else
+    .bg-white.rounded-lg.shadow-md.p-12.text-center
+      svg.w-16.h-16.mx-auto.text-gray-400.mb-4 fill="none" stroke="currentColor" viewBox="0 0 24 24"
+        path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+      p.text-gray-500.text-lg 配送予定がありません
+      p.text-gray-400.text-sm.mt-2 フィルターを変更してみてください

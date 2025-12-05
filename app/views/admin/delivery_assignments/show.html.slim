@@ -1,0 +1,194 @@
+/ Content Header (Page header)
+section.content-header
+  .container-fluid
+    .row.mb-2
+      .col-sm-6
+        h1 配送割当詳細
+      .col-sm-6
+        ol.breadcrumb.float-sm-right
+          = breadcrumbs separator: ' / '
+
+/ Main content
+section.content
+  .container-fluid
+    .row
+      .col-md-8
+        / Assignment Details Card
+        .card
+          .card-header
+            h3.card-title 配送割当情報
+            .card-tools
+              = link_to edit_admin_delivery_assignment_path(@delivery_assignment), class: 'btn btn-sm btn-primary' do
+                i.fas.fa-edit.mr-1
+                | 編集
+              - if @delivery_assignment.status == 'pending'
+                = link_to admin_delivery_assignment_path(@delivery_assignment), method: :delete, data: { confirm: '本当に削除しますか？' }, class: 'btn btn-sm btn-danger' do
+                  i.fas.fa-trash.mr-1
+                  | 削除
+          .card-body
+            table.table.table-bordered
+              tbody
+                tr
+                  th style="width: 200px;" ID
+                  td = @delivery_assignment.id
+                tr
+                  th 配送予定日
+                  td = @delivery_assignment.scheduled_date.strftime('%Y年%m月%d日')
+                tr
+                  th 配送時刻
+                  td
+                    - if @delivery_assignment.scheduled_time
+                      = @delivery_assignment.scheduled_time.strftime('%H:%M')
+                    - else
+                      | 未設定
+                tr
+                  th 順序番号
+                  td = @delivery_assignment.sequence_number
+                tr
+                  th ステータス
+                  td
+                    - case @delivery_assignment.status
+                    - when 'pending'
+                      span.badge.badge-warning 待機中
+                    - when 'in_transit'
+                      span.badge.badge-primary 配送中
+                    - when 'completed'
+                      span.badge.badge-success 完了
+                    - else
+                      span.badge.badge-secondary = @delivery_assignment.status
+                tr
+                  th 割当日時
+                  td
+                    - if @delivery_assignment.assigned_at
+                      = @delivery_assignment.assigned_at.strftime('%Y年%m月%d日 %H:%M')
+                    - else
+                      | -
+
+        / Delivery Company and User Card
+        .card
+          .card-header
+            h3.card-title 配送担当情報
+          .card-body
+            table.table.table-bordered
+              tbody
+                tr
+                  th style="width: 200px;" 配送会社
+                  td
+                    = link_to @delivery_assignment.delivery_company.name, admin_delivery_company_path(@delivery_assignment.delivery_company), target: '_blank'
+                tr
+                  th 配送担当者
+                  td
+                    = link_to @delivery_assignment.delivery_user.name, admin_delivery_user_path(@delivery_assignment.delivery_user), target: '_blank'
+                tr
+                  th 担当者メール
+                  td = @delivery_assignment.delivery_user.email
+                tr
+                  th 担当者電話
+                  td
+                    - if @delivery_assignment.delivery_user.phone
+                      = @delivery_assignment.delivery_user.phone
+                    - else
+                      | -
+
+      .col-md-4
+        / Order Details Card
+        .card
+          .card-header
+            h3.card-title 案件情報
+          .card-body
+            table.table.table-sm
+              tbody
+                tr
+                  th 案件ID
+                  td
+                    = link_to @delivery_assignment.order.id, admin_order_path(@delivery_assignment.order), target: '_blank', class: 'btn btn-xs btn-info'
+                tr
+                  th 企業
+                  td
+                    - if @delivery_assignment.order.company
+                      span.badge style="background-color: #{@delivery_assignment.order.company.color || '#2196f3'};"
+                        = @delivery_assignment.order.company.name
+                    - else
+                      | -
+                tr
+                  th 飲食店
+                  td
+                    - if @delivery_assignment.order.restaurant
+                      = @delivery_assignment.order.restaurant.name
+                    - else
+                      | -
+                tr
+                  th メニュー
+                  td
+                    - if @delivery_assignment.order.menu
+                      = @delivery_assignment.order.menu.name
+                    - else
+                      | -
+                tr
+                  th 食数
+                  td = @delivery_assignment.order.default_meal_count
+                tr
+                  th 配送予定日
+                  td = @delivery_assignment.order.scheduled_date.strftime('%Y/%m/%d')
+                tr
+                  th 回収時刻
+                  td
+                    - if @delivery_assignment.order.collection_time
+                      = @delivery_assignment.order.collection_time.strftime('%H:%M')
+                    - else
+                      | -
+                tr
+                  th 倉庫集荷
+                  td
+                    - if @delivery_assignment.order.warehouse_pickup_time
+                      = @delivery_assignment.order.warehouse_pickup_time.strftime('%H:%M')
+                    - else
+                      | -
+                tr
+                  th 区分
+                  td
+                    - if @delivery_assignment.order.is_trial
+                      span.badge.badge-warning 試食会
+                    - else
+                      span.badge.badge-success 本導入
+                tr
+                  th 返却先
+                  td
+                    - if @delivery_assignment.order.return_location
+                      = @delivery_assignment.order.return_location
+                    - else
+                      | -
+                tr
+                  th 器材メモ
+                  td.small
+                    - if @delivery_assignment.order.equipment_notes
+                      = @delivery_assignment.order.equipment_notes
+                    - else
+                      | -
+          .card-footer
+            = link_to '案件詳細を見る', admin_order_path(@delivery_assignment.order), target: '_blank', class: 'btn btn-block btn-primary btn-sm'
+
+        / Actions Card
+        .card
+          .card-header
+            h3.card-title 操作
+          .card-body
+            = link_to admin_delivery_assignments_path, class: 'btn btn-block btn-default' do
+              i.fas.fa-list.mr-2
+              | 一覧に戻る
+            = link_to edit_admin_delivery_assignment_path(@delivery_assignment), class: 'btn btn-block btn-primary' do
+              i.fas.fa-edit.mr-2
+              | 編集
+            - if @delivery_assignment.status == 'pending'
+              = link_to admin_delivery_assignment_path(@delivery_assignment), method: :delete, data: { confirm: '本当に削除しますか？' }, class: 'btn btn-block btn-danger' do
+                i.fas.fa-trash.mr-2
+                | 削除
+            - else
+              button.btn.btn-block.btn-secondary disabled=""
+                i.fas.fa-ban.mr-2
+                | 削除不可（
+                - if @delivery_assignment.status == 'in_transit'
+                  | 配送中
+                - else
+                  | 完了
+                | ）

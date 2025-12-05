@@ -1,0 +1,19 @@
+nav.metis-navbar.d-flex.justify-content-between.align-items-center
+  / Left: Title or Menu Toggle
+  div
+    h4.mb-0 管理画面
+
+  / Right: User
+  .d-flex.align-items-center
+    / User Dropdown
+    .dropdown
+      button.btn.btn-link.dropdown-toggle type="button" id="userDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+        i.far.fa-user-circle.mr-1
+        span
+          - if current_admin_user
+            = current_admin_user&.email
+      .dropdown-menu.dropdown-menu-right aria-labelledby="userDropdown"
+        h6.dropdown-header アカウント
+        = link_to destroy_admin_user_session_path, data: { turbo_method: :delete }, class: "dropdown-item" do
+          i.fas.fa-sign-out-alt.mr-2
+          |  ログアウト

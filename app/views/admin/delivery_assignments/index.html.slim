@@ -1,0 +1,118 @@
+/ Content Header (Page header)
+section.content-header
+  .container-fluid
+    .row.mb-2
+      .col-sm-6
+        h1 配送割当
+      .col-sm-6
+        ol.breadcrumb.float-sm-right
+          = breadcrumbs separator: ' / '
+
+/ Main content
+section.content
+  .container-fluid
+    / Filter Card
+    .card.card-secondary.collapsed-card
+      .card-header
+        h3.card-title
+          i.fas.fa-filter.mr-2
+          | フィルター
+        .card-tools
+          button.btn.btn-tool type="button" data-card-widget="collapse"
+            i.fas.fa-plus
+      .card-body style="display: none;"
+        = form_with url: admin_delivery_assignments_path, method: :get, local: true, class: "form-horizontal" do |f|
+          .row
+            .col-md-3
+              .form-group
+                = f.label :scheduled_date, '配送予定日', class: 'control-label'
+                = f.date_field :scheduled_date, value: params[:scheduled_date], class: 'form-control'
+            .col-md-3
+              .form-group
+                = f.label :delivery_company_id, '配送会社', class: 'control-label'
+                = f.select :delivery_company_id, options_from_collection_for_select(DeliveryCompany.order(:name), :id, :name, params[:delivery_company_id]), { include_blank: '全て' }, class: 'form-control'
+            .col-md-3
+              .form-group
+                = f.label :delivery_user_id, '配送担当者', class: 'control-label'
+                = f.select :delivery_user_id, options_from_collection_for_select(DeliveryUser.includes(:delivery_company).order('delivery_companies.name, delivery_users.name').references(:delivery_companies), :id, ->(du) { "#{du.delivery_company&.name} - #{du.name}" }, params[:delivery_user_id]), { include_blank: '全て' }, class: 'form-control'
+            .col-md-3
+              .form-group
+                = f.label :status, 'ステータス', class: 'control-label'
+                = f.select :status, options_for_select([['待機中', 'pending'], ['配送中', 'in_transit'], ['完了', 'completed']], params[:status]), { include_blank: '全て' }, class: 'form-control'
+          .row
+            .col-md-12
+              = f.submit 'フィルター適用', class: 'btn btn-primary'
+              = link_to 'リセット', admin_delivery_assignments_path, class: 'btn btn-default ml-2'
+
+    / Delivery Assignments Card
+    .card
+      .card-header
+        h3.card-title 配送割当一覧
+        .card-tools
+          = link_to new_admin_delivery_assignment_path, class: 'btn btn-sm btn-success' do
+            i.fas.fa-plus.mr-1
+            | 新規作成
+      .card-body
+        - if @delivery_assignments.any?
+          .table-responsive
+            table.table.table-bordered.table-hover.table-sm
+              thead
+                tr.table-secondary
+                  th style="width: 60px;" ID
+                  th style="width: 100px;" 配送予定日
+                  th style="width: 80px;" 配送時刻
+                  th style="width: 60px;" 順序
+                  th 配送会社
+                  th 配送担当者
+                  th 案件
+                  th 企業
+                  th style="width: 80px;" ステータス
+                  th style="width: 120px;" 操作
+              tbody
+                - @delivery_assignments.each do |assignment|
+                  tr
+                    td.text-center = assignment.id
+                    td = assignment.scheduled_date.strftime('%Y/%m/%d')
+                    td
+                      - if assignment.scheduled_time
+                        = assignment.scheduled_time.strftime('%H:%M')
+                      - else
+                        | -
+                    td.text-center = assignment.sequence_number
+                    td = assignment.delivery_company&.name
+                    td = assignment.delivery_user&.name
+                    td
+                      = link_to admin_order_path(assignment.order), target: '_blank' do
+                        | Order #
+                        = assignment.order.id
+                        = " "
+                        i.fas.fa-external-link-alt.fa-xs
+                    td
+                      - if assignment.order.company
+                        span.badge style="background-color: #{assignment.order.company.color || '#2196f3'};"
+                          = assignment.order.company.name
+                      - else
+                        | -
+                    td.text-center
+                      - case assignment.status
+                      - when 'pending'
+                        span.badge.badge-warning 待機中
+                      - when 'in_transit'
+                        span.badge.badge-primary 配送中
+                      - when 'completed'
+                        span.badge.badge-success 完了
+                      - else
+                        span.badge.badge-secondary = assignment.status
+                    td.text-center
+                      = link_to '詳細', admin_delivery_assignment_path(assignment), class: 'btn btn-xs btn-info'
+                      = link_to '編集', edit_admin_delivery_assignment_path(assignment), class: 'btn btn-xs btn-primary'
+                      - if assignment.status == 'pending'
+                        = link_to '削除', admin_delivery_assignment_path(assignment), method: :delete, data: { confirm: '本当に削除しますか？' }, class: 'btn btn-xs btn-danger'
+
+          / Pagination
+          .mt-3
+            = paginate @delivery_assignments
+        - else
+          .alert.alert-info
+            i.fas.fa-info-circle.mr-2
+            | 配送割当がありません。

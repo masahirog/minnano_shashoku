@@ -1,0 +1,75 @@
+- content_for(:title) do
+  | 拠点別在庫管理
+
+- breadcrumb :admin_supplies_by_location
+
+/ Content Header
+.content-header
+  .container-fluid
+    .row.mb-2
+      .col-sm-6
+        h1.m-0 拠点別在庫管理
+      .col-sm-6
+        ol.breadcrumb.float-sm-right
+          = breadcrumbs separator: " / ", autoroot: false
+
+/ Main content
+.container-fluid
+  .row
+    .col-12
+      .card
+        .card-header
+          h3.card-title 拠点一覧
+          .card-tools
+            = link_to "移動登録", new_admin_bulk_supply_movement_path, class: "btn btn-primary btn-sm mr-1"
+            = link_to "戻る", admin_supplies_path, class: "btn btn-secondary btn-sm"
+
+        .card-body.p-0
+          table.table.table-striped.table-hover
+            thead
+              tr
+                th 拠点区分
+                th 拠点名
+                th.text-center 在庫品目数
+                th.text-center 操作
+            tbody
+              - if @own_locations.any? || @companies.any? || @restaurants.any?
+                / 自社拠点
+                - @own_locations.each do |location|
+                  tr
+                    td 自社拠点
+                    td = location.name
+                    td.text-center
+                      span.badge.badge-info
+                        = @location_stock_counts["OwnLocation_#{location.id}"] || 0
+                        |  品目
+                    td.text-center
+                      = link_to "在庫一覧", by_location_admin_supply_stocks_path(location_type: 'OwnLocation', location_id: location.id), class: "btn btn-sm btn-outline-primary"
+
+                / 企業拠点
+                - @companies.each do |location|
+                  tr
+                    td 企業
+                    td = location.name
+                    td.text-center
+                      span.badge.badge-info
+                        = @location_stock_counts["Company_#{location.id}"] || 0
+                        |  品目
+                    td.text-center
+                      = link_to "在庫一覧", by_location_admin_supply_stocks_path(location_type: 'Company', location_id: location.id), class: "btn btn-sm btn-outline-primary"
+
+                / 飲食店拠点
+                - @restaurants.each do |location|
+                  tr
+                    td 飲食店
+                    td = location.name
+                    td.text-center
+                      span.badge.badge-info
+                        = @location_stock_counts["Restaurant_#{location.id}"] || 0
+                        |  品目
+                    td.text-center
+                      = link_to "在庫一覧", by_location_admin_supply_stocks_path(location_type: 'Restaurant', location_id: location.id), class: "btn btn-sm btn-outline-primary"
+              - else
+                tr
+                  td.text-center.text-muted.p-4 colspan="4"
+                    | 拠点データがありません

@@ -1,0 +1,78 @@
+- content_for(:title) { t("administrate.actions.show_resource", name: page.page_title) }
+
+- breadcrumb :admin_delivery_company, page.resource
+
+/ Content Header
+.content-header
+  .container-fluid
+    .row.mb-2
+      .col-sm-6
+        h1.m-0 = page.page_title
+      .col-sm-6
+        ol.breadcrumb.float-sm-right
+          = breadcrumbs separator: " / ", autoroot: false
+
+/ Main content
+.container-fluid
+  .row
+    / 配送会社情報カード
+    .col-md-12
+      .card
+        .card-header
+          h3.card-title 配送会社情報
+          .card-tools
+            - if accessible_action?(page.resource, :edit)
+              = link_to "編集", [:edit, namespace, page.resource], class: "btn btn-primary btn-sm mr-1"
+            - if accessible_action?(page.resource, :destroy)
+              = button_to "削除", [namespace, page.resource], class: "btn btn-danger btn-sm", method: :delete, data: { turbo_confirm: t("administrate.actions.confirm") }
+
+        .card-body
+          - page.attributes.each do |title, attributes|
+            - if title.present?
+              h5.mt-3.mb-3 = t "helpers.label.#{page.resource_name}.#{title}", default: title
+
+            dl.row
+              - attributes.each do |attribute|
+                - unless attribute.name == :drivers
+                  dt.col-sm-3 id=attribute.name
+                    = t("helpers.label.#{resource_name}.#{attribute.name}", default: page.resource.class.human_attribute_name(attribute.name))
+                  dd.col-sm-9
+                    = render_field attribute, page: page
+
+            - unless title == page.attributes.keys.last
+              hr
+
+    / ドライバー一覧カード
+    .col-md-12
+      .card
+        .card-header
+          h3.card-title ドライバー一覧
+          .card-tools
+            = link_to "新しいドライバーを追加", new_admin_driver_path(driver: { delivery_company_id: page.resource.id }), class: "btn btn-success btn-sm"
+
+        .card-body.p-0
+          - if page.resource.drivers.any?
+            table.table.table-striped.table-hover
+              thead
+                tr
+                  th ID
+                  th ドライバー名
+                  th 電話番号
+                  th.text-center 有効
+                  th.text-center 操作
+              tbody
+                - page.resource.drivers.each do |driver|
+                  tr
+                    td = driver.id
+                    td = driver.name
+                    td = driver.phone
+                    td.text-center
+                      - if driver.is_active
+                        span.badge.badge-success 有効
+                      - else
+                        span.badge.badge-secondary 無効
+                    td.text-center
+                      = link_to "詳細", admin_driver_path(driver), class: "btn btn-sm btn-outline-info mr-1"
+                      = link_to "編集", edit_admin_driver_path(driver), class: "btn btn-sm btn-outline-secondary"
+          - else
+            p.p-4.text-center.text-muted ドライバーが登録されていません

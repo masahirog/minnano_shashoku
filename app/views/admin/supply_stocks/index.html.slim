@@ -1,0 +1,39 @@
+- content_for(:title) do
+  = display_resource_name(:supply_stock)
+
+- breadcrumb :admin_supply_stocks
+
+header.main-content__header style="display: flex; align-items: center; flex-wrap: wrap;"
+  = breadcrumbs separator: " ＞ ".html_safe, autoroot: false, class: "breadcrumbs"
+
+  div style="margin-left: auto;"
+    = link_to "拠点別在庫一覧", by_location_admin_supply_stocks_path, class: "btn btn-sm btn-success"
+
+    = link_to "備品移動登録", new_admin_bulk_supply_movement_path, class: "btn btn-sm btn-primary"
+
+section.main-content__body.main-content__body--flush
+
+  table.table style="width: 100%; border-collapse: collapse;"
+    thead
+      tr style="background-color: #f5f5f5;"
+        th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;" 備品名
+        th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;" SKU
+        th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;" カテゴリ
+        th style="padding: 12px; text-align: right; border-bottom: 2px solid #ddd;" 合計在庫数
+        th style="padding: 12px; text-align: center; border-bottom: 2px solid #ddd;" 拠点数
+        th style="padding: 12px; text-align: center; border-bottom: 2px solid #ddd;" 操作
+    tbody
+      - Supply.includes(:supply_stocks).order(:name).each do |supply|
+        tr style="border-bottom: 1px solid #eee;"
+          td style="padding: 12px;" = supply.name
+          td style="padding: 12px;" = supply.sku
+          td style="padding: 12px;" = supply.category
+          td style="padding: 12px; text-align: right; font-weight: bold;"
+            = supply.supply_stocks.sum(:quantity)
+            = " "
+            = supply.unit
+          td style="padding: 12px; text-align: center;"
+            = supply.supply_stocks.count
+            | 拠点
+          td style="padding: 12px; text-align: center;"
+            = link_to "拠点別詳細", by_location_admin_supply_stocks_path(supply_id: supply.id), class: "button", style: "font-size: 12px; padding: 6px 12px;"

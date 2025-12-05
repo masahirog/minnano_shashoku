@@ -1,0 +1,202 @@
+/ Content Header (Page header)
+section.content-header
+  .container-fluid
+    .row.mb-2
+      .col-sm-6
+        h1 配送シート
+      .col-sm-6
+        ol.breadcrumb.float-sm-right
+          li.breadcrumb-item
+            = link_to 'ホーム', admin_root_path
+          li.breadcrumb-item
+            = link_to '案件', admin_orders_path
+          li.breadcrumb-item.active 配送シート
+
+/ Main content
+section.content
+  .container-fluid
+    / Filter Card
+    .card.card-secondary.collapsed-card
+      .card-header
+        h3.card-title
+          i.fas.fa-filter.mr-2
+          | フィルター
+        .card-tools
+          button.btn.btn-tool type="button" data-card-widget="collapse"
+            i.fas.fa-plus
+      .card-body style="display: none;"
+        = form_with url: delivery_sheets_admin_orders_path, method: :get, local: true, class: "form-horizontal" do |f|
+          .row
+            .col-md-3
+              .form-group
+                = f.label :start_date, '開始日', class: 'control-label'
+                = f.date_field :start_date, value: params[:start_date] || @start_date, class: 'form-control'
+            .col-md-3
+              .form-group
+                = f.label :end_date, '終了日', class: 'control-label'
+                = f.date_field :end_date, value: params[:end_date] || @end_date, class: 'form-control'
+            .col-md-2
+              .form-group
+                = f.label :company_id, '企業', class: 'control-label'
+                = f.select :company_id, options_from_collection_for_select(Company.order(:name), :id, :name, params[:company_id]), { include_blank: '全て' }, class: 'form-control'
+            .col-md-2
+              .form-group
+                = f.label :restaurant_id, '飲食店', class: 'control-label'
+                = f.select :restaurant_id, options_from_collection_for_select(Restaurant.order(:name), :id, :name, params[:restaurant_id]), { include_blank: '全て' }, class: 'form-control'
+            .col-md-2
+              .form-group
+                = f.label :delivery_company_id, '配送会社', class: 'control-label'
+                = f.select :delivery_company_id, options_from_collection_for_select(DeliveryCompany.order(:name), :id, :name, params[:delivery_company_id]), { include_blank: '全て' }, class: 'form-control'
+          .row
+            .col-md-12
+              = f.submit 'フィルター適用', class: 'btn btn-primary'
+              = link_to 'リセット', delivery_sheets_admin_orders_path, class: 'btn btn-default ml-2'
+
+    / Delivery Sheet Card
+    .card
+      .card-header
+        .card-tools
+          = link_to delivery_sheet_pdf_admin_orders_path(start_date: params[:start_date] || @start_date, end_date: params[:end_date] || @end_date, company_id: params[:company_id], restaurant_id: params[:restaurant_id], delivery_company_id: params[:delivery_company_id]), class: 'btn btn-sm btn-success', target: '_blank' do
+            i.fas.fa-file-pdf.mr-1
+            | PDF出力
+          = link_to 'カレンダーに戻る', calendar_admin_orders_path, class: 'btn btn-sm btn-secondary ml-2'
+          = link_to '一覧に戻る', admin_orders_path, class: 'btn btn-sm btn-default ml-2'
+      .card-body
+        - if @orders.any?
+          .alert.alert-secondary
+            i.fas.fa-info-circle.mr-2
+            | 合計
+            = " "
+            strong
+              = @orders.count
+            = " "
+            | 件の配送案件があります。
+
+          .table-responsive
+            table.table.table-bordered.table-hover.table-sm
+              thead
+                tr.table-secondary
+                  th style="width: 100px;" 日付
+                  th style="width: 80px;" 回収時刻
+                  th style="width: 80px;" 倉庫集荷
+                  th 企業名
+                  th 飲食店名
+                  th メニュー
+                  th style="width: 60px;" 食数
+                  th style="width: 80px;" 区分
+                  th style="width: 100px;" 返却先
+                  th 器材メモ
+                  th style="width: 80px;" 操作
+              tbody
+                - @orders.group_by(&:scheduled_date).sort.each do |date, daily_orders|
+                  tr.table-active
+                    td.font-weight-bold colspan="11"
+                      = date.strftime('%Y年%m月%d日')
+                      = " "
+                      | (
+                      = %w[日 月 火 水 木 金 土][date.wday]
+                      | 曜日) -
+                      = " "
+                      = daily_orders.count
+                      | 件
+                  - daily_orders.each do |order|
+                    tr
+                      td = order.scheduled_date.strftime('%m/%d')
+                      td
+                        - if order.collection_time
+                          = order.collection_time.strftime('%H:%M')
+                        - else
+                          | -
+                      td
+                        - if order.warehouse_pickup_time
+                          = order.warehouse_pickup_time.strftime('%H:%M')
+                        - else
+                          | -
+                      td
+                        span.badge style="background-color: #{order.company&.color || '#2196f3'};"
+                          - if order.company
+                            = order.company.name
+                          - else
+                            | -
+                      td
+                        - if order.restaurant
+                          = order.restaurant.name
+                        - else
+                          | -
+                      td
+                        - if order.menu
+                          = order.menu.name
+                        - else
+                          | -
+                        - if order.duplicate_menu_in_week?
+                          i.fas.fa-exclamation-triangle.text-warning.ml-1 title="同じ週に同じメニューが重複しています"
+                      td.text-right = order.default_meal_count
+                      td
+                        - if order.is_trial
+                          span.badge.badge-warning 試食会
+                        - else
+                          span.badge.badge-success 本導入
+                      td
+                        - if order.return_location
+                          = order.return_location
+                        - else
+                          | -
+                      td.small
+                        - if order.equipment_notes
+                          = order.equipment_notes
+                        - else
+                          | -
+                      td.text-center
+                        = link_to '詳細', admin_order_path(order), class: 'btn btn-xs btn-info', target: '_blank'
+
+          .mt-3
+            = link_to delivery_sheet_pdf_admin_orders_path(start_date: params[:start_date] || @start_date, end_date: params[:end_date] || @end_date, company_id: params[:company_id], restaurant_id: params[:restaurant_id], delivery_company_id: params[:delivery_company_id]), class: 'btn btn-success btn-lg', target: '_blank' do
+              i.fas.fa-file-pdf.mr-2
+              | 配送シートをPDF出力
+        - else
+          .alert.alert-warning
+            i.fas.fa-exclamation-triangle.mr-2
+            | 該当する配送案件がありません。フィルター条件を変更してください。
+
+css:
+  /* コンテンツエリアの余白削減 - 配送シートページ専用 */
+  body .content-wrapper {
+    padding: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .content-wrapper .container-fluid {
+    max-width: none !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100% !important;
+  }
+
+  .content {
+    padding: 0 !important;
+  }
+
+  .content-header {
+    padding: 10px !important;
+  }
+
+  .content-header .container-fluid {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  .content .container-fluid {
+    padding-left: 5px;
+    padding-right: 5px;
+    max-width: none !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+
+  .table-sm td {
+    vertical-align: middle;
+  }
+
+  .table-active td {
+    background-color: #e9ecef;
+  }

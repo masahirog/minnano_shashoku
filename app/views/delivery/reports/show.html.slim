@@ -1,0 +1,90 @@
+.container.mx-auto.px-4.py-6.max-w-4xl
+  / ヘッダー
+  .mb-6
+    = link_to delivery_assignment_path(@delivery_assignment), class: "inline-flex items-center text-blue-600 hover:text-blue-800 mb-3" do
+      svg.w-5.h-5.mr-1 fill="none" stroke="currentColor" viewBox="0 0 24 24"
+        path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"
+      | 戻る
+    h1.text-2xl.font-bold.text-gray-800 配送報告詳細
+
+  / 報告ステータス
+  div class="mb-6 p-4 rounded-lg #{case @delivery_report.report_type when 'completed' then 'bg-green-100 border border-green-300' when 'issue' then 'bg-yellow-100 border border-yellow-300' when 'failed' then 'bg-red-100 border border-red-300' end}"
+    .flex.items-center
+      span.text-2xl.mr-3
+        = case @delivery_report.report_type when 'completed' then '✅' when 'issue' then '⚠️' when 'failed' then '❌' end
+      div
+        p.text-sm.text-gray-600 報告タイプ
+        p class="text-lg font-bold #{case @delivery_report.report_type when 'completed' then 'text-green-800' when 'issue' then 'text-yellow-800' when 'failed' then 'text-red-800' end}"
+          = case @delivery_report.report_type when 'completed' then '配送完了' when 'issue' then '問題あり' when 'failed' then '配送失敗' end
+
+  / 配送先情報
+  .bg-white.rounded-lg.shadow-md.p-6.mb-6
+    h2.text-lg.font-bold.text-gray-800.mb-4 配送先情報
+    .space-y-3
+      div
+        p.text-sm.text-gray-600 企業名
+        p.font-semibold.text-gray-900 = @delivery_assignment.order.company.name
+      div
+        p.text-sm.text-gray-600 配送先住所
+        p.font-semibold.text-gray-900 = @delivery_assignment.order.delivery_address || @delivery_assignment.order.company.delivery_address
+
+  / 報告内容
+  .bg-white.rounded-lg.shadow-md.p-6.mb-6
+    h2.text-lg.font-bold.text-gray-800.mb-4 報告内容
+
+    - if @delivery_report.issue_type.present?
+      .mb-4
+        p.text-sm.text-gray-600 問題種別
+        p.font-semibold.text-gray-900
+          = case @delivery_report.issue_type when 'absent' then '不在' when 'address_unknown' then '住所不明' when 'damaged' then '商品破損' when 'other' then 'その他' end
+
+    - if @delivery_report.notes.present?
+      div
+        p.text-sm.text-gray-600 メモ
+        p.text-gray-900.whitespace-pre-wrap = @delivery_report.notes
+
+  / 位置情報
+  - if @delivery_report.has_location?
+    .bg-white.rounded-lg.shadow-md.p-6.mb-6
+      h2.text-lg.font-bold.text-gray-800.mb-4 位置情報
+      .space-y-2
+        div
+          p.text-sm.text-gray-600 緯度
+          p.font-semibold.text-gray-900 = @delivery_report.latitude
+        div
+          p.text-sm.text-gray-600 経度
+          p.font-semibold.text-gray-900 = @delivery_report.longitude
+
+      a.mt-4.block.w-full.bg-blue-600.text-white.text-center.py-3.rounded-lg.font-semibold.hover:bg-blue-700.transition-colors href="https://www.google.com/maps?q=#{@delivery_report.latitude},#{@delivery_report.longitude}" target="_blank"
+        svg.w-5.h-5.inline.mr-2 fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+          path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+        | Google Mapsで開く
+
+  / 写真
+  - if @delivery_report.has_photos?
+    .bg-white.rounded-lg.shadow-md.p-6.mb-6
+      h2.text-lg.font-bold.text-gray-800.mb-4 写真
+      .grid.grid-cols-2.gap-3
+        - @delivery_report.photos.each do |photo|
+          .relative
+            = image_tag photo, class: "w-full h-48 object-cover rounded-lg"
+
+  / 報告日時
+  .bg-white.rounded-lg.shadow-md.p-6.mb-6
+    h2.text-lg.font-bold.text-gray-800.mb-4 報告日時
+    .space-y-2
+      - if @delivery_report.started_at.present?
+        div
+          p.text-sm.text-gray-600 開始時刻
+          p.font-semibold.text-gray-900 = @delivery_report.started_at.strftime('%Y年%m月%d日 %H:%M')
+      - if @delivery_report.completed_at.present?
+        div
+          p.text-sm.text-gray-600 完了時刻
+          p.font-semibold.text-gray-900 = @delivery_report.completed_at.strftime('%Y年%m月%d日 %H:%M')
+      - if @delivery_report.delivery_duration
+        div
+          p.text-sm.text-gray-600 配送時間
+          p.font-semibold.text-gray-900
+            = @delivery_report.delivery_duration
+            | 分

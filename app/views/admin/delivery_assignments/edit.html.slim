@@ -1,0 +1,197 @@
+/ Content Header (Page header)
+section.content-header
+  .container-fluid
+    .row.mb-2
+      .col-sm-6
+        h1 配送割当編集
+      .col-sm-6
+        ol.breadcrumb.float-sm-right
+          = breadcrumbs separator: ' / '
+
+/ Main content
+section.content
+  .container-fluid
+    .row
+      .col-md-8
+        .card
+          .card-header
+            h3.card-title 配送割当情報編集
+          = form_with model: @delivery_assignment, url: admin_delivery_assignment_path(@delivery_assignment), method: :patch, local: true do |f|
+            .card-body
+              - if @delivery_assignment.errors.any?
+                .alert.alert-danger.alert-dismissible
+                  button.close type="button" data-dismiss="alert" aria-hidden="true" &times;
+                  h5
+                    i.icon.fas.fa-ban
+                    |  エラーが発生しました
+                  ul
+                    - @delivery_assignment.errors.full_messages.each do |message|
+                      li = message
+
+              / 案件情報（読み取り専用）
+              .form-group
+                label 案件
+                .input-group
+                  input.form-control type="text" value="Order ##{@delivery_assignment.order.id} - #{@delivery_assignment.order.company&.name} - #{@delivery_assignment.order.scheduled_date.strftime('%Y/%m/%d')} - #{@delivery_assignment.order.menu&.name} (#{@delivery_assignment.order.default_meal_count}食)" readonly=""
+                  .input-group-append
+                    = link_to admin_order_path(@delivery_assignment.order), target: '_blank', class: 'btn btn-info' do
+                      i.fas.fa-external-link-alt
+                      |  詳細
+                small.form-text.text-muted
+                  | 案件は編集できません。変更する場合は一度削除してから新規作成してください。
+
+              / 配送担当者
+              .form-group
+                = f.label :delivery_user_id, '配送担当者', class: 'required'
+                = f.select :delivery_user_id, options_from_collection_for_select(@delivery_users, :id, ->(du) { "#{du.delivery_company&.name} - #{du.name}" }, @delivery_assignment.delivery_user_id), { include_blank: '配送担当者を選択してください' }, class: 'form-control select2', required: true
+                small.form-text.text-muted
+                  | 同じ配送会社に所属する有効な配送担当者のみ表示されます。
+
+              .row
+                .col-md-6
+                  .form-group
+                    = f.label :scheduled_time, '配送時刻（任意）'
+                    = f.time_field :scheduled_time, value: @delivery_assignment.scheduled_time&.strftime('%H:%M'), class: 'form-control'
+                    small.form-text.text-muted
+                      | 指定した時刻に配送します（任意）
+                .col-md-6
+                  .form-group
+                    = f.label :sequence_number, '順序番号'
+                    = f.number_field :sequence_number, class: 'form-control', min: 1, required: true
+                    small.form-text.text-muted
+                      | 配送の順序を指定します
+
+              / ステータス（現在のステータスによって編集可否を変更）
+              .form-group
+                = f.label :status, 'ステータス'
+                - if @delivery_assignment.status == 'pending'
+                  = f.select :status, options_for_select([['待機中', 'pending'], ['配送中', 'in_transit'], ['完了', 'completed']], @delivery_assignment.status), {}, class: 'form-control'
+                  small.form-text.text-muted
+                    | ステータスを変更できます
+                - else
+                  input.form-control type="text" value=(@delivery_assignment.status == 'in_transit' ? '配送中' : '完了') readonly=""
+                  small.form-text.text-muted.text-warning
+                    i.fas.fa-exclamation-triangle
+                    | 配送中または完了済みのためステータスは変更できません
+
+              / 日時情報（読み取り専用）
+              .form-group
+                label 割当日時
+                input.form-control type="text" value=(@delivery_assignment.assigned_at&.strftime('%Y/%m/%d %H:%M') || '-') readonly=""
+
+              - if @delivery_assignment.status == 'in_transit'
+                .alert.alert-warning
+                  i.fas.fa-exclamation-triangle.mr-2
+                  strong 配送中の案件です
+                  p.mb-0.mt-2 配送担当者の変更は制限されています。必要な場合は配送をキャンセルしてから再割当してください。
+              - elsif @delivery_assignment.status == 'completed'
+                .alert.alert-success
+                  i.fas.fa-check-circle.mr-2
+                  strong 完了済みの案件です
+                  p.mb-0.mt-2 完了済みの案件の変更は推奨されません。
+            .card-footer
+              = f.submit '更新', class: 'btn btn-primary'
+              = link_to 'キャンセル', admin_delivery_assignment_path(@delivery_assignment), class: 'btn btn-default ml-2'
+
+      .col-md-4
+        / 案件詳細情報
+        .card.card-info
+          .card-header
+            h3.card-title 案件詳細
+          .card-body
+            table.table.table-sm
+              tbody
+                tr
+                  th 企業
+                  td
+                    - if @delivery_assignment.order.company
+                      span.badge style="background-color: #{@delivery_assignment.order.company.color || '#2196f3'};"
+                        = @delivery_assignment.order.company.name
+                    - else
+                      | -
+                tr
+                  th 飲食店
+                  td
+                    - if @delivery_assignment.order.restaurant
+                      = @delivery_assignment.order.restaurant.name
+                    - else
+                      | -
+                tr
+                  th メニュー
+                  td
+                    - if @delivery_assignment.order.menu
+                      = @delivery_assignment.order.menu.name
+                    - else
+                      | -
+                tr
+                  th 食数
+                  td = @delivery_assignment.order.default_meal_count
+                tr
+                  th 配送予定日
+                  td = @delivery_assignment.order.scheduled_date.strftime('%Y/%m/%d')
+                tr
+                  th 回収時刻
+                  td
+                    - if @delivery_assignment.order.collection_time
+                      = @delivery_assignment.order.collection_time.strftime('%H:%M')
+                    - else
+                      | -
+                tr
+                  th 返却先
+                  td
+                    - if @delivery_assignment.order.return_location
+                      = @delivery_assignment.order.return_location
+                    - else
+                      | -
+          .card-footer
+            = link_to '案件詳細を見る', admin_order_path(@delivery_assignment.order), target: '_blank', class: 'btn btn-block btn-info btn-sm'
+
+        / 配送会社情報
+        .card.card-secondary
+          .card-header
+            h3.card-title 配送会社情報
+          .card-body
+            table.table.table-sm
+              tbody
+                tr
+                  th 配送会社
+                  td = @delivery_assignment.delivery_company.name
+                tr
+                  th 電話番号
+                  td
+                    - if @delivery_assignment.delivery_company.phone
+                      = @delivery_assignment.delivery_company.phone
+                    - else
+                      | -
+                tr
+                  th メール
+                  td
+                    - if @delivery_assignment.delivery_company.email
+                      = @delivery_assignment.delivery_company.email
+                    - else
+                      | -
+
+        / 操作
+        .card
+          .card-header
+            h3.card-title その他の操作
+          .card-body
+            = link_to admin_delivery_assignment_path(@delivery_assignment), class: 'btn btn-block btn-default' do
+              i.fas.fa-arrow-left.mr-2
+              | 詳細に戻る
+            = link_to admin_delivery_assignments_path, class: 'btn btn-block btn-secondary' do
+              i.fas.fa-list.mr-2
+              | 一覧に戻る
+            - if @delivery_assignment.status == 'pending'
+              = link_to admin_delivery_assignment_path(@delivery_assignment), method: :delete, data: { confirm: '本当に削除しますか？' }, class: 'btn btn-block btn-danger mt-3' do
+                i.fas.fa-trash.mr-2
+                | 削除
+
+javascript:
+  $(document).ready(function() {
+    // Select2の初期化
+    $('.select2').select2({
+      theme: 'bootstrap4',
+      width: '100%'
+    });
+  });

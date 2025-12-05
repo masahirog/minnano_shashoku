@@ -1,0 +1,253 @@
+.content-wrapper
+  / Content Header (Page header)
+  section.content-header
+    .container-fluid
+      .row.mb-2
+        .col-sm-6
+          h1 スケジュール調整
+        .col-sm-6
+          ol.breadcrumb.float-sm-right
+            li.breadcrumb-item
+              = link_to 'ホーム', admin_root_path
+            li.breadcrumb-item
+              = link_to '案件', admin_orders_path
+            li.breadcrumb-item.active スケジュール調整
+
+  / Main content
+  section.content
+    .container-fluid
+      / Filter Card
+      .card.card-secondary.collapsed-card
+        .card-header
+          h3.card-title
+            i.fas.fa-filter.mr-2
+            | フィルター
+          .card-tools
+            button.btn.btn-tool type="button" data-card-widget="collapse"
+              i.fas.fa-plus
+        .card-body style="display: none;"
+          = form_with url: schedule_admin_orders_path, method: :get, local: true, class: "form-horizontal" do |f|
+            .row
+              .col-md-3
+                .form-group
+                  = f.label :start_date, '開始日', class: 'control-label'
+                  = f.date_field :start_date, value: params[:start_date] || @start_date, class: 'form-control'
+              .col-md-3
+                .form-group
+                  = f.label :end_date, '終了日', class: 'control-label'
+                  = f.date_field :end_date, value: params[:end_date] || @end_date, class: 'form-control'
+              .col-md-2
+                .form-group
+                  = f.label :company_id, '企業', class: 'control-label'
+                  = f.select :company_id, options_from_collection_for_select(Company.order(:name), :id, :name, params[:company_id]), { include_blank: '全て' }, class: 'form-control'
+              .col-md-2
+                .form-group
+                  = f.label :restaurant_id, '飲食店', class: 'control-label'
+                  = f.select :restaurant_id, options_from_collection_for_select(Restaurant.order(:name), :id, :name, params[:restaurant_id]), { include_blank: '全て' }, class: 'form-control'
+              .col-md-2
+                .form-group
+                  = f.label :status, 'ステータス', class: 'control-label'
+                  = f.select :status, options_for_select([['全て', ''], ['保留', 'pending'], ['確定', 'confirmed'], ['完了', 'completed'], ['キャンセル', 'cancelled']], params[:status]), {}, class: 'form-control'
+            .row
+              .col-md-12
+                = f.submit 'フィルター適用', class: 'btn btn-primary'
+                = link_to 'リセット', schedule_admin_orders_path, class: 'btn btn-default ml-2'
+
+      / Schedule Table Card
+      .card.card-primary
+        .card-header
+          h3.card-title
+            i.fas.fa-list.mr-2
+            | 案件一覧（
+            = @start_date.strftime('%Y/%m/%d')
+            |  〜
+            = " "
+            = @end_date.strftime('%Y/%m/%d')
+            | ）
+          .card-tools
+            = link_to '配送シート', delivery_sheets_admin_orders_path, class: 'btn btn-sm btn-success'
+            = link_to 'カレンダーに戻る', calendar_admin_orders_path, class: 'btn btn-sm btn-secondary ml-2'
+            = link_to '一覧に戻る', admin_orders_path, class: 'btn btn-sm btn-default ml-2'
+        .card-body
+          = form_with url: update_schedule_admin_orders_path, method: :patch, local: true, id: 'schedule-form' do |f|
+            .table-responsive
+              table.table.table-bordered.table-hover.table-sm
+                thead
+                  tr.table-secondary
+                    th style="width: 40px;"
+                      input#select-all type="checkbox"
+                    th style="width: 60px;" ID
+                    th style="width: 120px;" 予定日
+                    th style="width: 100px;" 回収時刻
+                    th 企業
+                    th 飲食店
+                    th メニュー
+                    th style="width: 80px;" 食数
+                    th style="width: 100px;" ステータス
+                    th style="width: 50px;" 警告
+                    th style="width: 80px;" 操作
+                tbody
+                  - @orders.each do |order|
+                    - conflicts = order.schedule_conflicts
+                    - has_conflicts = conflicts.any?
+                    tr class="order-row #{has_conflicts ? 'has-conflict' : ''}" data-order-id=order.id
+                      td.text-center
+                        input.order-checkbox type="checkbox" name="selected_orders[]" value=order.id
+                      td = order.id
+                      td
+                        = date_field_tag "orders[#{order.id}][scheduled_date]", order.scheduled_date, class: 'form-control form-control-sm date-input', data: { order_id: order.id }
+                      td
+                        = time_field_tag "orders[#{order.id}][collection_time]", order.collection_time&.strftime('%H:%M'), class: 'form-control form-control-sm time-input', data: { order_id: order.id }
+                      td
+                        span.badge style="background-color: #{order.company&.color || '#2196f3'};"
+                          = order.company&.name
+                      td = order.restaurant&.name
+                      td
+                        = order.menu&.name
+                        - if order.duplicate_menu_in_week?
+                          i.fas.fa-exclamation-triangle.text-warning.ml-1 title="同じ週に同じメニューが重複しています"
+                      td.text-right = order.default_meal_count
+                      td
+                        - status_class = case order.status
+                        - when 'pending' then 'warning'
+                        - when 'confirmed' then 'success'
+                        - when 'completed' then 'info'
+                        - when 'cancelled' then 'danger'
+                        - else 'secondary'
+                        span.badge class="badge-#{status_class}"
+                          = order.status
+                      td.text-center
+                        - if has_conflicts
+                          i.fas.fa-exclamation-circle.text-danger.conflict-icon data-toggle="tooltip" data-html="true" title="<strong>スケジュールコンフリクト:</strong><br>#{conflicts.map { |c| c[:message] }.join('<br>')}"
+                      td.text-center
+                        = link_to '詳細', admin_order_path(order), class: 'btn btn-xs btn-info', target: '_blank'
+                  - if @orders.empty?
+                    tr
+                      td.text-center.text-muted colspan="11"
+                        | 該当する案件がありません
+
+            .mt-3
+              = f.submit '選択した案件を更新', class: 'btn btn-primary', id: 'update-button'
+              small.text-muted.ml-3
+                | ※ 日付または時刻を変更した案件のみが更新されます
+
+css:
+  .order-row:hover {
+    background-color: #f8f9fa;
+  }
+
+  .date-input, .time-input {
+    min-width: 120px;
+  }
+
+  .order-row.selected {
+    background-color: #e3f2fd;
+  }
+
+  .table-sm td {
+    vertical-align: middle;
+  }
+
+  /* コンフリクトがある行のスタイル */
+  .order-row.has-conflict {
+    background-color: #ffebee !important;
+    border-left: 4px solid #f44336;
+  }
+
+  .order-row.has-conflict:hover {
+    background-color: #ffcdd2 !important;
+  }
+
+  .order-row.has-conflict.selected {
+    background-color: #f8bbd0 !important;
+  }
+
+  /* コンフリクトアイコン */
+  .conflict-icon {
+    font-size: 18px;
+    cursor: pointer;
+    animation: pulse-danger 2s infinite;
+  }
+
+  @keyframes pulse-danger {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.6;
+    }
+  }
+
+javascript:
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Bootstrap tooltips for conflict warnings
+    $('[data-toggle="tooltip"]').tooltip({
+      placement: 'left',
+      boundary: 'window'
+    });
+
+    // 全選択チェックボックス
+    const selectAllCheckbox = document.getElementById('select-all');
+    const orderCheckboxes = document.querySelectorAll('.order-checkbox');
+
+    if (selectAllCheckbox) {
+      selectAllCheckbox.addEventListener('change', function() {
+        orderCheckboxes.forEach(checkbox => {
+          checkbox.checked = this.checked;
+          updateRowHighlight(checkbox);
+        });
+      });
+    }
+
+    // 個別チェックボックス
+    orderCheckboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', function() {
+        updateRowHighlight(this);
+        updateSelectAllCheckbox();
+      });
+    });
+
+    function updateRowHighlight(checkbox) {
+      const row = checkbox.closest('tr');
+      if (checkbox.checked) {
+        row.classList.add('selected');
+      } else {
+        row.classList.remove('selected');
+      }
+    }
+
+    function updateSelectAllCheckbox() {
+      const totalCheckboxes = orderCheckboxes.length;
+      const checkedCheckboxes = document.querySelectorAll('.order-checkbox:checked').length;
+
+      if (selectAllCheckbox) {
+        selectAllCheckbox.checked = totalCheckboxes > 0 && totalCheckboxes === checkedCheckboxes;
+      }
+    }
+
+    // フォーム送信時の確認
+    const scheduleForm = document.getElementById('schedule-form');
+    if (scheduleForm) {
+      scheduleForm.addEventListener('submit', function(e) {
+        const checkedBoxes = document.querySelectorAll('.order-checkbox:checked');
+        if (checkedBoxes.length === 0) {
+          e.preventDefault();
+          alert('更新する案件を選択してください');
+          return false;
+        }
+
+        // 選択されていない案件の入力フィールドを無効化（送信しない）
+        orderCheckboxes.forEach(checkbox => {
+          if (!checkbox.checked) {
+            const orderId = checkbox.value;
+            const dateInput = document.querySelector(`input[name="orders[${orderId}][scheduled_date]"]`);
+            const timeInput = document.querySelector(`input[name="orders[${orderId}][collection_time]"]`);
+            if (dateInput) dateInput.disabled = true;
+            if (timeInput) timeInput.disabled = true;
+          }
+        });
+
+        return confirm(`選択した ${checkedBoxes.length} 件の案件を更新しますか？`);
+      });
+    }
+  });

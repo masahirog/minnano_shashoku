@@ -1,0 +1,53 @@
+- content_for(:title) { t("administrate.actions.show_resource", name: page.page_title) }
+
+- breadcrumb "admin_#{page.resource_name}".to_sym, page.resource
+
+/ Content Header
+.content-header
+  .container-fluid
+    .row.mb-2
+      .col-sm-6
+        h1.m-0 = page.page_title
+      .col-sm-6
+        ol.breadcrumb.float-sm-right
+          = breadcrumbs separator: " / ", autoroot: false
+
+= content_for(:header_middle)
+
+/ Main content
+.container-fluid
+  .row
+    .col-12
+      .card
+        .card-header
+          h3.card-title 詳細情報
+          .card-tools
+            - if accessible_action?(page.resource, :edit)
+              = link_to "編集", [:edit, namespace, page.resource], class: "btn btn-primary btn-sm"
+
+            - if accessible_action?(page.resource, :destroy)
+              = button_to "削除", [namespace, page.resource], class: "btn btn-danger btn-sm", method: :delete, data: { turbo_confirm: t("administrate.actions.confirm") }
+
+        = content_for(:header_last)
+
+        = content_for(:before_main)
+
+        - if content_for?(:main)
+          = content_for(:main)
+        - else
+          .card-body
+            - page.attributes.each do |title, attributes|
+              - if title.present?
+                h5.mt-3.mb-3 = t "helpers.label.#{page.resource_name}.#{title}", default: title
+
+              dl.row
+                - attributes.each do |attribute|
+                  dt.col-sm-3 id=attribute.name
+                    = t("helpers.label.#{resource_name}.#{attribute.name}", default: page.resource.class.human_attribute_name(attribute.name))
+                  dd.col-sm-9
+                    = render_field attribute, page: page
+
+              - unless title == page.attributes.keys.last
+                hr
+
+        = content_for(:after_main)

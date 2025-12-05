@@ -1,0 +1,96 @@
+- content_for(:title) do
+  = @supply.name
+  |  の拠点別在庫
+
+- breadcrumb :admin_supplies
+
+/ Content Header
+.content-header
+  .container-fluid
+    .row.mb-2
+      .col-sm-6
+        h1.m-0
+          = @supply.name
+          |  の拠点別在庫
+      .col-sm-6
+        ol.breadcrumb.float-sm-right
+          = breadcrumbs separator: " / ", autoroot: false
+
+/ Main content
+.container-fluid
+  .row
+    .col-12
+      / 商品情報カード
+      .card.card-primary.card-outline
+        .card-body
+          .row
+            .col-md-6
+              h5.mb-3 = @supply.name
+              p.mb-1
+                strong SKU:
+                = " "
+                = @supply.sku
+              p.mb-1
+                strong カテゴリ:
+                = " "
+                span.badge.badge-info = @supply.category
+              p.mb-1
+                strong 単位:
+                = " "
+                = @supply.unit
+            .col-md-6.text-right
+              h3.mb-0 合計在庫数
+              h2.text-primary
+                strong = @stocks.sum(:quantity)
+                = " "
+                = @supply.unit
+              p.text-muted
+                = @stocks.count
+                |  拠点に配置
+
+      / 拠点別在庫テーブル
+      .card
+        .card-header
+          h3.card-title 拠点別在庫一覧
+          .card-tools
+            = link_to "移動登録", new_admin_bulk_supply_movement_path, class: "btn btn-primary btn-sm mr-1"
+            = link_to "戻る", admin_supplies_path, class: "btn btn-secondary btn-sm"
+
+        .card-body.p-0
+          table.table.table-striped.table-hover
+            thead
+              tr
+                th 拠点区分
+                th 拠点名
+                th.text-right 在庫数
+                th.text-right 実地棚卸数
+                th 最終更新
+                th.text-center 操作
+            tbody
+              - if @stocks.any?
+                - @stocks.each do |stock|
+                  tr
+                    td = stock.location_type_japanese
+                    td = stock.location_display_name
+                    td.text-right
+                      strong = stock.quantity
+                      = " "
+                      = @supply.unit
+                    td.text-right
+                      - if stock.physical_count
+                        = stock.physical_count
+                        = " "
+                        = @supply.unit
+                      - else
+                        | -
+                    td
+                      - if stock.last_updated_at
+                        = l(stock.last_updated_at, format: :long)
+                      - else
+                        | -
+                    td.text-center
+                      = link_to "詳細", admin_supply_stock_path(stock), class: "btn btn-sm btn-outline-info"
+              - else
+                tr
+                  td.text-center.text-muted.p-4 colspan="6"
+                    | 在庫データがありません

@@ -1,0 +1,28 @@
+/
+  Index Header - 2行レイアウト
+  1行目: タイトル(左) | 新規作成(右)
+  2行目: 検索 | フィルター(自動更新)
+
+- content_for(:title) do
+  = display_resource_name(page.resource_name)
+
+header.main-content__header style="display: block;"
+  / 1行目: タイトルと新規作成
+  .d-flex.justify-content-between.align-items-center.mb-3
+    h1.main-content__page-title.mb-0 id="page-title"
+      = content_for(:title)
+    = link_to "新規作成", new_admin_menu_path, class: "btn btn-primary btn-sm"
+
+  / 2行目: 検索とフィルター
+  = form_tag(admin_menus_path, method: :get, class: "d-flex align-items-center", id: "menu-filter-form") do
+    / 検索ボックス
+    = text_field_tag :search, params[:search], class: "form-control form-control-sm mr-2", placeholder: "メニュー名で検索...", style: "width: 300px;"
+
+    / 飲食店フィルター
+    = select_tag :restaurant_id, options_from_collection_for_select(Restaurant.order(:name), :id, :name, params[:restaurant_id]), { include_blank: "飲食店: 全て", class: "form-control form-control-sm mr-2", style: "width: 200px;", onchange: "this.form.submit();" }
+
+    / ステータスフィルター
+    = select_tag :is_active, options_for_select([["ステータス: 全て", ""], ["有効のみ", "true"], ["無効のみ", "false"]], params[:is_active]), { class: "form-control form-control-sm mr-2", style: "width: 150px;", onchange: "this.form.submit();" }
+
+    / クリアボタン
+    = link_to "クリア", admin_menus_path, class: "btn btn-secondary btn-sm"
