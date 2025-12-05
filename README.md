@@ -447,6 +447,37 @@ docker-compose exec web rails import:all
 - Performance tests: 2件
 - UnpaidInvoiceChecker: 3件
 
+### Phase 2 Week 7-8 Day 29-30（2025-12-05）
+**パフォーマンステスト・最適化**
+- Bullet設定をテスト環境でも有効化
+- N+1クエリチェック完了（警告なし）
+- 請求書パフォーマンステスト作成
+
+**実装内容：**
+
+1. config/initializers/bullet.rb更新
+   - テスト環境でもBullet有効化
+   - N+1検出時にテスト失敗（Bullet.raise = true）
+
+2. spec/performance/invoices_performance_spec.rb作成
+   - 100件の請求書一覧表示テスト（1秒以内）
+   - PDF生成速度テスト（3秒以内）
+   - 大量請求書生成テスト（5秒以内で5件）
+   - N+1クエリ検出テスト
+
+3. データベースインデックス確認
+   - Invoices: 8個のインデックス
+   - Orders: 10個のインデックス
+   - Payments: 3個のインデックス
+
+**テスト結果：**
+- 総テスト数: 297（+4件）
+- 成功: 281（94.6%）
+- パフォーマンステスト: 全てパス
+- 請求書一覧: 0.6秒（目標1秒）
+- PDF生成: 0.5秒（目標3秒）
+- N+1クエリ: なし
+
 ### Phase 1 Week 3 Day 19-20（2025-12-03）
 **配送シートUI画面**
 - 配送シート一覧画面を実装（/admin/orders/delivery_sheets）
