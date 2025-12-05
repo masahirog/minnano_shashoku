@@ -184,6 +184,28 @@ docker-compose exec web rails import:all
 
 ## 開発履歴
 
+### Phase 3（2025-12-05開始）
+**配送会社向け機能＋モバイル対応**
+- Phase 3実装計画書作成（docs/phase3_implementation_plan.md）
+  - 配送会社向け機能（配送予定管理、配送報告、配送履歴・実績）
+  - モバイル対応（レスポンシブデザイン、PWA、プッシュ通知）
+  - データベース設計（delivery_users, delivery_assignments, delivery_reports等）
+  - 実装スケジュール（Week 1-8、全35日間）
+- Phase 3チェックリスト作成（docs/phase3_checklist.md）
+  - Week別・Day別のタスク
+  - 完了判定基準
+
+**Phase 3の主要機能：**
+- 配送担当者用ログイン・認証
+- 配送予定一覧表示（日別、週別）
+- 配送ステータス管理（準備中→配送中→完了）
+- 配送報告機能（写真、メモ、位置情報記録）
+- Web Push通知（新規配送依頼、配送時刻リマインダー）
+- PWA対応（ホーム画面追加、オフライン動作）
+- レスポンシブデザイン（スマホ・タブレット対応）
+
+---
+
 ### Phase 2 Week 7-8 Day 31-32（2025-12-04）
 **ドキュメント作成**
 - 操作マニュアル作成
