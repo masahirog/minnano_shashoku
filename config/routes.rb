@@ -6,6 +6,11 @@ Rails.application.routes.draw do
       resources :delivery_sheet_items
       resources :drivers
       resources :delivery_users
+      resources :delivery_assignments do
+        collection do
+          post :bulk_assign
+        end
+      end
       resources :menus
       resources :orders do
         collection do

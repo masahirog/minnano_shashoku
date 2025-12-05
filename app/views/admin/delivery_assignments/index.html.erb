@@ -1,0 +1,178 @@
+<!-- Content Header (Page header) -->
+<section class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1>配送割当</h1>
+      </div>
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+          <%= breadcrumbs separator: ' / ' %>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Main content -->
+<section class="content">
+  <div class="container-fluid">
+    <!-- Filter Card -->
+    <div class="card card-secondary collapsed-card">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fas fa-filter mr-2"></i>
+          フィルター
+        </h3>
+        <div class="card-tools">
+          <button type="button" class="btn btn-tool" data-card-widget="collapse">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
+      </div>
+      <div class="card-body" style="display: none;">
+        <%= form_with url: admin_delivery_assignments_path, method: :get, local: true, class: "form-horizontal" do |f| %>
+          <div class="row">
+            <div class="col-md-3">
+              <div class="form-group">
+                <%= f.label :scheduled_date, '配送予定日', class: 'control-label' %>
+                <%= f.date_field :scheduled_date, value: params[:scheduled_date], class: 'form-control' %>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <%= f.label :delivery_company_id, '配送会社', class: 'control-label' %>
+                <%= f.select :delivery_company_id,
+                    options_from_collection_for_select(DeliveryCompany.order(:name), :id, :name, params[:delivery_company_id]),
+                    { include_blank: '全て' },
+                    class: 'form-control' %>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <%= f.label :delivery_user_id, '配送担当者', class: 'control-label' %>
+                <%= f.select :delivery_user_id,
+                    options_from_collection_for_select(DeliveryUser.includes(:delivery_company).order('delivery_companies.name, delivery_users.name').references(:delivery_companies), :id, ->(du) { "#{du.delivery_company&.name} - #{du.name}" }, params[:delivery_user_id]),
+                    { include_blank: '全て' },
+                    class: 'form-control' %>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <%= f.label :status, 'ステータス', class: 'control-label' %>
+                <%= f.select :status,
+                    options_for_select([
+                      ['待機中', 'pending'],
+                      ['配送中', 'in_transit'],
+                      ['完了', 'completed']
+                    ], params[:status]),
+                    { include_blank: '全て' },
+                    class: 'form-control' %>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <%= f.submit 'フィルター適用', class: 'btn btn-primary' %>
+              <%= link_to 'リセット', admin_delivery_assignments_path, class: 'btn btn-default ml-2' %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Delivery Assignments Card -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">配送割当一覧</h3>
+        <div class="card-tools">
+          <%= link_to new_admin_delivery_assignment_path, class: 'btn btn-sm btn-success' do %>
+            <i class="fas fa-plus mr-1"></i>
+            新規作成
+          <% end %>
+        </div>
+      </div>
+      <div class="card-body">
+        <% if @delivery_assignments.any? %>
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover table-sm">
+              <thead>
+                <tr class="table-secondary">
+                  <th style="width: 60px;">ID</th>
+                  <th style="width: 100px;">配送予定日</th>
+                  <th style="width: 80px;">配送時刻</th>
+                  <th style="width: 60px;">順序</th>
+                  <th>配送会社</th>
+                  <th>配送担当者</th>
+                  <th>案件</th>
+                  <th>企業</th>
+                  <th style="width: 80px;">ステータス</th>
+                  <th style="width: 120px;">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @delivery_assignments.each do |assignment| %>
+                  <tr>
+                    <td class="text-center"><%= assignment.id %></td>
+                    <td><%= assignment.scheduled_date.strftime('%Y/%m/%d') %></td>
+                    <td><%= assignment.scheduled_time&.strftime('%H:%M') || '-' %></td>
+                    <td class="text-center"><%= assignment.sequence_number %></td>
+                    <td><%= assignment.delivery_company&.name %></td>
+                    <td><%= assignment.delivery_user&.name %></td>
+                    <td>
+                      <%= link_to admin_order_path(assignment.order), target: '_blank' do %>
+                        Order #<%= assignment.order.id %>
+                        <i class="fas fa-external-link-alt fa-xs"></i>
+                      <% end %>
+                    </td>
+                    <td>
+                      <% if assignment.order.company %>
+                        <span class="badge" style="background-color: <%= assignment.order.company.color || '#2196f3' %>;">
+                          <%= assignment.order.company.name %>
+                        </span>
+                      <% else %>
+                        -
+                      <% end %>
+                    </td>
+                    <td class="text-center">
+                      <% case assignment.status %>
+                      <% when 'pending' %>
+                        <span class="badge badge-warning">待機中</span>
+                      <% when 'in_transit' %>
+                        <span class="badge badge-primary">配送中</span>
+                      <% when 'completed' %>
+                        <span class="badge badge-success">完了</span>
+                      <% else %>
+                        <span class="badge badge-secondary"><%= assignment.status %></span>
+                      <% end %>
+                    </td>
+                    <td class="text-center">
+                      <%= link_to '詳細', admin_delivery_assignment_path(assignment), class: 'btn btn-xs btn-info' %>
+                      <%= link_to '編集', edit_admin_delivery_assignment_path(assignment), class: 'btn btn-xs btn-primary' %>
+                      <% if assignment.status == 'pending' %>
+                        <%= link_to '削除', admin_delivery_assignment_path(assignment),
+                            method: :delete,
+                            data: { confirm: '本当に削除しますか？' },
+                            class: 'btn btn-xs btn-danger' %>
+                      <% end %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="mt-3">
+            <%= paginate @delivery_assignments %>
+          </div>
+        <% else %>
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle mr-2"></i>
+            配送割当がありません。
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</section>

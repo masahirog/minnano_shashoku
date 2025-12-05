@@ -1,0 +1,266 @@
+<!-- Content Header (Page header) -->
+<section class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1>配送割当編集</h1>
+      </div>
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+          <%= breadcrumbs separator: ' / ' %>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Main content -->
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">配送割当情報編集</h3>
+          </div>
+          <%= form_with model: @delivery_assignment, url: admin_delivery_assignment_path(@delivery_assignment), method: :patch, local: true do |f| %>
+            <div class="card-body">
+              <% if @delivery_assignment.errors.any? %>
+                <div class="alert alert-danger alert-dismissible">
+                  <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                  <h5><i class="icon fas fa-ban"></i> エラーが発生しました</h5>
+                  <ul>
+                    <% @delivery_assignment.errors.full_messages.each do |message| %>
+                      <li><%= message %></li>
+                    <% end %>
+                  </ul>
+                </div>
+              <% end %>
+
+              <!-- 案件情報（読み取り専用） -->
+              <div class="form-group">
+                <label>案件</label>
+                <div class="input-group">
+                  <input type="text" class="form-control"
+                         value="Order #<%= @delivery_assignment.order.id %> - <%= @delivery_assignment.order.company&.name %> - <%= @delivery_assignment.order.scheduled_date.strftime('%Y/%m/%d') %> - <%= @delivery_assignment.order.menu&.name %> (<%= @delivery_assignment.order.default_meal_count %>食)"
+                         readonly>
+                  <div class="input-group-append">
+                    <%= link_to admin_order_path(@delivery_assignment.order), target: '_blank', class: 'btn btn-info' do %>
+                      <i class="fas fa-external-link-alt"></i> 詳細
+                    <% end %>
+                  </div>
+                </div>
+                <small class="form-text text-muted">
+                  案件は編集できません。変更する場合は一度削除してから新規作成してください。
+                </small>
+              </div>
+
+              <!-- 配送担当者 -->
+              <div class="form-group">
+                <%= f.label :delivery_user_id, '配送担当者', class: 'required' %>
+                <%= f.select :delivery_user_id,
+                    options_from_collection_for_select(@delivery_users, :id, ->(du) {
+                      "#{du.delivery_company&.name} - #{du.name}"
+                    }, @delivery_assignment.delivery_user_id),
+                    { include_blank: '配送担当者を選択してください' },
+                    class: 'form-control select2',
+                    required: true %>
+                <small class="form-text text-muted">
+                  同じ配送会社に所属する有効な配送担当者のみ表示されます。
+                </small>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <%= f.label :scheduled_time, '配送時刻（任意）' %>
+                    <%= f.time_field :scheduled_time, value: @delivery_assignment.scheduled_time&.strftime('%H:%M'), class: 'form-control' %>
+                    <small class="form-text text-muted">
+                      指定した時刻に配送します（任意）
+                    </small>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <%= f.label :sequence_number, '順序番号' %>
+                    <%= f.number_field :sequence_number, class: 'form-control', min: 1, required: true %>
+                    <small class="form-text text-muted">
+                      配送の順序を指定します
+                    </small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ステータス（現在のステータスによって編集可否を変更） -->
+              <div class="form-group">
+                <%= f.label :status, 'ステータス' %>
+                <% if @delivery_assignment.status == 'pending' %>
+                  <%= f.select :status,
+                      options_for_select([
+                        ['待機中', 'pending'],
+                        ['配送中', 'in_transit'],
+                        ['完了', 'completed']
+                      ], @delivery_assignment.status),
+                      {},
+                      class: 'form-control' %>
+                  <small class="form-text text-muted">
+                    ステータスを変更できます
+                  </small>
+                <% else %>
+                  <input type="text" class="form-control"
+                         value="<%= @delivery_assignment.status == 'in_transit' ? '配送中' : '完了' %>"
+                         readonly>
+                  <small class="form-text text-muted text-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    配送中または完了済みのためステータスは変更できません
+                  </small>
+                <% end %>
+              </div>
+
+              <!-- 日時情報（読み取り専用） -->
+              <div class="form-group">
+                <label>割当日時</label>
+                <input type="text" class="form-control"
+                       value="<%= @delivery_assignment.assigned_at&.strftime('%Y/%m/%d %H:%M') || '-' %>"
+                       readonly>
+              </div>
+
+              <% if @delivery_assignment.status == 'in_transit' %>
+                <div class="alert alert-warning">
+                  <i class="fas fa-exclamation-triangle mr-2"></i>
+                  <strong>配送中の案件です</strong>
+                  <p class="mb-0 mt-2">配送担当者の変更は制限されています。必要な場合は配送をキャンセルしてから再割当してください。</p>
+                </div>
+              <% elsif @delivery_assignment.status == 'completed' %>
+                <div class="alert alert-success">
+                  <i class="fas fa-check-circle mr-2"></i>
+                  <strong>完了済みの案件です</strong>
+                  <p class="mb-0 mt-2">完了済みの案件の変更は推奨されません。</p>
+                </div>
+              <% end %>
+            </div>
+            <div class="card-footer">
+              <%= f.submit '更新', class: 'btn btn-primary' %>
+              <%= link_to 'キャンセル', admin_delivery_assignment_path(@delivery_assignment), class: 'btn btn-default ml-2' %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <!-- 案件詳細情報 -->
+        <div class="card card-info">
+          <div class="card-header">
+            <h3 class="card-title">案件詳細</h3>
+          </div>
+          <div class="card-body">
+            <table class="table table-sm">
+              <tbody>
+                <tr>
+                  <th>企業</th>
+                  <td>
+                    <% if @delivery_assignment.order.company %>
+                      <span class="badge" style="background-color: <%= @delivery_assignment.order.company.color || '#2196f3' %>;">
+                        <%= @delivery_assignment.order.company.name %>
+                      </span>
+                    <% else %>
+                      -
+                    <% end %>
+                  </td>
+                </tr>
+                <tr>
+                  <th>飲食店</th>
+                  <td><%= @delivery_assignment.order.restaurant&.name || '-' %></td>
+                </tr>
+                <tr>
+                  <th>メニュー</th>
+                  <td><%= @delivery_assignment.order.menu&.name || '-' %></td>
+                </tr>
+                <tr>
+                  <th>食数</th>
+                  <td><%= @delivery_assignment.order.default_meal_count %></td>
+                </tr>
+                <tr>
+                  <th>配送予定日</th>
+                  <td><%= @delivery_assignment.order.scheduled_date.strftime('%Y/%m/%d') %></td>
+                </tr>
+                <tr>
+                  <th>回収時刻</th>
+                  <td><%= @delivery_assignment.order.collection_time&.strftime('%H:%M') || '-' %></td>
+                </tr>
+                <tr>
+                  <th>返却先</th>
+                  <td><%= @delivery_assignment.order.return_location || '-' %></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card-footer">
+            <%= link_to '案件詳細を見る', admin_order_path(@delivery_assignment.order), target: '_blank', class: 'btn btn-block btn-info btn-sm' %>
+          </div>
+        </div>
+
+        <!-- 配送会社情報 -->
+        <div class="card card-secondary">
+          <div class="card-header">
+            <h3 class="card-title">配送会社情報</h3>
+          </div>
+          <div class="card-body">
+            <table class="table table-sm">
+              <tbody>
+                <tr>
+                  <th>配送会社</th>
+                  <td><%= @delivery_assignment.delivery_company.name %></td>
+                </tr>
+                <tr>
+                  <th>電話番号</th>
+                  <td><%= @delivery_assignment.delivery_company.phone || '-' %></td>
+                </tr>
+                <tr>
+                  <th>メール</th>
+                  <td><%= @delivery_assignment.delivery_company.email || '-' %></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 操作 -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">その他の操作</h3>
+          </div>
+          <div class="card-body">
+            <%= link_to admin_delivery_assignment_path(@delivery_assignment), class: 'btn btn-block btn-default' do %>
+              <i class="fas fa-arrow-left mr-2"></i>
+              詳細に戻る
+            <% end %>
+            <%= link_to admin_delivery_assignments_path, class: 'btn btn-block btn-secondary' do %>
+              <i class="fas fa-list mr-2"></i>
+              一覧に戻る
+            <% end %>
+            <% if @delivery_assignment.status == 'pending' %>
+              <%= link_to admin_delivery_assignment_path(@delivery_assignment),
+                  method: :delete,
+                  data: { confirm: '本当に削除しますか？' },
+                  class: 'btn btn-block btn-danger mt-3' do %>
+                <i class="fas fa-trash mr-2"></i>
+                削除
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+$(document).ready(function() {
+  // Select2の初期化
+  $('.select2').select2({
+    theme: 'bootstrap4',
+    width: '100%'
+  });
+});
+</script>

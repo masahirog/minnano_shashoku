@@ -1,0 +1,157 @@
+<!-- Content Header (Page header) -->
+<section class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1>配送割当作成</h1>
+      </div>
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+          <%= breadcrumbs separator: ' / ' %>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Main content -->
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">配送割当情報入力</h3>
+          </div>
+          <%= form_with model: @delivery_assignment, url: admin_delivery_assignments_path, local: true do |f| %>
+            <div class="card-body">
+              <% if flash[:alert] %>
+                <div class="alert alert-danger alert-dismissible">
+                  <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                  <i class="icon fas fa-ban"></i>
+                  <%= flash[:alert] %>
+                </div>
+              <% end %>
+
+              <div class="form-group">
+                <%= f.label :order_id, '案件', class: 'required' %>
+                <%= f.select :order_id,
+                    options_from_collection_for_select(@orders, :id, ->(o) {
+                      "Order ##{o.id} - #{o.company&.name} - #{o.scheduled_date.strftime('%Y/%m/%d')} - #{o.menu&.name} (#{o.default_meal_count}食)"
+                    }),
+                    { include_blank: '案件を選択してください' },
+                    class: 'form-control select2',
+                    required: true %>
+                <small class="form-text text-muted">
+                  未割当の案件のみ表示されます。
+                </small>
+              </div>
+
+              <div class="form-group">
+                <%= f.label :delivery_user_id, '配送担当者', class: 'required' %>
+                <%= f.select :delivery_user_id,
+                    options_from_collection_for_select(@delivery_users, :id, ->(du) {
+                      "#{du.delivery_company&.name} - #{du.name}"
+                    }),
+                    { include_blank: '配送担当者を選択してください' },
+                    class: 'form-control select2',
+                    required: true %>
+                <small class="form-text text-muted">
+                  有効な配送担当者のみ表示されます。
+                </small>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <%= f.label :scheduled_time, '配送時刻（任意）' %>
+                    <%= f.time_field :scheduled_time, class: 'form-control' %>
+                    <small class="form-text text-muted">
+                      指定した時刻に配送します（任意）
+                    </small>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <%= f.label :sequence_number, '順序番号（任意）' %>
+                    <%= f.number_field :sequence_number, class: 'form-control', min: 1 %>
+                    <small class="form-text text-muted">
+                      未入力の場合は自動採番されます
+                    </small>
+                  </div>
+                </div>
+              </div>
+
+              <div class="alert alert-info">
+                <i class="fas fa-info-circle mr-2"></i>
+                <strong>注意事項</strong>
+                <ul class="mb-0 mt-2">
+                  <li>案件の配送会社と配送担当者の所属会社が一致している必要があります</li>
+                  <li>既に配送割当されている案件には割り当てできません</li>
+                  <li>無効な配送担当者には割り当てできません</li>
+                </ul>
+              </div>
+            </div>
+            <div class="card-footer">
+              <%= f.submit '配送割当を作成', class: 'btn btn-success' %>
+              <%= link_to 'キャンセル', admin_delivery_assignments_path, class: 'btn btn-default ml-2' %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card card-secondary">
+          <div class="card-header">
+            <h3 class="card-title">ヘルプ</h3>
+          </div>
+          <div class="card-body">
+            <h6>配送割当とは</h6>
+            <p class="text-sm">
+              案件を配送担当者に割り当てる機能です。割り当てられた案件は配送担当者の配送予定一覧に表示されます。
+            </p>
+
+            <h6>順序番号について</h6>
+            <p class="text-sm">
+              配送の順序を指定できます。未入力の場合は、その配送担当者の当日の最後の順序に自動で追加されます。
+            </p>
+
+            <h6>配送時刻について</h6>
+            <p class="text-sm">
+              配送予定時刻を指定できます（任意）。案件の回収時刻や倉庫集荷時刻とは別に管理されます。
+            </p>
+
+            <h6>一括割当について</h6>
+            <p class="text-sm">
+              複数の案件を一度に同じ配送担当者に割り当てたい場合は、一覧画面から一括割当機能をご利用ください。
+            </p>
+          </div>
+        </div>
+
+        <div class="card card-warning">
+          <div class="card-header">
+            <h3 class="card-title">制約事項</h3>
+          </div>
+          <div class="card-body">
+            <ul class="mb-0 text-sm">
+              <li>案件に配送会社が設定されている必要があります</li>
+              <li>配送担当者の所属会社と案件の配送会社が一致している必要があります</li>
+              <li>配送担当者が有効（is_active = true）である必要があります</li>
+              <li>既に配送割当されている案件には重複して割り当てできません</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+$(document).ready(function() {
+  // Select2の初期化
+  $('.select2').select2({
+    theme: 'bootstrap4',
+    width: '100%'
+  });
+});
+</script>

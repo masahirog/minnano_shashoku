@@ -91,6 +91,17 @@ crumb :admin_delivery_user do |delivery_user|
   parent :admin_delivery_users
 end
 
+# 配送割当
+crumb :admin_delivery_assignments do
+  link "配送割当", admin_delivery_assignments_path
+  parent :root
+end
+
+crumb :admin_delivery_assignment do |delivery_assignment|
+  link "配送割当 ##{delivery_assignment.id}", admin_delivery_assignment_path(delivery_assignment)
+  parent :admin_delivery_assignments
+end
+
 # メニュー
 crumb :admin_menus do
   link "メニュー", admin_menus_path
