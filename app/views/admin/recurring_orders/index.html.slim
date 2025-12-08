@@ -6,17 +6,39 @@
   = content_for(:main)
 - else
   section.main-content__body.main-content__body--flush
-    / 一括生成ボタン
-    .card
-      .card-body
-        = form_with url: bulk_generate_admin_recurring_orders_path, method: :post, local: true, class: "form-inline" do |f|
-          label.mr-2 for="weeks"
-            | 生成期間（週）:
-          = f.number_field :weeks, value: 4, min: 1, max: 52, class: "form-control mr-2", style: "width: 100px;"
-          = f.submit "注文を一括生成", class: "btn btn-primary", data: { confirm: "定期案件から注文を生成します。よろしいですか？" }
-
     = render("collection", collection_presenter: page, collection_field_name: resource_name, page: page, resources: resources, table_title: "page-title")
 
     = render("pagination", resources: resources)
 
 = content_for(:after_main)
+
+/ 一括生成モーダル
+- next_sunday = Date.today.beginning_of_week(:sunday) + (Date.today.sunday? ? 0 : 7)
+- next_saturday = next_sunday + 6
+
+#bulkGenerateModal.modal.fade tabindex="-1" role="dialog" aria-labelledby="bulkGenerateModalLabel" aria-hidden="true"
+  .modal-dialog role="document"
+    .modal-content
+      .modal-header
+        h5#bulkGenerateModalLabel.modal-title 注文一括生成
+        button.close type="button" data-dismiss="modal" aria-label="Close"
+          span aria-hidden="true" &times;
+      = form_with url: bulk_generate_admin_recurring_orders_path, method: :post, local: true do |f|
+        .modal-body
+          .alert.alert-info
+            p.mb-0.mt-2
+              | 指定期間内で、各定期案件の配送曜日に該当する日に注文を生成します。
+
+          .form-group
+            = f.label :from_date, '開始日'
+            = f.date_field :from_date, value: next_sunday, class: 'form-control', required: true
+            small.form-text.text-muted この日から注文生成を開始します
+
+          .form-group
+            = f.label :to_date, '終了日'
+            = f.date_field :to_date, value: next_saturday, class: 'form-control', required: true
+            small.form-text.text-muted この日までの期間で注文を生成します
+
+        .modal-footer
+          button.btn.btn-secondary type="button" data-dismiss="modal" キャンセル
+          = f.submit '注文を生成', class: "btn btn-primary", data: { confirm: "定期案件から注文を生成します。よろしいですか？" }

@@ -29,18 +29,34 @@ module Admin
     #   end
     # end
 
+    # 新規作成アクション（scheduled_dateを初期値として設定）
+    def new
+      @page = Administrate::Page::Form.new(dashboard, resource_class.new)
+
+      # scheduled_dateパラメータがあれば初期値として設定
+      if params[:scheduled_date].present?
+        @page.resource.scheduled_date = params[:scheduled_date].to_date
+      end
+
+      render locals: {
+        page: @page
+      }
+    end
+
     # カレンダー表示アクション
     def calendar
       start_date = params.fetch(:start_date, Date.today).to_date
       @orders = Order.includes(:company, :restaurant, :menus)
                      .where(scheduled_date: start_date.beginning_of_month..start_date.end_of_month)
+                     .order(:scheduled_date, :collection_time)
+    end
 
-      # フィルター適用
-      @orders = @orders.where(company_id: params[:company_id]) if params[:company_id].present?
-      @orders = @orders.where(restaurant_id: params[:restaurant_id]) if params[:restaurant_id].present?
-      @orders = @orders.where(status: params[:status]) if params[:status].present?
-
-      @orders = @orders.order(:scheduled_date, :collection_time)
+    # 1日の詳細表示アクション
+    def daily_view
+      @date = params.fetch(:date, Date.today).to_date
+      @orders = Order.includes(:company, :restaurant, :menus, :delivery_company, order_items: :menu)
+                     .where(scheduled_date: @date)
+                     .order(:collection_time, :company_id)
     end
 
     # スケジュール調整画面

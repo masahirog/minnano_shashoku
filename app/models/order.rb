@@ -106,6 +106,22 @@ class Order < ApplicationRecord
     total_meal_count
   end
 
+  # 案件種別に応じた色を返す
+  def order_type_color
+    case order_type
+    when '定期'
+      '#2196f3'  # 青
+    when 'スポット'
+      '#ff9800'  # オレンジ
+    when 'トライアル'
+      '#4caf50'  # 緑
+    when '試食会'
+      '#9c27b0'  # 紫
+    else
+      '#2196f3'  # デフォルトは青
+    end
+  end
+
   # 同じ週に同じメニューが重複しているかチェック
   def duplicate_menu_in_week?
     return false unless scheduled_date && menus.any?

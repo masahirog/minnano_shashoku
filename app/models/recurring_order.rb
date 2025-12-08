@@ -16,4 +16,43 @@ class RecurringOrder < ApplicationRecord
   def day_of_week_name
     %w[日 月 火 水 木 金 土][day_of_week]
   end
+
+  # 指定期間内でOrderを生成
+  def generate_orders_for_range(from_date, to_date)
+    orders = []
+
+    (from_date..to_date).each do |date|
+      # この定期案件の曜日と一致する日のみ
+      next unless date.wday == day_of_week
+
+      # 既に存在するOrderはスキップ
+      next if Order.exists?(
+        recurring_order_id: id,
+        scheduled_date: date,
+        company_id: company_id
+      )
+
+      # Orderを作成
+      order = Order.create!(
+        recurring_order_id: id,
+        company_id: company_id,
+        scheduled_date: date,
+        order_type: '定期',
+        total_meal_count: meal_count,
+        status: '確認待ち',
+        subtotal: 0,
+        tax: 0,
+        tax_8_percent: 0,
+        tax_10_percent: 0,
+        delivery_fee: 0,
+        delivery_fee_tax: 0,
+        discount_amount: 0,
+        total_price: 0
+      )
+
+      orders << order
+    end
+
+    orders
+  end
 end

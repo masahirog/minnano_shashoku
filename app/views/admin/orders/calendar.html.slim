@@ -15,58 +15,45 @@ section.content-header
 / Main content
 section.content.calendar-content
   .container-fluid
-    / Filter Card
-    .card.card-secondary.collapsed-card
-      .card-header
-        h3.card-title
-          i.fas.fa-filter.mr-2
-          | フィルター
-        .card-tools
-          button.btn.btn-tool type="button" data-card-widget="collapse"
-            i.fas.fa-plus
-      .card-body style="display: none;"
-        = form_with url: calendar_admin_orders_path, method: :get, local: true, class: "form-horizontal" do |f|
-          .row
-            .col-md-4
-              .form-group
-                = f.label :company_id, '企業', class: 'control-label'
-                = f.select :company_id, options_from_collection_for_select(Company.order(:name), :id, :name, params[:company_id]), { include_blank: '全て' }, class: 'form-control'
-            .col-md-4
-              .form-group
-                = f.label :restaurant_id, '飲食店', class: 'control-label'
-                = f.select :restaurant_id, options_from_collection_for_select(Restaurant.order(:name), :id, :name, params[:restaurant_id]), { include_blank: '全て' }, class: 'form-control'
-            .col-md-4
-              .form-group
-                = f.label :status, 'ステータス', class: 'control-label'
-                = f.select :status, options_for_select([['全て', ''], ['保留', 'pending'], ['確定', 'confirmed'], ['完了', 'completed'], ['キャンセル', 'cancelled']], params[:status]), {}, class: 'form-control'
-          .row
-            .col-md-12
-              = f.hidden_field :view, value: params[:view]
-              = f.hidden_field :start_date, value: params[:start_date]
-              = f.submit 'フィルター適用', class: 'btn btn-primary'
-              = link_to 'リセット', calendar_admin_orders_path(view: params[:view], start_date: params[:start_date]), class: 'btn btn-default ml-2'
+    / 案件種別の色分け凡例
+    .card.card-info
+      .card-body.p-2
+        .d-flex.align-items-center.flex-wrap style="gap: 20px;"
+          strong.mr-3 案件種別:
+          .d-flex.align-items-center
+            .color-box style="background-color: #2196f3; width: 20px; height: 20px; border-radius: 3px; margin-right: 8px;"
+            span 定期
+          .d-flex.align-items-center
+            .color-box style="background-color: #ff9800; width: 20px; height: 20px; border-radius: 3px; margin-right: 8px;"
+            span スポット
+          .d-flex.align-items-center
+            .color-box style="background-color: #4caf50; width: 20px; height: 20px; border-radius: 3px; margin-right: 8px;"
+            span トライアル
+          .d-flex.align-items-center
+            .color-box style="background-color: #9c27b0; width: 20px; height: 20px; border-radius: 3px; margin-right: 8px;"
+            span 試食会
 
     / Calendar Card
     .card
       .card-header
         .card-tools
           - if params[:view] == 'week'
-            = link_to '月間表示に切替', calendar_admin_orders_path(start_date: params[:start_date], view: 'month', company_id: params[:company_id], restaurant_id: params[:restaurant_id], status: params[:status]), class: 'btn btn-sm btn-secondary'
+            = link_to '月間表示に切替', calendar_admin_orders_path(start_date: params[:start_date], view: 'month'), class: 'btn btn-sm btn-secondary'
           - else
-            = link_to '週間表示に切替', calendar_admin_orders_path(start_date: params[:start_date], view: 'week', company_id: params[:company_id], restaurant_id: params[:restaurant_id], status: params[:status]), class: 'btn btn-sm btn-secondary'
+            = link_to '週間表示に切替', calendar_admin_orders_path(start_date: params[:start_date], view: 'week'), class: 'btn btn-sm btn-secondary'
           = link_to '配送シート', delivery_sheets_admin_orders_path, class: 'btn btn-sm btn-success ml-2'
           = link_to '一覧に戻る', admin_orders_path, class: 'btn btn-sm btn-default ml-2'
       .card-body.p-0
         .calendar-container.p-3
           - if params[:view] == 'week'
             = week_calendar(events: @orders, attribute: :scheduled_date, end_attribute: :scheduled_date) do |date, orders|
-              .calendar-day-header
+              .calendar-day-header data-date-url="#{daily_view_admin_orders_path(date: date)}"
                 = date.strftime('%m/%d (%a)')
               .calendar-events
                 - orders.each do |order|
                   - has_duplicate = order.duplicate_menu_in_week?
                   - first_menu = order.menus.first
-                  .calendar-event data-order-id=order.id style="background-color: #{order.company&.color || '#2196f3'}20; border-left-color: #{order.company&.color || '#2196f3'};" data-toggle="tooltip" data-html="true" title="<strong>#{order.company&.name}</strong><br>#{order.restaurant&.name}<br>#{'メニュー: ' + first_menu.name + '<br>' if first_menu}食数: #{order.total_meal_count}食<br>ステータス: #{order.status}#{has_duplicate ? '<br><span class=\'text-warning\'><strong>注意: 同じ週に同じメニューが重複しています</strong></span>' : ''}"
+                  .calendar-event data-order-id=order.id style="background-color: #{order.order_type_color}20; border-left-color: #{order.order_type_color};" data-toggle="tooltip" data-html="true" title="<strong>#{order.company&.name}</strong><br>#{order.restaurant&.name}<br>#{'メニュー: ' + first_menu.name + '<br>' if first_menu}食数: #{order.total_meal_count}食<br>ステータス: #{order.status}#{has_duplicate ? '<br><span class=\'text-warning\'><strong>注意: 同じ週に同じメニューが重複しています</strong></span>' : ''}"
                     = link_to admin_order_path(order), class: 'calendar-event-link' do
                       .event-time
                         = order.collection_time&.strftime('%H:%M')
@@ -81,13 +68,13 @@ section.content.calendar-content
                           = first_menu.name
           - else
             = month_calendar(events: @orders, attribute: :scheduled_date, end_attribute: :scheduled_date) do |date, orders|
-              .calendar-day-header
+              .calendar-day-header data-date-url="#{daily_view_admin_orders_path(date: date)}"
                 = date.day
               .calendar-events
                 - orders.each do |order|
                   - has_duplicate = order.duplicate_menu_in_week?
                   - first_menu = order.menus.first
-                  .calendar-event.calendar-event-small data-order-id=order.id style="background-color: #{order.company&.color || '#2196f3'}20; border-left-color: #{order.company&.color || '#2196f3'};" data-toggle="tooltip" data-html="true" title="<strong>#{order.company&.name}</strong><br>#{order.restaurant&.name}<br>#{'メニュー: ' + first_menu.name + '<br>' if first_menu}食数: #{order.total_meal_count}食<br>ステータス: #{order.status}#{has_duplicate ? '<br><span class=\'text-warning\'><strong>注意: 同じ週に同じメニューが重複しています</strong></span>' : ''}"
+                  .calendar-event.calendar-event-small data-order-id=order.id style="background-color: #{order.order_type_color}20; border-left-color: #{order.order_type_color};" data-toggle="tooltip" data-html="true" title="<strong>#{order.company&.name}</strong><br>#{order.restaurant&.name}<br>#{'メニュー: ' + first_menu.name + '<br>' if first_menu}食数: #{order.total_meal_count}食<br>ステータス: #{order.status}#{has_duplicate ? '<br><span class=\'text-warning\'><strong>注意: 同じ週に同じメニューが重複しています</strong></span>' : ''}"
                     = link_to admin_order_path(order), class: 'calendar-event-link' do
                       .event-time.small
                         = order.collection_time&.strftime('%H:%M')
@@ -168,10 +155,12 @@ css:
     background-color: #ffffff;
     width: 14.28%; /* 7日分で均等 */
     transition: background-color 0.2s ease;
+    cursor: pointer;
+    position: relative;
   }
 
   .simple-calendar .day:hover {
-    background-color: #f8f9fa;
+    background-color: #e3f2fd;
   }
 
   .simple-calendar .wday-0 {
@@ -210,6 +199,7 @@ css:
     margin-bottom: 6px;
     font-size: 15px;
     color: #2d3748;
+    pointer-events: none;
   }
 
   .calendar-events {
@@ -217,6 +207,7 @@ css:
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: #cbd5e0 #f7fafc;
+    pointer-events: auto;
   }
 
   .calendar-events::-webkit-scrollbar {
@@ -248,6 +239,8 @@ css:
     transition: all 0.2s ease;
     position: relative;
     overflow: hidden;
+    pointer-events: auto;
+    z-index: 1;
   }
 
   .calendar-event::before {
@@ -381,3 +374,31 @@ css:
       transform: scale(1.1);
     }
   }
+
+javascript:
+  // カレンダーのマス全体をクリッカブルにする関数
+  function initializeCalendarClick() {
+    // 既存のイベントリスナーを削除するため、一度全て削除
+    document.querySelectorAll('.simple-calendar .day').forEach(function(dayCell) {
+      const newDayCell = dayCell.cloneNode(true);
+      dayCell.parentNode.replaceChild(newDayCell, dayCell);
+    });
+
+    // 新しいイベントリスナーを設定
+    document.querySelectorAll('.simple-calendar .day').forEach(function(dayCell) {
+      const dateHeader = dayCell.querySelector('.calendar-day-header');
+      if (dateHeader && dateHeader.dataset.dateUrl) {
+        dayCell.addEventListener('click', function(e) {
+          // イベントカードのリンクをクリックした場合は日付遷移をキャンセル
+          if (e.target.closest('.calendar-event')) {
+            return;
+          }
+          window.location.href = dateHeader.dataset.dateUrl;
+        });
+      }
+    });
+  }
+
+  // DOMContentLoadedとturbo:loadの両方で初期化
+  document.addEventListener('DOMContentLoaded', initializeCalendarClick);
+  document.addEventListener('turbo:load', initializeCalendarClick);

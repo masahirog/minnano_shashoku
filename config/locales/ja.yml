@@ -152,7 +152,7 @@ ja:
         delivery_company: 配送会社
         recurring_order: 定期案件
         order_type: 案件種別
-        scheduled_date: 実施予定日
+        scheduled_date: 納品日
         status: ステータス
         restaurant_status: 飲食店ステータス
         delivery_company_status: 配送会社ステータス

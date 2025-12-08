@@ -14,7 +14,7 @@ class RecurringOrderGenerator
   def generate
     generated_orders = []
 
-    RecurringOrder.active.current.find_each do |recurring_order|
+    RecurringOrder.active.find_each do |recurring_order|
       begin
         orders = recurring_order.generate_orders_for_range(start_date, end_date)
         generated_orders.concat(orders)

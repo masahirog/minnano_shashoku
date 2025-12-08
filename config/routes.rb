@@ -15,6 +15,7 @@ Rails.application.routes.draw do
       resources :orders do
         collection do
           get :calendar
+          get :daily_view
           get :schedule
           patch :update_schedule
           get :delivery_sheets

@@ -31,14 +31,13 @@ module Admin
 
     # 一括注文生成アクション
     def bulk_generate
-      weeks = params[:weeks]&.to_i || 4
-      start_date = Date.today
-      end_date = start_date + weeks.weeks
+      from_date = params[:from_date].to_date
+      to_date = params[:to_date].to_date
 
-      result = RecurringOrderGenerator.generate_for_period(start_date, end_date)
+      result = RecurringOrderGenerator.generate_for_period(from_date, to_date)
 
       if result[:success]
-        flash[:notice] = "#{result[:generated_count]}件の注文を生成しました"
+        flash[:notice] = "#{result[:generated_count]}件の注文を生成しました（#{from_date.strftime('%Y/%m/%d')} 〜 #{to_date.strftime('%Y/%m/%d')}）"
       else
         flash[:error] = "#{result[:errors].size}件のエラーが発生しました。生成: #{result[:generated_count]}件"
       end
@@ -86,11 +85,24 @@ module Admin
       @recurring_order = RecurringOrder.find(params[:id])
 
       # パラメータから開始日と終了日を取得
-      start_date = params[:start_date].to_date
-      end_date = params[:end_date].to_date
+      from_date = params[:from_date].to_date
+      to_date = params[:to_date].to_date
 
-      # 簡易的なOrder生成（後で実装）
-      redirect_to [:admin, @recurring_order], notice: 'Order生成機能は後で実装します'
+      begin
+        # Orderを生成
+        orders = @recurring_order.generate_orders_for_range(from_date, to_date)
+
+        if orders.any?
+          flash[:notice] = "#{orders.size}件のOrderを生成しました（#{from_date.strftime('%Y/%m/%d')} 〜 #{to_date.strftime('%Y/%m/%d')}）"
+        else
+          flash[:alert] = "指定期間内に生成可能なOrderはありませんでした（既に存在するか、配送曜日に該当する日がありません）"
+        end
+
+        redirect_to admin_recurring_order_path(@recurring_order)
+      rescue => e
+        flash[:error] = "Orderの生成に失敗しました: #{e.message}"
+        redirect_to generate_weekly_admin_recurring_order_path(@recurring_order)
+      end
     end
 
     private

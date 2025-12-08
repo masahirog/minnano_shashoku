@@ -304,12 +304,13 @@ html lang=I18n.locale
       / Page Content
       = yield
 
-    / jQuery
+    / jQuery (required by AdminLTE and custom scripts)
     script src="https://code.jquery.com/jquery-3.6.0.min.js"
-    / Bootstrap 4
-    script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"
     / AdminLTE
     script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"
+
+    / Page-specific JavaScript
+    = yield :javascript
 
     / Custom pushmenu script
     javascript:

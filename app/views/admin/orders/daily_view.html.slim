@@ -1,0 +1,262 @@
+/ Content Header
+section.content-header
+  .container-fluid
+    .row.mb-2
+      .col-sm-6
+        h1
+          = @date.strftime('%Y年%m月%d日 (%a)')
+          |  の案件
+      .col-sm-6
+        ol.breadcrumb.float-sm-right
+          li.breadcrumb-item
+            = link_to 'ホーム', admin_root_path
+          li.breadcrumb-item
+            = link_to '案件', admin_orders_path
+          li.breadcrumb-item
+            = link_to 'カレンダー', calendar_admin_orders_path
+          li.breadcrumb-item.active = @date.strftime('%Y/%m/%d')
+
+/ Main content
+section.content
+  .container-fluid
+    / Navigation
+    .card
+      .card-header.d-flex.justify-content-between.align-items-center
+        .left-buttons
+          = link_to '前日', daily_view_admin_orders_path(date: @date - 1), class: 'btn btn-sm btn-default'
+          = link_to '翌日', daily_view_admin_orders_path(date: @date + 1), class: 'btn btn-sm btn-default ml-2'
+        .right-buttons.ml-auto
+          = link_to '案件追加', new_admin_order_path(scheduled_date: @date), class: 'btn btn-sm btn-success'
+          = link_to '配送計画作成', '#', class: 'btn btn-sm btn-info ml-2'
+
+    / Orders List
+    - if @orders.any?
+      .card
+        .card-body.p-0
+          .table-responsive
+            table.table.table-hover.table-bordered.mb-0
+              thead.thead-light
+                tr
+                  th.text-center style="width: 80px;" 納品時間
+                  th.text-center style="width: 100px;" 案件種別
+                  th 企業
+                  th 飲食店
+                  th メニュー
+                  th.text-center style="width: 80px;" 食数
+                  th.text-right style="width: 120px;" 合計金額
+                  th.text-center style="width: 100px;" ステータス
+                  th.text-center style="width: 150px;" アクション
+
+              tbody
+                - @orders.each do |order|
+                  tr.order-row style="border-left: 4px solid #{order.order_type_color};"
+                    td.text-center.align-middle
+                      strong.text-primary
+                        = order.collection_time&.strftime('%H:%M') || '未設定'
+                    td.text-center.align-middle
+                      span.badge style="background-color: #{order.order_type_color}; color: white;"
+                        = order.order_type
+                    td.align-middle
+                      strong = order.company&.name
+                      - if order.memo.present? || order.equipment_notes.present? || order.delivery_notes.present?
+                        i.fas.fa-sticky-note.ml-2.text-info.memo-icon data-memo="#{order.memo}" data-equipment="#{order.equipment_notes}" data-delivery="#{order.delivery_notes}" style="cursor: pointer;"
+                      - if order.delivery_company.present?
+                        br
+                        small.text-muted
+                          i.fas.fa-truck.mr-1
+                          = order.delivery_company.name
+                    td.align-middle
+                      = order.restaurant&.name || '未設定'
+                    td.align-middle
+                      - if order.menus.any?
+                        - order.menus.each_with_index do |menu, index|
+                          - item = order.order_items.find { |oi| oi.menu_id == menu.id }
+                          div
+                            = menu.name
+                            - if item
+                              span.ml-2.text-muted.small
+                                | (#{item.quantity}食)
+                          - if index < order.menus.size - 1
+                            hr.my-1
+                      - else
+                        span.text-muted 未設定
+                    td.text-center.align-middle
+                      strong = "#{order.total_meal_count}食"
+                    td.text-right.align-middle
+                      strong.text-success
+                        = number_to_currency(order.total_price, unit: '¥', precision: 0)
+                    td.text-center.align-middle
+                      - case order.status
+                      - when '確認待ち'
+                        span.badge.badge-warning = order.status
+                      - when '確定'
+                        span.badge.badge-info = order.status
+                      - when '準備中'
+                        span.badge.badge-primary = order.status
+                      - when '配送中'
+                        span.badge.badge-primary = order.status
+                      - when '完了'
+                        span.badge.badge-success = order.status
+                      - else
+                        span.badge.badge-secondary = order.status
+                    td.text-center.align-middle
+                      = link_to '詳細', admin_order_path(order), class: 'btn btn-sm btn-primary', style: 'min-width: 60px;'
+
+    - else
+      .card
+        .card-body
+          .text-center.text-muted.py-5
+            i.fas.fa-calendar-times.fa-3x.mb-3
+            p この日には案件がありません
+
+css:
+  .card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .table thead th {
+    background-color: #e9ecef;
+    font-weight: 600;
+    font-size: 0.9em;
+    border-bottom: 2px solid #dee2e6;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    white-space: nowrap;
+  }
+
+  .table tbody tr.order-row {
+    transition: all 0.2s ease;
+    background-color: white;
+  }
+
+  .table tbody tr.order-row:hover {
+    background-color: #f8f9fa;
+    transform: scale(1.01);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  .table td {
+    font-size: 0.9em;
+    vertical-align: middle;
+  }
+
+  .table-responsive {
+    max-height: calc(100vh - 350px);
+    overflow-y: auto;
+  }
+
+  .badge {
+    font-size: 0.85em;
+    padding: 0.4em 0.8em;
+    font-weight: 600;
+  }
+
+  .btn-sm {
+    font-size: 0.8em;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .memo-icon {
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .memo-icon:hover {
+    transform: scale(1.2);
+    color: #0056b3 !important;
+  }
+
+  /* カスタムツールチップスタイル */
+  .custom-tooltip {
+    position: fixed;
+    z-index: 9999;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    max-width: 400px;
+    padding: 0;
+    animation: fadeIn 0.2s ease;
+  }
+
+  .custom-tooltip-content {
+    padding: 12px 16px;
+    font-size: 0.9em;
+    line-height: 1.6;
+    color: #333;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+- content_for :javascript do
+  javascript:
+    // カスタムツールチップ実装（Bootstrap不要）
+    function initializeCustomTooltips() {
+      // 既存のツールチップを削除
+      document.querySelectorAll('.custom-tooltip').forEach(el => el.remove());
+
+      // メモアイコンにイベントリスナーを設定
+      document.querySelectorAll('.memo-icon').forEach(function(icon) {
+        // クリックイベント
+        icon.addEventListener('click', function(e) {
+          e.stopPropagation();
+
+          // 既存のツールチップを全て閉じる
+          document.querySelectorAll('.custom-tooltip').forEach(el => el.remove());
+
+          // データ取得
+          const memo = icon.dataset.memo || '';
+          const equipment = icon.dataset.equipment || '';
+          const delivery = icon.dataset.delivery || '';
+
+          // コンテンツ作成
+          let content = '';
+          if (memo) {
+            content += '<strong>メモ:</strong><br>' + memo.replace(/\n/g, '<br>') + '<br><br>';
+          }
+          if (equipment) {
+            content += '<strong>器材注意事項:</strong><br>' + equipment.replace(/\n/g, '<br>') + '<br><br>';
+          }
+          if (delivery) {
+            content += '<strong>配送注意事項:</strong><br>' + delivery.replace(/\n/g, '<br>');
+          }
+
+          // ツールチップ要素を作成
+          const tooltip = document.createElement('div');
+          tooltip.className = 'custom-tooltip';
+          tooltip.innerHTML = '<div class="custom-tooltip-content">' + content + '</div>';
+          document.body.appendChild(tooltip);
+
+          // 位置調整
+          const rect = icon.getBoundingClientRect();
+          tooltip.style.top = rect.top + 'px';
+          tooltip.style.left = (rect.right + 10) + 'px';
+
+          // 画面外にはみ出る場合は左側に表示
+          if (tooltip.getBoundingClientRect().right > window.innerWidth) {
+            tooltip.style.left = (rect.left - tooltip.offsetWidth - 10) + 'px';
+          }
+        });
+      });
+
+      // 外側クリックでツールチップを閉じる
+      document.addEventListener('click', function(e) {
+        if (!e.target.closest('.memo-icon') && !e.target.closest('.custom-tooltip')) {
+          document.querySelectorAll('.custom-tooltip').forEach(el => el.remove());
+        }
+      });
+    }
+
+    // DOMContentLoadedとturbo:loadの両方で初期化
+    document.addEventListener('DOMContentLoaded', initializeCustomTooltips);
+    document.addEventListener('turbo:load', initializeCustomTooltips);
