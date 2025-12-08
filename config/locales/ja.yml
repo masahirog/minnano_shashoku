@@ -1,7 +1,7 @@
 ja:
   activerecord:
     models:
-      admin_user: 管理者
+      admin_user: 社内アカウント
       staff: スタッフ
       company: 導入企業
       restaurant: 飲食店
@@ -9,15 +9,34 @@ ja:
       delivery_company: 配送会社
       driver: ドライバー
       order: 案件
+      order_item: 注文明細
       delivery_sheet_item: 配送シート明細
       supply: 備品
       supply_stock: 在庫
       supply_movement: 備品移動登録
       own_location: 自社拠点
+      delivery_plan: 配送計画
+      delivery_plan_item: 配送計画アイテム
+      delivery_plan_item_order: 配送計画アイテム案件
+      recurring_order: 定期案件
+      invoice: 請求書
+      invoice_item: 請求明細
+      payment: 入金
+      delivery_user: 配送ユーザー
+      delivery_assignment: 配送割り当て
+      delivery_report: 配送報告
     attributes:
       admin_user:
         id: ID
         email: メールアドレス
+        name: 名前
+        role: 権限
+        phone: 電話番号
+        employee_number: 社員番号
+        photo: 写真
+        is_login_enabled: ログイン有効
+        companies: 担当企業
+        restaurants: 担当飲食店
         password: パスワード
         password_confirmation: パスワード（確認）
         created_at: 作成日時
@@ -34,7 +53,7 @@ ja:
         name: 通称
         formal_name: 正式名称
         contract_status: 契約ステータス
-        staff: 担当スタッフ
+        admin_user: 社内担当者
         contact_person: 担当者名
         contact_phone: 電話番号
         contact_email: メールアドレス
@@ -53,7 +72,9 @@ ja:
         delivery_day_of_week: 配送曜日
         has_setup: 設置有無
         digital_signage_id: デジタルサイネージID
-        first_delivery_date: 初回配送日
+        first_delivery_date: 導入開始日
+        contract_end_date: 導入終了日
+        recurring_orders: 定期配送設定
         discount_campaign_end_date: 割引キャンペーン適用末日
         trial_billable: 試食会請求対象
         trial_free_meal_count: 試食会無料対象食数
@@ -75,7 +96,7 @@ ja:
       restaurant:
         id: ID
         name: 飲食店名
-        staff: 担当スタッフ
+        admin_user: 社内担当者
         supplier_code: 送付先コード
         invoice_number: インボイス番号
         contract_status: 契約ステータス
@@ -101,6 +122,7 @@ ja:
         name: メニュー名
         description: 説明
         price_per_meal: 1食あたり価格
+        tax_rate: 消費税率（%）
         is_active: 有効
         photo_url: 写真URL
         created_at: 作成日時
@@ -127,19 +149,31 @@ ja:
         id: ID
         company: 導入企業
         restaurant: 飲食店
-        menu: メニュー
-        second_menu: 2つ目のメニュー
         delivery_company: 配送会社
+        recurring_order: 定期案件
         order_type: 案件種別
         scheduled_date: 実施予定日
-        delivery_group: 配送グループ
-        delivery_priority: 配送優先順
-        default_meal_count: デフォルト食数
-        confirmed_meal_count: 確定食数
         status: ステータス
         restaurant_status: 飲食店ステータス
         delivery_company_status: 配送会社ステータス
-        options: オプション
+        order_items: 注文明細
+        menus: メニュー
+        total_meal_count: 合計食数
+        subtotal: 小計
+        tax_8_percent: 消費税（8%）
+        tax_10_percent: 消費税（10%）
+        tax: 消費税合計
+        delivery_fee: 配送料
+        delivery_fee_tax: 配送料の消費税
+        discount_amount: 割引額
+        total_price: 合計金額
+        collection_time: 回収時刻
+        warehouse_pickup_time: 倉庫集荷時刻
+        return_location: 返却場所
+        equipment_notes: 備品備考
+        is_trial: 試食会
+        memo: メモ
+        delivery_plan_items: 配送計画アイテム
         created_at: 作成日時
         updated_at: 更新日時
       delivery_sheet_item:
@@ -190,12 +224,26 @@ ja:
         supply: 備品
         movement_type: 移動種別
         quantity: 数量
-        from_location_type: 移動元拠点区分
-        from_location_id: 移動元拠点ID
-        to_location_type: 移動先拠点区分
-        to_location_id: 移動先拠点ID
+        from_location_type: ピックアップ先拠点区分
+        from_location_id: ピックアップ先拠点ID
+        to_location_type: 納品先拠点区分
+        to_location_id: 納品先拠点ID
         movement_date: 移動日
+        status: ステータス
         notes: 備考
+        created_at: 作成日時
+        updated_at: 更新日時
+      supply_inventory:
+        id: ID
+        supply: 備品
+        location_type: 拠点区分
+        location_id: 拠点ID
+        inventory_date: 棚卸し実施日
+        theoretical_quantity: 理論在庫
+        actual_quantity: 実在庫
+        difference: 差異
+        notes: 備考
+        admin_user: 実施者
         created_at: 作成日時
         updated_at: 更新日時
       own_location:
@@ -205,6 +253,68 @@ ja:
         address: 住所
         phone: 電話番号
         is_active: 有効
+        created_at: 作成日時
+        updated_at: 更新日時
+      order_item:
+        id: ID
+        order: 案件
+        menu: メニュー
+        quantity: 数量
+        unit_price: 単価
+        tax_rate: 消費税率（%）
+        discount_type: 割引種別
+        discount_value: 割引値
+        discount_amount: 割引額
+        subtotal: 小計
+        created_at: 作成日時
+        updated_at: 更新日時
+      delivery_plan:
+        id: ID
+        delivery_company: 配送会社
+        driver: ドライバー
+        delivery_date: 配送日
+        status: ステータス
+        started_at: 開始日時
+        completed_at: 完了日時
+        notes: 備考
+        delivery_plan_items: 配送計画アイテム
+        created_at: 作成日時
+        updated_at: 更新日時
+      delivery_plan_item:
+        id: ID
+        delivery_plan: 配送計画
+        sequence: 順序
+        action_type: アクション種別
+        location_type: 場所種別
+        location_id: 場所ID
+        location: 場所
+        scheduled_time: 予定時刻
+        actual_time: 実際時刻
+        status: ステータス
+        meal_count: 食数
+        supplies_info: 備品情報
+        notes: 備考
+        orders: 案件
+        created_at: 作成日時
+        updated_at: 更新日時
+      delivery_plan_item_order:
+        id: ID
+        delivery_plan_item: 配送計画アイテム
+        order: 案件
+        action_role: アクション役割
+        created_at: 作成日時
+        updated_at: 更新日時
+      recurring_order:
+        id: ID
+        company: 導入企業
+        day_of_week: 曜日
+        meal_count: 食数
+        delivery_time: 配達時間
+        pickup_time: 回収時間
+        is_active: 有効
+        status: ステータス
+        notes: 備考
+        orders: 案件
         created_at: 作成日時
         updated_at: 更新日時
   date:
@@ -289,3 +399,57 @@ ja:
       long: "%Y/%m/%d %H:%M"
       short: "%m/%d %H:%M"
     pm: 午後
+
+  # Enum値・選択肢の日本語化
+  enums:
+    order:
+      order_type:
+        定期: 定期
+        スポット: スポット
+        トライアル: トライアル
+        試食会: 試食会
+      status:
+        確認待ち: 確認待ち
+        確定: 確定
+        準備中: 準備中
+        配送中: 配送中
+        完了: 完了
+      restaurant_status:
+        未確認: 未確認
+        確認済み: 確認済み
+        調理中: 調理中
+        完成: 完成
+      delivery_company_status:
+        未配送: 未配送
+        配送準備: 配送準備
+        配送中: 配送中
+        配送完了: 配送完了
+    delivery_plan:
+      status:
+        draft: 下書き
+        confirmed: 確定
+        in_progress: 進行中
+        completed: 完了
+        cancelled: キャンセル
+    delivery_plan_item:
+      action_type:
+        pickup: ピック
+        delivery: 納品
+        collection: 回収
+        return: 返却
+        supply_pickup: 備品ピック
+        supply_return: 備品返却
+      status:
+        pending: 未実施
+        in_progress: 進行中
+        completed: 完了
+        skipped: スキップ
+    recurring_order:
+      frequency:
+        weekly: 毎週
+        biweekly: 隔週
+        monthly: 毎月
+      status:
+        active: 有効
+        paused: 一時停止
+        completed: 終了

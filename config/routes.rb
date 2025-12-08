@@ -25,6 +25,10 @@ Rails.application.routes.draw do
         collection do
           post :bulk_generate
         end
+        member do
+          get :generate_weekly
+          post :create_weekly_orders
+        end
       end
       resources :invoices
       resources :invoice_items
@@ -39,7 +43,6 @@ Rails.application.routes.draw do
         end
       end
       resources :restaurants
-      resources :staffs
       resources :supplies do
         collection do
           get :by_location
@@ -59,6 +62,18 @@ Rails.application.routes.draw do
         collection do
           get :get_stocks
         end
+      end
+      resources :supply_inventories, only: [:index, :new, :create, :show]
+      resources :supply_forecasts, only: [:index, :show]
+      resources :delivery_plans do
+        collection do
+          post :auto_generate
+        end
+        member do
+          post :add_orders
+          patch :reorder_items
+        end
+        resources :delivery_plan_items, only: [:new, :create, :edit, :update, :destroy]
       end
 
       root to: "admin_users#index"

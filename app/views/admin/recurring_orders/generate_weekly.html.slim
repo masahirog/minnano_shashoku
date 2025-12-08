@@ -1,0 +1,61 @@
+- content_for(:title) do
+  | 週次Order生成 - #{@recurring_order.company.name}
+
+section.main-content__body
+  .card
+    .card-header
+      h3.card-title 週次Order生成
+
+    .card-body
+      / RecurringOrder情報表示
+      .mb-4
+        h5 定期案件情報
+        table.table.table-sm.table-bordered
+          tbody
+            tr
+              th style="width: 150px;" 企業
+              td = @recurring_order.company.name
+            tr
+              th 配送曜日
+              td = %w[日 月 火 水 木 金 土][@recurring_order.day_of_week]
+            tr
+              th 頻度
+              td = @recurring_order.frequency
+            tr
+              th デフォルト食数
+              td = "#{@recurring_order.default_meal_count}食"
+            tr
+              th 配送時間
+              td = @recurring_order.delivery_time&.strftime('%H:%M')
+            tr
+              th 開始日
+              td = @recurring_order.start_date
+            tr
+              th 終了日
+              td = @recurring_order.end_date || '（無期限）'
+
+      hr
+
+      / 日付範囲選択フォーム
+      = form_with url: create_weekly_orders_admin_recurring_order_path(@recurring_order), method: :post, local: true do |f|
+        .form-group
+          = f.label :start_date, '開始日'
+          = f.date_field :start_date, value: Date.today, class: 'form-control', required: true
+          small.form-text.text-muted この日から週次Orderの生成を開始します
+
+        .form-group
+          = f.label :end_date, '終了日'
+          = f.date_field :end_date, value: Date.today + 4.weeks, class: 'form-control', required: true
+          small.form-text.text-muted この日までの期間で、配送曜日に該当する日にOrderを生成します
+
+        .alert.alert-info
+          strong 注意事項:
+          ul.mb-0
+            li 既に存在するOrderは生成されません（重複チェック）
+            li 生成されるOrderは「確認待ち」ステータスで作成されます
+            li 飲食店とメニューは後から設定してください
+            li 頻度（weekly/biweekly/monthly）に応じて適切な日のみ生成されます
+
+        .form-group.mt-4
+          = f.submit '週次Orderを生成', class: 'btn btn-primary btn-lg', data: { confirm: '選択した期間でOrderを生成します。よろしいですか？' }
+          = link_to 'キャンセル', admin_recurring_order_path(@recurring_order), class: 'btn btn-secondary btn-lg ml-2'

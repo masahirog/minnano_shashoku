@@ -1,0 +1,109 @@
+.field-unit.field-unit--nested-has-many.col-md-12
+  .field-unit__label.col-md-2 style='margin:0;'
+    = f.label field.attribute, "定期配送設定"
+  .field-unit__field.col-md-10 style='margin: 0;'
+    div data-controller="nested-recurring-orders" style="overflow: hidden;"
+      div data-nested-recurring-orders-target="container"
+        = f.fields_for field.attribute do |ff|
+          .nested-item.mb-3.py-3.px-3.border.rounded data-nested-recurring-orders-target="item" style="background-color: #f8f9fa;"
+            .row.align-items-end
+              .col-md-2
+                = ff.label :day_of_week, "曜日", class: "form-label small mb-1"
+                = ff.select :day_of_week, options_for_select([['日曜日', 0], ['月曜日', 1], ['火曜日', 2], ['水曜日', 3], ['木曜日', 4], ['金曜日', 5], ['土曜日', 6]], ff.object.day_of_week), {}, class: "form-control form-control-sm"
+              .col-md-2
+                = ff.label :meal_count, "食数", class: "form-label small mb-1"
+                = ff.number_field :meal_count, class: "form-control form-control-sm", min: 1, value: ff.object.meal_count || 50
+              .col-md-2
+                = ff.label :delivery_time, "配達時間", class: "form-label small mb-1"
+                = ff.time_field :delivery_time, class: "form-control form-control-sm"
+              .col-md-2
+                = ff.label :pickup_time, "集荷時間", class: "form-label small mb-1"
+                = ff.time_field :pickup_time, class: "form-control form-control-sm"
+              .col-md-2
+                = ff.label :status, "ステータス", class: "form-label small mb-1"
+                = ff.select :status, options_for_select([['有効', 'active'], ['一時停止', 'paused'], ['終了', 'completed']], ff.object.status), {}, class: "form-control form-control-sm"
+              .col-md-2.text-center
+                = ff.label :_destroy, "削除", class: "form-label small mb-1 d-block"
+                = ff.hidden_field :_destroy, value: '0'
+                button.btn.btn-danger.btn-sm type="button" data-action="click->nested-recurring-orders#removeItem" style="width: 40px; height: 31px;" ×
+
+      button.btn.btn-secondary.btn-sm.mt-2 type="button" id="add-recurring-order-btn"
+        | + 定期配送を追加
+
+      template data-nested-recurring-orders-target="template"
+        .nested-item.mb-3.py-3.px-3.border.rounded data-nested-recurring-orders-target="item" style="background-color: #f8f9fa;"
+          .row.align-items-end
+            .col-md-2
+              label.form-label.small.mb-1 曜日
+              select.form-control.form-control-sm name="#{f.object_name}[#{field.attribute}_attributes][NEW_RECORD][day_of_week]"
+                option value="0" 日曜日
+                option value="1" 月曜日
+                option value="2" 火曜日
+                option value="3" 水曜日
+                option value="4" 木曜日
+                option value="5" 金曜日
+                option value="6" 土曜日
+            .col-md-2
+              label.form-label.small.mb-1 食数
+              input.form-control.form-control-sm type="number" name="#{f.object_name}[#{field.attribute}_attributes][NEW_RECORD][meal_count]" min="1" value="50"
+            .col-md-2
+              label.form-label.small.mb-1 配達時間
+              input.form-control.form-control-sm type="time" name="#{f.object_name}[#{field.attribute}_attributes][NEW_RECORD][delivery_time]"
+            .col-md-2
+              label.form-label.small.mb-1 集荷時間
+              input.form-control.form-control-sm type="time" name="#{f.object_name}[#{field.attribute}_attributes][NEW_RECORD][pickup_time]"
+            .col-md-2
+              label.form-label.small.mb-1 ステータス
+              select.form-control.form-control-sm name="#{f.object_name}[#{field.attribute}_attributes][NEW_RECORD][status]"
+                option value="active" 有効
+                option value="paused" 一時停止
+                option value="completed" 終了
+            .col-md-2.text-center
+              label.form-label.small.mb-1.d-block 削除
+              button.btn.btn-danger.btn-sm type="button" data-action="click->nested-recurring-orders#removeItem" style="width: 40px; height: 31px;" ×
+
+      javascript:
+        (function() {
+          const container = document.querySelector('[data-nested-recurring-orders-target="container"]');
+          const template = document.querySelector('[data-nested-recurring-orders-target="template"]');
+          const addBtn = document.getElementById('add-recurring-order-btn');
+
+          if (!container || !template || !addBtn) {
+            return;
+          }
+
+          // 定期配送追加
+          addBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const timestamp = new Date().getTime();
+            let content = template.innerHTML.replace(/NEW_RECORD/g, timestamp);
+            container.insertAdjacentHTML('beforeend', content);
+
+            // 新しく追加された要素にイベントリスナーを設定
+            const newItem = container.lastElementChild;
+            setupItemEvents(newItem);
+          });
+
+          // 既存のアイテムにイベント設定
+          document.querySelectorAll('[data-nested-recurring-orders-target="item"]').forEach(setupItemEvents);
+
+          function setupItemEvents(item) {
+            const destroyCheckbox = item.querySelector('input[name$="[_destroy]"]');
+            const removeBtn = item.querySelector('.btn-danger');
+
+            // 削除ボタン
+            if (removeBtn) {
+              removeBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (destroyCheckbox) {
+                  // 既存レコードの場合は_destroyフラグを立てて非表示
+                  destroyCheckbox.value = '1';
+                  item.style.display = 'none';
+                } else {
+                  // 新規レコードの場合は削除
+                  item.remove();
+                }
+              });
+            }
+          }
+        })();

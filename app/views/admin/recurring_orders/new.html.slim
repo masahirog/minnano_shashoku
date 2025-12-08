@@ -1,0 +1,51 @@
+- content_for(:title) do
+  = t("administrate.actions.new_resource", name: page.page_title)
+
+- breadcrumb :admin_recurring_orders
+
+/ Content Header
+.content-header
+  .container-fluid
+    .row.mb-2
+      .col-sm-6
+        h1.m-0
+          = t("administrate.actions.new_resource", name: display_resource_name(page.resource_name))
+      .col-sm-6
+        ol.breadcrumb.float-sm-right
+          = breadcrumbs separator: " / ", autoroot: false
+
+/ Main content
+.container-fluid
+  .row
+    .col-12
+      .card
+        .card-header
+          h3.card-title
+            = t("administrate.actions.new_resource", name: display_resource_name(page.resource_name))
+
+        .card-body
+          = form_for [namespace, page.resource], html: { class: "form" } do |f|
+            - if defined?(@company) && @company.present?
+              / 企業が選択されている場合は固定値として表示
+              .field-unit
+                label.field-unit__label 導入企業
+                .field-unit__field
+                  p.form-control-plaintext = @company.name
+                  = f.hidden_field :company_id, value: @company.id
+
+              / company以外のフィールドを表示
+              - page.attributes.each do |title, attributes|
+                - attributes.each do |attribute|
+                  - next if attribute.attribute == :company
+                  div class="field-unit field-unit--#{attribute.html_class}"
+                    = render_field attribute, f: f
+            - else
+              / 通常のフォーム（全フィールド表示）
+              - page.attributes.each do |title, attributes|
+                - attributes.each do |attribute|
+                  div class="field-unit field-unit--#{attribute.html_class}"
+                    = render_field attribute, f: f
+
+            .form-actions
+              = f.submit "登録", class: "btn btn-primary btn-sm", style: "margin-right: 10px;"
+              = link_to "戻る", [:admin, :recurring_orders], class: "btn btn-default btn-sm"

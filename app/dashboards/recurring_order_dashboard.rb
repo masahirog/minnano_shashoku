@@ -10,9 +10,6 @@ class RecurringOrderDashboard < Administrate::BaseDashboard
   ATTRIBUTE_TYPES = {
     id: Field::Number,
     company: Field::BelongsTo,
-    restaurant: Field::BelongsTo,
-    menu: Field::BelongsTo,
-    delivery_company: Field::BelongsTo,
     orders: Field::HasMany,
 
     # Schedule settings
@@ -20,28 +17,18 @@ class RecurringOrderDashboard < Administrate::BaseDashboard
       collection: [['日曜日', 0], ['月曜日', 1], ['火曜日', 2], ['水曜日', 3],
                    ['木曜日', 4], ['金曜日', 5], ['土曜日', 6]]
     ),
-    frequency: Field::Select.with_options(
-      collection: [['毎週', 'weekly'], ['隔週', 'biweekly'], ['毎月', 'monthly']]
-    ),
-    start_date: Field::Date,
-    end_date: Field::Date,
 
     # Order details
-    default_meal_count: Field::Number,
-    delivery_time: Field::DateTime,
-
-    # Delivery flow fields
-    is_trial: Field::Boolean,
-    collection_time: Field::DateTime,
-    warehouse_pickup_time: Field::DateTime,
-    return_location: Field::String,
-    equipment_notes: Field::Text,
+    meal_count: Field::Number,
+    delivery_time: TimeWithoutSecondsField,
+    pickup_time: TimeWithoutSecondsField,
 
     # Status fields
     is_active: Field::Boolean,
     status: Field::Select.with_options(
       collection: [['有効', 'active'], ['一時停止', 'paused'], ['終了', 'completed']]
     ),
+    notes: Field::Text,
 
     # Timestamps
     created_at: Field::DateTime,
@@ -55,12 +42,10 @@ class RecurringOrderDashboard < Administrate::BaseDashboard
   # Feel free to add, remove, or rearrange items.
   COLLECTION_ATTRIBUTES = %i[
     company
-    restaurant
     day_of_week
-    frequency
-    start_date
+    meal_count
+    delivery_time
     status
-    is_active
   ].freeze
 
   # SHOW_PAGE_ATTRIBUTES
@@ -68,22 +53,13 @@ class RecurringOrderDashboard < Administrate::BaseDashboard
   SHOW_PAGE_ATTRIBUTES = %i[
     id
     company
-    restaurant
-    menu
-    delivery_company
     day_of_week
-    frequency
-    start_date
-    end_date
-    default_meal_count
+    meal_count
     delivery_time
-    is_trial
-    collection_time
-    warehouse_pickup_time
-    return_location
-    equipment_notes
+    pickup_time
     is_active
     status
+    notes
     orders
     created_at
     updated_at
@@ -94,22 +70,12 @@ class RecurringOrderDashboard < Administrate::BaseDashboard
   # on the model's form (`new` and `edit`) pages.
   FORM_ATTRIBUTES = %i[
     company
-    restaurant
-    menu
-    delivery_company
     day_of_week
-    frequency
-    start_date
-    end_date
-    default_meal_count
+    meal_count
     delivery_time
-    is_trial
-    collection_time
-    warehouse_pickup_time
-    return_location
-    equipment_notes
-    is_active
+    pickup_time
     status
+    notes
   ].freeze
 
   # COLLECTION_FILTERS
@@ -128,7 +94,9 @@ class RecurringOrderDashboard < Administrate::BaseDashboard
   # across all pages of the admin dashboard.
   #
   def display_resource(recurring_order)
+    return "新規定期案件" if recurring_order.new_record?
     day_names = %w[日 月 火 水 木 金 土]
-    "#{recurring_order.company&.name} - 毎#{day_names[recurring_order.day_of_week]}曜日"
+    day_text = recurring_order.day_of_week ? "毎#{day_names[recurring_order.day_of_week]}曜日" : "未設定"
+    "#{recurring_order.company&.name} - #{day_text}"
   end
 end

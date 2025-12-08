@@ -1,0 +1,4 @@
+.field-unit__label
+  = f.label field.attribute
+.field-unit__field
+  = f.select field.attribute, field.selectable_options, { include_blank: field.include_blank_option }, { class: "field-unit__input form-control" }

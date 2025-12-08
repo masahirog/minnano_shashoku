@@ -46,6 +46,61 @@ module Admin
       redirect_to admin_recurring_orders_path
     end
 
+    # 新規作成（company_idパラメータがあれば企業を自動設定）
+    def new
+      if params[:company_id].present?
+        @company = Company.find(params[:company_id])
+        resource = RecurringOrder.new(company: @company)
+      else
+        resource = RecurringOrder.new
+      end
+
+      authorize_resource(resource)
+      render locals: {
+        page: Administrate::Page::Form.new(dashboard, resource),
+      }
+    end
+
+    def create
+      resource = RecurringOrder.new(resource_params)
+      authorize_resource(resource)
+
+      if resource.save
+        redirect_to(
+          [namespace, resource],
+          notice: translate_with_resource("create.success"),
+        )
+      else
+        render :new, locals: {
+          page: Administrate::Page::Form.new(dashboard, resource),
+        }, status: :unprocessable_entity
+      end
+    end
+
+    # 個別の定期案件から週次Order生成
+    def generate_weekly
+      @recurring_order = RecurringOrder.find(params[:id])
+    end
+
+    def create_weekly_orders
+      @recurring_order = RecurringOrder.find(params[:id])
+
+      # パラメータから開始日と終了日を取得
+      start_date = params[:start_date].to_date
+      end_date = params[:end_date].to_date
+
+      # 簡易的なOrder生成（後で実装）
+      redirect_to [:admin, @recurring_order], notice: 'Order生成機能は後で実装します'
+    end
+
+    private
+
+    def resource_params
+      params.require(:recurring_order).permit(
+        dashboard.permitted_attributes(action_name) + [:company_id]
+      )
+    end
+
     # See https://administrate-demo.herokuapp.com/customizing_controller_actions
     # for more information
   end

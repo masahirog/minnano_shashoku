@@ -1,0 +1,4 @@
+.field-unit__label
+  = f.label field.attribute
+.field-unit__field
+  = f.number_field field.attribute, class: "field-unit__input", style: "background-color: #e9ecef; cursor: not-allowed;", readonly: true, value: (field.data || 0).to_i
