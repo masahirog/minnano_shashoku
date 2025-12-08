@@ -1,0 +1,14 @@
+.order-card data-order-id=order.id
+  .card.mb-2
+    .card-body.p-2
+      .order-info
+        strong Order ##{order.id}
+        br
+        = "#{order.restaurant&.name || '未設定'} → #{order.company.name}"
+        br
+        small.text-muted
+          = "#{order.total_meal_count}食"
+          - if order.scheduled_date
+            = " | #{order.scheduled_date.strftime('%m/%d')}"
+      .order-actions.mt-1
+        = link_to '詳細', admin_order_path(order), class: 'btn btn-xs btn-info', target: '_blank'

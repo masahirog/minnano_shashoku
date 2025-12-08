@@ -27,7 +27,7 @@ class RestaurantDashboard < Administrate::BaseDashboard
     pickup_time_trial_only: Field::String,
     pickup_time_with_main: Field::String,
     self_delivery: Field::Boolean,
-    staff: Field::BelongsTo,
+    admin_user: Field::BelongsTo,
     supplier_code: Field::String,
     supply_stocks: Field::HasMany,
     trial_available: Field::Boolean,
@@ -44,7 +44,7 @@ class RestaurantDashboard < Administrate::BaseDashboard
     name
     genre
     contract_status
-    staff
+    admin_user
   ].freeze
 
   # SHOW_PAGE_ATTRIBUTES
@@ -52,7 +52,7 @@ class RestaurantDashboard < Administrate::BaseDashboard
   SHOW_PAGE_ATTRIBUTES = %i[
     id
     name
-    staff
+    admin_user
     genre
     contract_status
     contact_person
@@ -82,7 +82,7 @@ class RestaurantDashboard < Administrate::BaseDashboard
   # on the model's form (`new` and `edit`) pages.
   FORM_ATTRIBUTES = %i[
     name
-    staff
+    admin_user
     genre
     contract_status
     contact_person

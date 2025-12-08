@@ -1,0 +1,215 @@
+/ Content Header
+.content-header
+  .container-fluid
+    .row.mb-2
+      .col-sm-6
+        h1.m-0 在庫推移グラフ
+      .col-sm-6
+        ol.breadcrumb.float-sm-right
+          li.breadcrumb-item
+            = link_to '管理画面', admin_root_path
+          li.breadcrumb-item
+            = link_to '在庫予測', admin_supply_forecasts_path
+          li.breadcrumb-item.active 推移グラフ
+
+/ Main content
+.container-fluid
+  .row
+    .col-12
+      .card
+        .card-header
+          h3.card-title
+            = @stock.supply.name
+            = " - "
+            = @stock.location_display_name
+          .card-tools
+            = link_to '戻る', admin_supply_forecasts_path(location_type: @stock.location_type, location_id: @stock.location_id, days_ahead: @days_ahead), class: 'btn btn-secondary btn-sm'
+
+        .card-body
+          .row.mb-4
+            .col-md-3
+              .info-box
+                span.info-box-icon.bg-info
+                  i.fas.fa-box
+                .info-box-content
+                  span.info-box-text 現在在庫
+                  span.info-box-number
+                    = @stock.quantity
+                    = " "
+                    = @stock.supply.unit
+
+            .col-md-3
+              .info-box
+                span.info-box-icon class=(@stock.supply.reorder_point && @transitions.last[:quantity] <= @stock.supply.reorder_point ? 'bg-warning' : 'bg-success')
+                  i.fas.fa-chart-line
+                .info-box-content
+                  span.info-box-text
+                    = "#{@days_ahead}日後の予測"
+                  span.info-box-number
+                    = @transitions.last[:quantity]
+                    = " "
+                    = @stock.supply.unit
+
+            .col-md-3
+              .info-box
+                span.info-box-icon.bg-secondary
+                  i.fas.fa-exclamation-triangle
+                .info-box-content
+                  span.info-box-text 発注点
+                  span.info-box-number
+                    - if @stock.supply.reorder_point
+                      = @stock.supply.reorder_point
+                      = " "
+                      = @stock.supply.unit
+                    - else
+                      | 未設定
+
+            .col-md-3
+              .info-box
+                span.info-box-icon class=(@stock.first_reorder_date(@days_ahead) ? 'bg-danger' : 'bg-success')
+                  i.fas.fa-calendar-alt
+                .info-box-content
+                  span.info-box-text 発注推奨日
+                  span.info-box-number style="font-size: 16px;"
+                    - if @stock.first_reorder_date(@days_ahead)
+                      = l(@stock.first_reorder_date(@days_ahead), format: :short)
+                    - else
+                      | なし
+
+          / グラフ
+          .row
+            .col-12
+              canvas#stockChart height="80"
+
+      / 予定移動一覧
+      .card
+        .card-header
+          h3.card-title 予定移動一覧
+
+        .card-body.p-0
+          - if @planned_movements.any?
+            table.table.table-striped.table-hover.mb-0
+              thead
+                tr
+                  th 日付
+                  th 種別
+                  th ステータス
+                  th ピックアップ先
+                  th 納品先
+                  th 数量
+                  th 備考
+              tbody
+                - @planned_movements.each do |movement|
+                  tr
+                    td = l(movement.movement_date, format: :long)
+                    td
+                      - case movement.movement_type
+                      - when '入荷'
+                        span.badge.badge-success = movement.movement_type
+                      - when '消費'
+                        span.badge.badge-danger = movement.movement_type
+                      - when '移動'
+                        span.badge.badge-info = movement.movement_type
+                      - when '棚卸調整'
+                        span.badge.badge-warning = movement.movement_type
+                      - else
+                        span.badge.badge-secondary = movement.movement_type
+                    td
+                      - if movement.status == '予定'
+                        span.badge.badge-warning = movement.status
+                      - else
+                        span.badge.badge-success = movement.status
+                    td
+                      - if movement.from_location
+                        = movement.from_location.name
+                      - else
+                        span.text-muted -
+                    td
+                      - if movement.to_location
+                        = movement.to_location.name
+                      - else
+                        span.text-muted -
+                    td.text-right
+                      - if movement.from_location_type == @stock.location_type && movement.from_location_id == @stock.location_id
+                        span.text-danger
+                          | -
+                          = movement.quantity
+                      - else
+                        span.text-success
+                          | +
+                          = movement.quantity
+                      = " "
+                      = @stock.supply.unit
+                    td = movement.notes.present? ? movement.notes : '-'
+          - else
+            .p-4.text-center.text-muted
+              | 予定移動はありません
+
+/ Chart.js
+script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"
+
+javascript:
+  const ctx = document.getElementById('stockChart').getContext('2d');
+  const chartData = #{raw @chart_data.to_json};
+
+  const data = {
+    labels: chartData.labels,
+    datasets: [
+      {
+        label: '予測在庫',
+        data: chartData.quantities,
+        borderColor: 'rgb(75, 192, 192)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        tension: 0.1,
+        fill: true
+      }
+    ]
+  };
+
+  // 発注点の線を追加
+  if (chartData.reorder_point) {
+    data.datasets.push({
+      label: '発注点',
+      data: new Array(chartData.labels.length).fill(chartData.reorder_point),
+      borderColor: 'rgb(255, 99, 132)',
+      backgroundColor: 'rgba(255, 99, 132, 0.1)',
+      borderDash: [5, 5],
+      pointRadius: 0,
+      fill: false
+    });
+  }
+
+  const config = {
+    type: 'line',
+    data: data,
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          position: 'top',
+        },
+        title: {
+          display: true,
+          text: '在庫推移予測'
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: '数量 (#{@stock.supply.unit})'
+          }
+        },
+        x: {
+          title: {
+            display: true,
+            text: '日付'
+          }
+        }
+      }
+    },
+  };
+
+  const stockChart = new Chart(ctx, config);

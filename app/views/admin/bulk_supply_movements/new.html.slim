@@ -19,24 +19,33 @@ section.main-content__body.main-content__body--flush
           span style="color: red;" *
         = select_tag :movement_type, options_for_select(@movement_types), prompt: '選択してください', required: true, style: "width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;", onchange: "updateMovementTypeFields(this.value)"
 
-      / 移動元拠点区分
-      div#from_location_section style="margin-bottom: 20px;"
-        label style="display: block; font-weight: bold; margin-bottom: 5px;" 移動元拠点区分
-        = select_tag :from_location_type, options_for_select([['選択してください', ''], ['みんなの食堂', 'OwnLocation'], ['導入企業', 'Company'], ['飲食店', 'Restaurant'], ['配送会社', 'DeliveryCompany']]), style: "width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;", onchange: "updateFromLocationSelect(this.value)"
+      / ステータス
+      div style="margin-bottom: 20px;"
+        label style="display: block; font-weight: bold; margin-bottom: 5px;"
+          | ステータス
+          span style="color: red;" *
+        = select_tag :status, options_for_select([['確定', '確定'], ['予定', '予定']], '確定'), required: true, style: "width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
+        p style="font-size: 12px; color: #666; margin-top: 5px;"
+          | ※「確定」は即座に在庫に反映されます。「予定」は在庫予測には使用されますが、実在庫には反映されません。
 
-      / 移動元拠点
+      / ピックアップ先拠点区分
+      div#from_location_section style="margin-bottom: 20px;"
+        label style="display: block; font-weight: bold; margin-bottom: 5px;" ピックアップ先拠点区分
+        = select_tag :from_location_type, options_for_select([['選択してください', ''], ['自社拠点', 'OwnLocation'], ['導入企業', 'Company'], ['飲食店', 'Restaurant'], ['配送会社', 'DeliveryCompany']]), style: "width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;", onchange: "updateFromLocationSelect(this.value)"
+
+      / ピックアップ先拠点
       div#from_location_id_container style="margin-bottom: 20px;"
-        label style="display: block; font-weight: bold; margin-bottom: 5px;" 移動元拠点
+        label style="display: block; font-weight: bold; margin-bottom: 5px;" ピックアップ先拠点
         = select_tag :from_location_id, options_for_select([['選択してください', '']]), style: "width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;", onchange: "loadStockData()"
 
-      / 移動先拠点区分
+      / 納品先拠点区分
       div#to_location_section style="margin-bottom: 20px;"
-        label style="display: block; font-weight: bold; margin-bottom: 5px;" 移動先拠点区分
-        = select_tag :to_location_type, options_for_select([['選択してください', ''], ['みんなの食堂', 'OwnLocation'], ['導入企業', 'Company'], ['飲食店', 'Restaurant'], ['配送会社', 'DeliveryCompany']]), style: "width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;", onchange: "updateToLocationSelect(this.value)"
+        label style="display: block; font-weight: bold; margin-bottom: 5px;" 納品先拠点区分
+        = select_tag :to_location_type, options_for_select([['選択してください', ''], ['自社拠点', 'OwnLocation'], ['導入企業', 'Company'], ['飲食店', 'Restaurant'], ['配送会社', 'DeliveryCompany']]), style: "width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;", onchange: "updateToLocationSelect(this.value)"
 
-      / 移動先拠点
+      / 納品先拠点
       div#to_location_id_container style="margin-bottom: 20px;"
-        label style="display: block; font-weight: bold; margin-bottom: 5px;" 移動先拠点
+        label style="display: block; font-weight: bold; margin-bottom: 5px;" 納品先拠点
         = select_tag :to_location_id, options_for_select([['選択してください', '']]), style: "width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
 
       / 備品選択
@@ -77,14 +86,14 @@ javascript:
     const toIdContainer = document.getElementById('to_location_id_container');
 
     if (type === '入荷') {
-      // 入荷：移動元を非表示、移動先のみ表示
+      // 入荷：ピックアップ先を非表示、納品先のみ表示
       fromSection.style.display = 'none';
       fromIdContainer.style.display = 'none';
       toSection.style.display = 'block';
       toIdContainer.style.display = 'block';
       clearStockInfo();
     } else if (type === '消費') {
-      // 消費：移動先を非表示、移動元のみ表示
+      // 消費：納品先を非表示、ピックアップ先のみ表示
       fromSection.style.display = 'block';
       fromIdContainer.style.display = 'block';
       toSection.style.display = 'none';

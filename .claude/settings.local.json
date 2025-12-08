@@ -26,7 +26,12 @@
       "Bash(done)",
       "Bash(ls:*)",
       "Bash(find:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(bundle show:*)",
+      "Read(//Users/yamashitamasahiro/.rbenv/versions/3.1.4/lib/ruby/gems/3.1.0/gems/administrate-1.0.0/app/views/administrate/application/**)",
+      "Bash(bin/spring stop:*)",
+      "Read(//Users/yamashitamasahiro/.rbenv/versions/3.1.4/lib/ruby/gems/3.1.0/gems/administrate-1.0.0/app/views/fields/**)",
+      "Bash(bin/rails routes:*)"
     ],
     "deny": [],
     "ask": []

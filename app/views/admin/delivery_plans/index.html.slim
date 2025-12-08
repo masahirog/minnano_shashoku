@@ -1,0 +1,75 @@
+.content-wrapper
+  .content-header
+    .container-fluid
+      .row.mb-2
+        .col-sm-6
+          h1.m-0 配送計画ボード
+        .col-sm-6
+          .float-sm-right
+            = form_with url: admin_delivery_plans_path, method: :get, local: true, class: 'form-inline' do |f|
+              = f.date_field :date, value: @date, class: 'form-control mr-2'
+              = f.submit '表示', class: 'btn btn-primary btn-sm'
+
+  .content
+    .container-fluid
+      .delivery-board data-controller="sortable" data-date=@date
+        .board-header.mb-3
+          h3 = @date.strftime('%Y年%m月%d日（%a）')
+          .btn-group
+            = link_to '+ 新規ルート', new_admin_delivery_plan_path(date: @date), class: 'btn btn-success btn-sm', data: { turbo_frame: 'modal' }
+            / 自動生成ボタン（一旦無効化）
+            / button.btn.btn-primary.btn-sm type="button" data-toggle="modal" data-target="#autoGenerateModal"
+            /   i.fas.fa-magic.mr-1
+            /   | 自動生成
+
+        .board-columns
+          / 未アサインカラム
+          .board-column.unassigned-column
+            .column-header
+              h4 未アサイン
+              span.badge.badge-info = @unassigned_orders.count
+
+            .column-content data-sortable-group="orders"
+              - @unassigned_orders.each do |order|
+                = render 'order_card', order: order
+
+          / DeliveryPlanカラム
+          - @delivery_plans.each do |plan|
+            = render 'plan_column', plan: plan
+
+/ 自動生成モーダル（一旦無効化）
+/ #autoGenerateModal.modal.fade tabindex="-1" role="dialog"
+/   .modal-dialog role="document"
+/     .modal-content
+/       = form_with url: auto_generate_admin_delivery_plans_path, method: :post, local: true do |f|
+/         .modal-header
+/           h5.modal-title 配送計画を自動生成
+/           button.close type="button" data-dismiss="modal" aria-label="Close"
+/             span aria-hidden="true" &times;
+/
+/         .modal-body
+/           .form-group
+/             = f.label :date, '対象日'
+/             = f.date_field :date, value: @date, class: 'form-control', required: true
+/             small.form-text.text-muted この日の「確定」ステータスのOrderから配送計画を自動生成します
+/
+/           .form-group
+/             = f.label :delivery_company_id, '配送会社（オプション）'
+/             = f.collection_select :delivery_company_id, DeliveryCompany.order(:name), :id, :name, { include_blank: '全ての配送会社' }, class: 'form-control'
+/             small.form-text.text-muted 指定すると、その配送会社のみ生成します
+/
+/           .alert.alert-info
+/             strong 自動生成の仕様:
+/             ul.mb-0.small
+/               li 「確定」ステータスのOrdersを対象
+/               li 配送会社ごとにDeliveryPlanを作成
+/               li 各Orderに4つのアクション（pickup → delivery → collection → return）を自動追加
+/               li collection_time順に最適化して配置
+/               li 既にDeliveryPlanに割り当て済みのOrdersは除外
+/
+/         .modal-footer
+/           button.btn.btn-secondary type="button" data-dismiss="modal" キャンセル
+/           = f.submit '自動生成', class: 'btn btn-primary', data: { confirm: '配送計画を自動生成します。よろしいですか？' }
+
+/ モーダル用のturbo-frame
+= turbo_frame_tag 'modal'

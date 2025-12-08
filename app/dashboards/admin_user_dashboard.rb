@@ -10,6 +10,16 @@ class AdminUserDashboard < Administrate::BaseDashboard
   ATTRIBUTE_TYPES = {
     id: Field::Number,
     email: Field::String,
+    name: Field::String,
+    role: Field::Select.with_options(
+      collection: AdminUser::ROLES
+    ),
+    phone: Field::String,
+    employee_number: Field::String,
+    photo: Field::ActiveStorage,
+    is_login_enabled: Field::Boolean,
+    companies: Field::HasMany,
+    restaurants: Field::HasMany,
     encrypted_password: Field::String,
     remember_created_at: Field::DateTime,
     reset_password_sent_at: Field::DateTime,
@@ -25,8 +35,10 @@ class AdminUserDashboard < Administrate::BaseDashboard
   # Feel free to add, remove, or rearrange items.
   COLLECTION_ATTRIBUTES = %i[
     email
-    created_at
-    updated_at
+    name
+    role
+    employee_number
+    is_login_enabled
   ].freeze
 
   # SHOW_PAGE_ATTRIBUTES
@@ -34,6 +46,14 @@ class AdminUserDashboard < Administrate::BaseDashboard
   SHOW_PAGE_ATTRIBUTES = %i[
     id
     email
+    name
+    role
+    phone
+    employee_number
+    photo
+    is_login_enabled
+    companies
+    restaurants
     created_at
     updated_at
   ].freeze
@@ -43,6 +63,12 @@ class AdminUserDashboard < Administrate::BaseDashboard
   # on the model's form (`new` and `edit`) pages.
   FORM_ATTRIBUTES = %i[
     email
+    name
+    role
+    phone
+    employee_number
+    photo
+    is_login_enabled
   ].freeze
 
   # COLLECTION_FILTERS
@@ -60,6 +86,6 @@ class AdminUserDashboard < Administrate::BaseDashboard
   # Overwrite this method to customize how admin users are displayed
   # across all pages of the admin dashboard.
   def display_resource(admin_user)
-    admin_user.email
+    admin_user.name
   end
 end

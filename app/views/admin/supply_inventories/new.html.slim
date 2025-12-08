@@ -1,0 +1,135 @@
+/ Content Header
+.content-header
+  .container-fluid
+    .row.mb-2
+      .col-sm-6
+        h1.m-0 棚卸し実施
+      .col-sm-6
+        ol.breadcrumb.float-sm-right
+          li.breadcrumb-item
+            = link_to '管理画面', admin_root_path
+          li.breadcrumb-item
+            = link_to '棚卸し一覧', admin_supply_inventories_path
+          li.breadcrumb-item.active 棚卸し実施
+
+/ Main content
+.container-fluid
+  .row
+    .col-12
+      .card
+        .card-header
+          h3.card-title 拠点選択
+
+        .card-body
+          = form_with url: new_admin_supply_inventory_path, method: :get, local: true do |f|
+            .row
+              .col-md-3
+                .form-group
+                  label 棚卸し実施日
+                  = date_field_tag :inventory_date, @inventory_date, class: 'form-control'
+
+              .col-md-3
+                .form-group
+                  label 拠点区分
+                  = select_tag :location_type, options_for_select([['選択してください', ''], ['自社拠点', 'OwnLocation'], ['導入企業', 'Company'], ['飲食店', 'Restaurant'], ['配送会社', 'DeliveryCompany']], @location_type), class: 'form-control', onchange: 'updateLocationSelect(this.value)'
+
+              .col-md-3
+                .form-group
+                  label 拠点
+                  = select_tag :location_id, options_for_select([['選択してください', '']]), class: 'form-control', id: 'location_id'
+
+              .col-md-3
+                .form-group
+                  label &nbsp;
+                  br
+                  = submit_tag '在庫を表示', class: 'btn btn-primary btn-block'
+
+      - if @stocks.present?
+        = form_with url: admin_supply_inventories_path, method: :post, local: true do |f|
+          = hidden_field_tag :inventory_date, @inventory_date
+          = hidden_field_tag :location_type, @location_type
+          = hidden_field_tag :location_id, @location_id
+
+          .card
+            .card-header
+              h3.card-title
+                = "棚卸し: #{@location.name}"
+                = " (#{l(@inventory_date, format: :long)})"
+
+            .card-body.p-0
+              table.table.table-striped.table-hover.mb-0
+                thead
+                  tr
+                    th 備品名
+                    th.text-right 理論在庫
+                    th.text-right 実在庫
+                    th 備考
+                tbody
+                  - @stocks.each do |stock|
+                    tr
+                      td
+                        = stock.supply.name
+                        = " (#{stock.supply.sku})"
+                      td.text-right
+                        = stock.quantity
+                        = " "
+                        = stock.supply.unit
+                        = hidden_field_tag "inventories[#{stock.supply_id}][theoretical_quantity]", stock.quantity
+                      td
+                        = number_field_tag "inventories[#{stock.supply_id}][actual_quantity]", stock.quantity, min: 0, step: 0.01, class: 'form-control form-control-sm text-right', style: 'width: 100px; display: inline-block;'
+                        = " "
+                        = stock.supply.unit
+                      td
+                        = text_field_tag "inventories[#{stock.supply_id}][notes]", nil, class: 'form-control form-control-sm', placeholder: '備考（任意）'
+
+            .card-footer
+              = submit_tag '棚卸しを確定', class: 'btn btn-primary', data: { confirm: '棚卸しを確定しますか？差異がある場合、在庫が自動調整されます。' }
+              = link_to 'キャンセル', admin_supply_inventories_path, class: 'btn btn-secondary ml-2'
+
+      - elsif @location_type.present? && @location_id.present?
+        .card
+          .card-body.text-center.text-muted
+            p この拠点には在庫がありません
+
+javascript:
+  const companies = #{raw @companies.map { |c| { id: c.id, name: c.name } }.to_json};
+  const restaurants = #{raw @restaurants.map { |r| { id: r.id, name: r.name } }.to_json};
+  const deliveryCompanies = #{raw @delivery_companies.map { |d| { id: d.id, name: d.name } }.to_json};
+  const ownLocations = #{raw @own_locations.map { |o| { id: o.id, name: o.name } }.to_json};
+
+  function updateLocationSelect(type) {
+    const select = document.getElementById('location_id');
+    select.innerHTML = '<option value="">選択してください</option>';
+
+    let data = [];
+    if (type === 'Company') {
+      data = companies;
+    } else if (type === 'Restaurant') {
+      data = restaurants;
+    } else if (type === 'DeliveryCompany') {
+      data = deliveryCompanies;
+    } else if (type === 'OwnLocation') {
+      data = ownLocations;
+    }
+
+    data.forEach(item => {
+      const option = document.createElement('option');
+      option.value = item.id;
+      option.textContent = item.name;
+      select.appendChild(option);
+    });
+
+    // 選択値を復元
+    const currentLocationId = '#{@location_id}';
+    if (currentLocationId) {
+      select.value = currentLocationId;
+    }
+  }
+
+  // ページロード時に拠点セレクトボックスを設定
+  document.addEventListener('DOMContentLoaded', function() {
+    const locationType = document.getElementById('location_type').value;
+    if (locationType) {
+      updateLocationSelect(locationType);
+    }
+  });

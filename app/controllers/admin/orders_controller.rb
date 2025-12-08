@@ -32,7 +32,7 @@ module Admin
     # カレンダー表示アクション
     def calendar
       start_date = params.fetch(:start_date, Date.today).to_date
-      @orders = Order.includes(:company, :restaurant, :menu)
+      @orders = Order.includes(:company, :restaurant, :menus)
                      .where(scheduled_date: start_date.beginning_of_month..start_date.end_of_month)
 
       # フィルター適用
@@ -48,7 +48,7 @@ module Admin
       @start_date = params.fetch(:start_date, Date.today).to_date
       @end_date = params.fetch(:end_date, @start_date + 1.month).to_date
 
-      @orders = Order.includes(:company, :restaurant, :menu, :delivery_company)
+      @orders = Order.includes(:company, :restaurant, :menus, :delivery_company)
                      .where(scheduled_date: @start_date..@end_date)
 
       # フィルター適用
@@ -88,7 +88,7 @@ module Admin
       @start_date = params.fetch(:start_date, Date.today).to_date
       @end_date = params.fetch(:end_date, @start_date + 7.days).to_date
 
-      @orders = Order.includes(:company, :restaurant, :menu, :delivery_company)
+      @orders = Order.includes(:company, :restaurant, :menus, :delivery_company)
                      .where(scheduled_date: @start_date..@end_date)
                      .where.not(status: 'cancelled')
 
@@ -105,7 +105,7 @@ module Admin
       start_date = params.fetch(:start_date, Date.today).to_date
       end_date = params.fetch(:end_date, start_date + 7.days).to_date
 
-      @orders = Order.includes(:company, :restaurant, :menu, :delivery_company)
+      @orders = Order.includes(:company, :restaurant, :menus, :delivery_company)
                      .where(scheduled_date: start_date..end_date)
                      .where.not(status: 'cancelled')
 
@@ -126,16 +126,12 @@ module Admin
                 disposition: 'attachment'
     end
 
-    # Override `resource_params` if you want to transform the submitted
-    # data before it's persisted. For example, the following would turn all
-    # empty values into nil values. It uses other APIs such as `resource_class`
-    # and `dashboard`:
-    #
-    # def resource_params
-    #   params.require(resource_class.model_name.param_key).
-    #     permit(dashboard.permitted_attributes(action_name)).
-    #     transform_values { |value| value == "" ? nil : value }
-    # end
+    # Override resource_params to allow nested attributes for order_items
+    def resource_params
+      params.require(resource_class.model_name.param_key).
+        permit(dashboard.permitted_attributes(action_name),
+               order_items_attributes: [:id, :menu_id, :quantity, :unit_price, :subtotal, :_destroy])
+    end
 
     # See https://administrate-demo.herokuapp.com/customizing_controller_actions
     # for more information

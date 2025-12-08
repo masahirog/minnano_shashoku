@@ -19,13 +19,13 @@ RSpec.describe GenerateInvoicesJob, type: :job do
       wednesday = base_date.beginning_of_month
       wednesday += 1.day until wednesday.wday == 3
 
-      Order.create!(
+      create_order_with_items(
         company: company,
         restaurant: restaurant,
         menu: menu,
         order_type: 'trial',
         scheduled_date: wednesday,
-        default_meal_count: 20,
+        meal_count: 20,
         status: 'completed'
       )
     end
@@ -46,13 +46,13 @@ RSpec.describe GenerateInvoicesJob, type: :job do
       wednesday = base_date.beginning_of_month
       wednesday += 1.day until wednesday.wday == 3
 
-      Order.create!(
+      create_order_with_items(
         company: company2,
         restaurant: restaurant,
         menu: menu,
         order_type: 'trial',
         scheduled_date: wednesday,
-        default_meal_count: 15,
+        meal_count: 15,
         status: 'completed'
       )
 

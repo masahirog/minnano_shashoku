@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_12_05_005417) do
+ActiveRecord::Schema[7.1].define(version: 2025_12_07_072551) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -64,6 +64,11 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_05_005417) do
     t.datetime "remember_created_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "name"
+    t.string "role"
+    t.boolean "is_login_enabled", default: true, null: false
+    t.string "phone"
+    t.string "employee_number"
     t.index ["email"], name: "index_admin_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_admin_users_on_reset_password_token", unique: true
   end
@@ -72,7 +77,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_05_005417) do
     t.string "name", null: false
     t.string "formal_name", null: false
     t.string "contract_status", null: false
-    t.bigint "staff_id"
+    t.bigint "admin_user_id"
     t.string "contact_person"
     t.string "contact_phone"
     t.string "contact_email"
@@ -116,9 +121,10 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_05_005417) do
     t.integer "meal_count_min"
     t.integer "meal_count_max"
     t.string "color", default: "#2196f3"
+    t.date "contract_end_date"
+    t.index ["admin_user_id"], name: "index_companies_on_admin_user_id"
     t.index ["contract_status"], name: "index_companies_on_contract_status"
     t.index ["name"], name: "index_companies_on_name"
-    t.index ["staff_id"], name: "index_companies_on_staff_id"
   end
 
   create_table "delivery_assignments", force: :cascade do |t|
@@ -152,6 +158,57 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_05_005417) do
     t.string "api_key"
     t.json "service_area"
     t.index ["api_key"], name: "index_delivery_companies_on_api_key", unique: true
+  end
+
+  create_table "delivery_plan_item_orders", force: :cascade do |t|
+    t.bigint "delivery_plan_item_id", null: false
+    t.bigint "order_id", null: false
+    t.string "action_role", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["delivery_plan_item_id", "order_id"], name: "index_delivery_plan_item_orders_on_item_and_order", unique: true
+    t.index ["delivery_plan_item_id"], name: "index_delivery_plan_item_orders_on_delivery_plan_item_id"
+    t.index ["order_id"], name: "index_delivery_plan_item_orders_on_order_id"
+  end
+
+  create_table "delivery_plan_items", force: :cascade do |t|
+    t.bigint "delivery_plan_id", null: false
+    t.integer "sequence", null: false
+    t.string "action_type", null: false
+    t.string "location_type"
+    t.bigint "location_id"
+    t.time "scheduled_time"
+    t.time "actual_time"
+    t.string "status", default: "pending", null: false
+    t.integer "meal_count"
+    t.jsonb "supplies_info", default: {}
+    t.text "notes"
+    t.string "photo_url"
+    t.string "completed_by"
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["delivery_plan_id", "sequence"], name: "index_delivery_plan_items_on_delivery_plan_id_and_sequence"
+    t.index ["delivery_plan_id"], name: "index_delivery_plan_items_on_delivery_plan_id"
+    t.index ["location_type", "location_id"], name: "index_delivery_plan_items_on_location_type_and_location_id"
+    t.index ["status"], name: "index_delivery_plan_items_on_status"
+  end
+
+  create_table "delivery_plans", force: :cascade do |t|
+    t.bigint "delivery_company_id", null: false
+    t.bigint "driver_id"
+    t.date "delivery_date", null: false
+    t.string "status", default: "draft", null: false
+    t.datetime "started_at"
+    t.datetime "completed_at"
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["delivery_company_id"], name: "index_delivery_plans_on_delivery_company_id"
+    t.index ["delivery_date", "delivery_company_id"], name: "index_delivery_plans_on_delivery_date_and_delivery_company_id"
+    t.index ["delivery_date"], name: "index_delivery_plans_on_delivery_date"
+    t.index ["driver_id"], name: "index_delivery_plans_on_driver_id"
+    t.index ["status"], name: "index_delivery_plans_on_status"
   end
 
   create_table "delivery_reports", force: :cascade do |t|
@@ -294,25 +351,35 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_05_005417) do
     t.string "photo_url"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "tax_rate", default: 8
     t.index ["restaurant_id"], name: "index_menus_on_restaurant_id"
+  end
+
+  create_table "order_items", force: :cascade do |t|
+    t.bigint "order_id", null: false
+    t.bigint "menu_id", null: false
+    t.integer "quantity", null: false
+    t.integer "unit_price", null: false
+    t.integer "subtotal", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "discount_type"
+    t.decimal "discount_value", precision: 10, scale: 2
+    t.decimal "discount_amount", precision: 10, scale: 2, default: "0.0"
+    t.integer "tax_rate", default: 8
+    t.index ["menu_id"], name: "index_order_items_on_menu_id"
+    t.index ["order_id"], name: "index_order_items_on_order_id"
   end
 
   create_table "orders", force: :cascade do |t|
     t.bigint "company_id", null: false
-    t.bigint "restaurant_id", null: false
-    t.bigint "menu_id", null: false
-    t.bigint "second_menu_id"
+    t.bigint "restaurant_id"
     t.bigint "delivery_company_id"
     t.string "order_type", null: false
     t.date "scheduled_date", null: false
-    t.integer "delivery_group", default: 1
-    t.integer "delivery_priority", default: 1
-    t.integer "default_meal_count", null: false
-    t.integer "confirmed_meal_count"
     t.string "status", default: "予定", null: false
     t.string "restaurant_status"
     t.string "delivery_company_status"
-    t.jsonb "options", default: {}
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "recurring_order_id"
@@ -328,15 +395,23 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_05_005417) do
     t.string "recipient_name"
     t.string "recipient_phone"
     t.text "delivery_address"
+    t.integer "total_meal_count"
+    t.integer "subtotal"
+    t.integer "tax"
+    t.integer "delivery_fee", default: 0
+    t.integer "total_price"
+    t.text "memo"
+    t.integer "discount_amount", default: 0
+    t.integer "tax_8_percent", default: 0
+    t.integer "tax_10_percent", default: 0
+    t.integer "delivery_fee_tax", default: 0
     t.index ["company_id"], name: "index_orders_on_company_id"
     t.index ["delivery_company_id"], name: "index_orders_on_delivery_company_id"
     t.index ["is_trial"], name: "index_orders_on_is_trial"
-    t.index ["menu_id"], name: "index_orders_on_menu_id"
     t.index ["recurring_order_id"], name: "index_orders_on_recurring_order_id"
     t.index ["restaurant_id"], name: "index_orders_on_restaurant_id"
     t.index ["scheduled_date", "delivery_company_id"], name: "index_orders_on_scheduled_date_and_delivery_company_id"
     t.index ["scheduled_date"], name: "index_orders_on_scheduled_date"
-    t.index ["second_menu_id"], name: "index_orders_on_second_menu_id"
     t.index ["status"], name: "index_orders_on_status"
   end
 
@@ -345,7 +420,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_05_005417) do
     t.string "location_type"
     t.string "address"
     t.string "phone"
-    t.boolean "is_active"
+    t.boolean "is_active", default: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -381,21 +456,10 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_05_005417) do
 
   create_table "recurring_orders", force: :cascade do |t|
     t.bigint "company_id", null: false
-    t.bigint "restaurant_id", null: false
-    t.bigint "menu_id"
-    t.bigint "delivery_company_id"
     t.integer "day_of_week", null: false
-    t.string "frequency", default: "weekly", null: false
-    t.date "start_date", null: false
-    t.date "end_date"
-    t.integer "default_meal_count", default: 50, null: false
+    t.integer "meal_count", default: 50, null: false
     t.time "delivery_time", null: false
     t.time "pickup_time"
-    t.boolean "is_trial", default: false, null: false
-    t.time "collection_time"
-    t.time "warehouse_pickup_time"
-    t.string "return_location", default: "warehouse"
-    t.text "equipment_notes"
     t.boolean "is_active", default: true, null: false
     t.string "status", default: "active", null: false
     t.text "notes"
@@ -403,17 +467,12 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_05_005417) do
     t.datetime "updated_at", null: false
     t.index ["company_id", "day_of_week"], name: "index_recurring_orders_on_company_id_and_day_of_week"
     t.index ["company_id"], name: "index_recurring_orders_on_company_id"
-    t.index ["delivery_company_id"], name: "index_recurring_orders_on_delivery_company_id"
     t.index ["is_active"], name: "index_recurring_orders_on_is_active"
-    t.index ["menu_id"], name: "index_recurring_orders_on_menu_id"
-    t.index ["restaurant_id", "day_of_week"], name: "index_recurring_orders_on_restaurant_id_and_day_of_week"
-    t.index ["restaurant_id"], name: "index_recurring_orders_on_restaurant_id"
-    t.index ["start_date"], name: "index_recurring_orders_on_start_date"
   end
 
   create_table "restaurants", force: :cascade do |t|
     t.string "name", null: false
-    t.bigint "staff_id"
+    t.bigint "admin_user_id"
     t.string "supplier_code"
     t.string "invoice_number"
     t.string "contract_status", null: false
@@ -438,17 +497,9 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_05_005417) do
     t.time "pickup_time_earliest"
     t.time "pickup_time_latest"
     t.string "regular_holiday"
+    t.index ["admin_user_id"], name: "index_restaurants_on_admin_user_id"
     t.index ["contract_status"], name: "index_restaurants_on_contract_status"
     t.index ["name"], name: "index_restaurants_on_name"
-    t.index ["staff_id"], name: "index_restaurants_on_staff_id"
-  end
-
-  create_table "staff", force: :cascade do |t|
-    t.string "name", null: false
-    t.string "email"
-    t.string "role"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
   end
 
   create_table "supplies", force: :cascade do |t|
@@ -465,6 +516,22 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_05_005417) do
     t.index ["sku"], name: "index_supplies_on_sku", unique: true
   end
 
+  create_table "supply_inventories", force: :cascade do |t|
+    t.bigint "supply_id", null: false
+    t.string "location_type"
+    t.bigint "location_id"
+    t.date "inventory_date", null: false
+    t.decimal "theoretical_quantity", precision: 10, scale: 2
+    t.decimal "actual_quantity", precision: 10, scale: 2
+    t.decimal "difference", precision: 10, scale: 2
+    t.text "notes"
+    t.bigint "admin_user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["admin_user_id"], name: "index_supply_inventories_on_admin_user_id"
+    t.index ["supply_id"], name: "index_supply_inventories_on_supply_id"
+  end
+
   create_table "supply_movements", force: :cascade do |t|
     t.bigint "supply_id", null: false
     t.string "movement_type", null: false
@@ -479,6 +546,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_05_005417) do
     t.datetime "updated_at", null: false
     t.string "from_location_name"
     t.string "to_location_name"
+    t.string "status", default: "確定", null: false
     t.index ["from_location_type", "from_location_id"], name: "index_supply_movements_on_from_location"
     t.index ["movement_date"], name: "index_supply_movements_on_movement_date"
     t.index ["movement_type"], name: "index_supply_movements_on_movement_type"
@@ -504,10 +572,15 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_05_005417) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "companies", "staff"
+  add_foreign_key "companies", "admin_users"
   add_foreign_key "delivery_assignments", "delivery_companies"
   add_foreign_key "delivery_assignments", "delivery_users"
   add_foreign_key "delivery_assignments", "orders"
+  add_foreign_key "delivery_plan_item_orders", "delivery_plan_items"
+  add_foreign_key "delivery_plan_item_orders", "orders"
+  add_foreign_key "delivery_plan_items", "delivery_plans"
+  add_foreign_key "delivery_plans", "delivery_companies"
+  add_foreign_key "delivery_plans", "delivery_users", column: "driver_id"
   add_foreign_key "delivery_reports", "delivery_assignments"
   add_foreign_key "delivery_reports", "delivery_users"
   add_foreign_key "delivery_routes", "delivery_assignments"
@@ -520,18 +593,17 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_05_005417) do
   add_foreign_key "invoice_items", "orders"
   add_foreign_key "invoices", "companies"
   add_foreign_key "menus", "restaurants"
+  add_foreign_key "order_items", "menus"
+  add_foreign_key "order_items", "orders"
   add_foreign_key "orders", "companies"
   add_foreign_key "orders", "delivery_companies"
-  add_foreign_key "orders", "menus"
-  add_foreign_key "orders", "menus", column: "second_menu_id"
   add_foreign_key "orders", "recurring_orders"
   add_foreign_key "orders", "restaurants"
   add_foreign_key "payments", "invoices"
   add_foreign_key "recurring_orders", "companies"
-  add_foreign_key "recurring_orders", "delivery_companies"
-  add_foreign_key "recurring_orders", "menus"
-  add_foreign_key "recurring_orders", "restaurants"
-  add_foreign_key "restaurants", "staff"
+  add_foreign_key "restaurants", "admin_users"
+  add_foreign_key "supply_inventories", "admin_users"
+  add_foreign_key "supply_inventories", "supplies"
   add_foreign_key "supply_movements", "supplies"
   add_foreign_key "supply_stocks", "supplies"
 end

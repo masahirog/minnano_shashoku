@@ -1,15 +1,7 @@
 - if flash.any?
   .container-fluid style="padding: 0 30px; margin-top: 20px;"
     - flash.each do |key, value|
-      - alert_type = case key.to_sym
-        - when :notice
-          - 'success'
-        - when :alert
-          - 'warning'
-        - when :error
-          - 'danger'
-        - else
-          - 'info'
+      - alert_type = case key.to_sym; when :notice; 'success'; when :alert; 'warning'; when :error; 'danger'; else; 'info'; end
 
       div class="alert alert-#{alert_type} alert-dismissible fade show" role="alert" style="border-left: 4px solid;"
         = value

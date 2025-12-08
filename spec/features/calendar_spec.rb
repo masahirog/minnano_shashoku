@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.feature "Calendar", type: :feature do
-  let(:admin_user) { AdminUser.create!(email: 'admin@example.com', password: 'password', password_confirmation: 'password') }
+  let(:admin_user) { AdminUser.create!(name: 'テスト管理者', email: 'admin@example.com', password: 'password', password_confirmation: 'password') }
   let(:company) { Company.create!(name: 'テスト企業', formal_name: 'テスト企業株式会社', contract_status: 'active', color: '#2196f3') }
   let(:restaurant) do
     Restaurant.create!(
@@ -19,13 +19,13 @@ RSpec.feature "Calendar", type: :feature do
 
   scenario "カレンダーに案件が表示される" do
     # 今月の案件を作成
-    order = Order.create!(
+    order = create_order_with_items(
       company: company,
       restaurant: restaurant,
       menu: menu,
       order_type: 'trial',
       scheduled_date: Date.today,
-      default_meal_count: 20,
+      meal_count: 20,
       status: 'confirmed',
       collection_time: Time.zone.parse('12:00')
     )
@@ -55,23 +55,23 @@ RSpec.feature "Calendar", type: :feature do
   scenario "企業でフィルタリングする" do
     company2 = Company.create!(name: 'テスト企業2', formal_name: 'テスト企業2株式会社', contract_status: 'active', color: '#ff5722')
 
-    Order.create!(
+    create_order_with_items(
       company: company,
       restaurant: restaurant,
       menu: menu,
       order_type: 'trial',
       scheduled_date: Date.today,
-      default_meal_count: 20,
+      meal_count: 20,
       status: 'confirmed'
     )
 
-    Order.create!(
+    create_order_with_items(
       company: company2,
       restaurant: restaurant,
       menu: menu,
       order_type: 'trial',
       scheduled_date: Date.today,
-      default_meal_count: 15,
+      meal_count: 15,
       status: 'confirmed'
     )
 
@@ -92,23 +92,23 @@ RSpec.feature "Calendar", type: :feature do
     # 同じ週に同じメニューの案件を2つ作成
     monday = Date.today.beginning_of_week(:monday)
 
-    Order.create!(
+    create_order_with_items(
       company: company,
       restaurant: restaurant,
       menu: menu,
       order_type: 'trial',
       scheduled_date: monday,
-      default_meal_count: 20,
+      meal_count: 20,
       status: 'confirmed'
     )
 
-    Order.create!(
+    create_order_with_items(
       company: company,
       restaurant: restaurant,
       menu: menu,
       order_type: 'trial',
       scheduled_date: monday + 2.days,
-      default_meal_count: 20,
+      meal_count: 20,
       status: 'confirmed'
     )
 

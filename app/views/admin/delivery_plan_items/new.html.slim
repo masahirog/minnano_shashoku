@@ -1,0 +1,55 @@
+.content-wrapper
+  .content-header
+    .container-fluid
+      h1.m-0 配送アイテム追加 - ルート##{@delivery_plan.id}
+
+  .content
+    .container-fluid
+      .row
+        .col-md-8
+          .card
+            .card-body
+              = form_with model: [:admin, @delivery_plan, @delivery_plan_item], local: true do |f|
+                - if @delivery_plan_item.errors.any?
+                  .alert.alert-danger
+                    h5 = "#{@delivery_plan_item.errors.count}件のエラーがあります"
+                    ul
+                      - @delivery_plan_item.errors.full_messages.each do |message|
+                        li = message
+
+                .form-group
+                  = f.label :sequence, '順序番号'
+                  = f.number_field :sequence, class: 'form-control', required: true
+
+                .form-group
+                  = f.label :action_type, 'アクション種別'
+                  = f.select :action_type, DeliveryPlanItem::ACTION_TYPES.map { |t| [t, t] }, { prompt: '選択してください' }, class: 'form-control', required: true
+
+                .form-group
+                  = f.label :location_type, '場所種別'
+                  = f.select :location_type, [['飲食店', 'Restaurant'], ['導入企業', 'Company'], ['自社拠点', 'OwnLocation']], { prompt: '選択してください' }, class: 'form-control'
+
+                .form-group
+                  = f.label :location_id, '場所ID'
+                  = f.number_field :location_id, class: 'form-control'
+                  small.form-text.text-muted 場所種別を選択後、対応するIDを入力してください
+
+                .form-group
+                  = f.label :scheduled_time, '予定時刻'
+                  = f.time_field :scheduled_time, class: 'form-control'
+
+                .form-group
+                  = f.label :meal_count, '食数'
+                  = f.number_field :meal_count, class: 'form-control'
+
+                .form-group
+                  = f.label :status, 'ステータス'
+                  = f.select :status, DeliveryPlanItem::STATUSES.map { |s| [s, s] }, {}, class: 'form-control'
+
+                .form-group
+                  = f.label :notes, 'メモ'
+                  = f.text_area :notes, class: 'form-control', rows: 3
+
+                .form-group
+                  = f.submit '追加', class: 'btn btn-primary'
+                  = link_to 'キャンセル', admin_delivery_plans_path(date: @delivery_plan.delivery_date), class: 'btn btn-secondary ml-2'

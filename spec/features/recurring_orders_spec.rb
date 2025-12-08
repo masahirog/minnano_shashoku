@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.feature "RecurringOrders", type: :feature do
-  let(:admin_user) { AdminUser.create!(email: 'admin@example.com', password: 'password', password_confirmation: 'password') }
+  let(:admin_user) { AdminUser.create!(name: 'テスト管理者', email: 'admin@example.com', password: 'password', password_confirmation: 'password') }
   let(:company) { Company.create!(name: 'テスト企業', formal_name: 'テスト企業株式会社', contract_status: 'active') }
   let(:restaurant) do
     Restaurant.create!(

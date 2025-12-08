@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.feature "ScheduleAdjustment", type: :feature do
-  let(:admin_user) { AdminUser.create!(email: 'admin@example.com', password: 'password', password_confirmation: 'password') }
+  let(:admin_user) { AdminUser.create!(name: 'テスト管理者', email: 'admin@example.com', password: 'password', password_confirmation: 'password') }
   let(:company) { Company.create!(name: 'テスト企業', formal_name: 'テスト企業株式会社', contract_status: 'active', color: '#2196f3') }
   let(:restaurant) do
     Restaurant.create!(
@@ -18,13 +18,13 @@ RSpec.feature "ScheduleAdjustment", type: :feature do
   end
 
   scenario "スケジュール調整画面に案件一覧が表示される" do
-    order = Order.create!(
+    order = create_order_with_items(
       company: company,
       restaurant: restaurant,
       menu: menu,
       order_type: 'trial',
       scheduled_date: Date.today,
-      default_meal_count: 20,
+      meal_count: 20,
       status: 'confirmed',
       collection_time: Time.zone.parse('12:00')
     )
@@ -39,23 +39,23 @@ RSpec.feature "ScheduleAdjustment", type: :feature do
   end
 
   scenario "複数の案件を選択して一括更新する" do
-    order1 = Order.create!(
+    order1 = create_order_with_items(
       company: company,
       restaurant: restaurant,
       menu: menu,
       order_type: 'trial',
       scheduled_date: Date.today,
-      default_meal_count: 20,
+      meal_count: 20,
       status: 'pending'
     )
 
-    order2 = Order.create!(
+    order2 = create_order_with_items(
       company: company,
       restaurant: restaurant,
       menu: menu,
       order_type: 'trial',
       scheduled_date: Date.today,
-      default_meal_count: 15,
+      meal_count: 15,
       status: 'pending'
     )
 
@@ -73,26 +73,26 @@ RSpec.feature "ScheduleAdjustment", type: :feature do
 
   scenario "コンフリクトがある案件が赤く表示される" do
     # 既存案件（12:00回収）
-    Order.create!(
+    create_order_with_items(
       company: company,
       restaurant: restaurant,
       menu: menu,
       order_type: 'trial',
       scheduled_date: Date.today + 2.days,
-      default_meal_count: 20,
+      meal_count: 20,
       status: 'confirmed',
       collection_time: Time.zone.parse('12:00')
     )
 
     # 時間帯が重複する案件（12:30回収）
     menu2 = Menu.create!(name: 'テストメニュー2', restaurant: restaurant)
-    order2 = Order.create!(
+    order2 = create_order_with_items(
       company: company,
       restaurant: restaurant,
       menu: menu2,
       order_type: 'trial',
       scheduled_date: Date.today + 2.days,
-      default_meal_count: 15,
+      meal_count: 15,
       status: 'pending',
       collection_time: Time.zone.parse('12:30')
     )
@@ -106,23 +106,23 @@ RSpec.feature "ScheduleAdjustment", type: :feature do
   scenario "企業でフィルタリングする" do
     company2 = Company.create!(name: 'テスト企業2', formal_name: 'テスト企業2株式会社', contract_status: 'active', color: '#ff5722')
 
-    Order.create!(
+    create_order_with_items(
       company: company,
       restaurant: restaurant,
       menu: menu,
       order_type: 'trial',
       scheduled_date: Date.today,
-      default_meal_count: 20,
+      meal_count: 20,
       status: 'confirmed'
     )
 
-    Order.create!(
+    create_order_with_items(
       company: company2,
       restaurant: restaurant,
       menu: menu,
       order_type: 'trial',
       scheduled_date: Date.today,
-      default_meal_count: 15,
+      meal_count: 15,
       status: 'confirmed'
     )
 
@@ -140,23 +140,23 @@ RSpec.feature "ScheduleAdjustment", type: :feature do
   end
 
   scenario "ステータスでフィルタリングする" do
-    Order.create!(
+    create_order_with_items(
       company: company,
       restaurant: restaurant,
       menu: menu,
       order_type: 'trial',
       scheduled_date: Date.today,
-      default_meal_count: 20,
+      meal_count: 20,
       status: 'pending'
     )
 
-    Order.create!(
+    create_order_with_items(
       company: company,
       restaurant: restaurant,
       menu: menu,
       order_type: 'trial',
       scheduled_date: Date.today,
-      default_meal_count: 15,
+      meal_count: 15,
       status: 'confirmed'
     )
 

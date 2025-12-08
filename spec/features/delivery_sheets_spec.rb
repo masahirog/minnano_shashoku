@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.feature "DeliverySheets", type: :feature do
-  let(:admin_user) { AdminUser.create!(email: 'admin@example.com', password: 'password', password_confirmation: 'password') }
+  let(:admin_user) { AdminUser.create!(name: 'テスト管理者', email: 'admin@example.com', password: 'password', password_confirmation: 'password') }
   let(:company) { Company.create!(name: 'テスト企業', formal_name: 'テスト企業株式会社', contract_status: 'active', color: '#2196f3') }
   let(:restaurant) do
     Restaurant.create!(
@@ -19,13 +19,13 @@ RSpec.feature "DeliverySheets", type: :feature do
   end
 
   scenario "配送シート一覧が表示される" do
-    order = Order.create!(
+    order = create_order_with_items(
       company: company,
       restaurant: restaurant,
       menu: menu,
       order_type: 'trial',
       scheduled_date: Date.today,
-      default_meal_count: 20,
+      meal_count: 20,
       status: 'confirmed',
       collection_time: Time.zone.parse('12:00'),
       warehouse_pickup_time: Time.zone.parse('10:00'),
@@ -46,24 +46,24 @@ RSpec.feature "DeliverySheets", type: :feature do
 
   scenario "期間を指定してフィルタリングする" do
     # 今日の案件
-    Order.create!(
+    create_order_with_items(
       company: company,
       restaurant: restaurant,
       menu: menu,
       order_type: 'trial',
       scheduled_date: Date.today,
-      default_meal_count: 20,
+      meal_count: 20,
       status: 'confirmed'
     )
 
     # 来週の案件
-    Order.create!(
+    create_order_with_items(
       company: company,
       restaurant: restaurant,
       menu: menu,
       order_type: 'trial',
       scheduled_date: Date.today + 7.days,
-      default_meal_count: 15,
+      meal_count: 15,
       status: 'confirmed'
     )
 
@@ -82,13 +82,13 @@ RSpec.feature "DeliverySheets", type: :feature do
   end
 
   scenario "PDF出力ボタンが機能する" do
-    Order.create!(
+    create_order_with_items(
       company: company,
       restaurant: restaurant,
       menu: menu,
       order_type: 'trial',
       scheduled_date: Date.today,
-      default_meal_count: 20,
+      meal_count: 20,
       status: 'confirmed',
       collection_time: Time.zone.parse('12:00'),
       warehouse_pickup_time: Time.zone.parse('10:00')
@@ -102,24 +102,24 @@ RSpec.feature "DeliverySheets", type: :feature do
 
   scenario "キャンセルされた案件は表示されない" do
     # 通常の案件
-    Order.create!(
+    create_order_with_items(
       company: company,
       restaurant: restaurant,
       menu: menu,
       order_type: 'trial',
       scheduled_date: Date.today,
-      default_meal_count: 20,
+      meal_count: 20,
       status: 'confirmed'
     )
 
     # キャンセルされた案件
-    Order.create!(
+    create_order_with_items(
       company: company,
       restaurant: restaurant,
       menu: menu,
       order_type: 'trial',
       scheduled_date: Date.today,
-      default_meal_count: 15,
+      meal_count: 15,
       status: 'cancelled'
     )
 
@@ -131,24 +131,24 @@ RSpec.feature "DeliverySheets", type: :feature do
 
   scenario "日付ごとにグループ化されて表示される" do
     # 今日の案件
-    Order.create!(
+    create_order_with_items(
       company: company,
       restaurant: restaurant,
       menu: menu,
       order_type: 'trial',
       scheduled_date: Date.today,
-      default_meal_count: 20,
+      meal_count: 20,
       status: 'confirmed'
     )
 
     # 明日の案件
-    Order.create!(
+    create_order_with_items(
       company: company,
       restaurant: restaurant,
       menu: menu,
       order_type: 'trial',
       scheduled_date: Date.today + 1.day,
-      default_meal_count: 15,
+      meal_count: 15,
       status: 'confirmed'
     )
 
@@ -160,14 +160,14 @@ RSpec.feature "DeliverySheets", type: :feature do
   end
 
   scenario "配送会社でフィルタリングする" do
-    Order.create!(
+    create_order_with_items(
       company: company,
       restaurant: restaurant,
       menu: menu,
-      delivery_company: delivery_company,
+      delivery_company_id: delivery_company.id,
       order_type: 'trial',
       scheduled_date: Date.today,
-      default_meal_count: 20,
+      meal_count: 20,
       status: 'confirmed'
     )
 

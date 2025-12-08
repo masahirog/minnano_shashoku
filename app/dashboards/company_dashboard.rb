@@ -18,6 +18,7 @@ class CompanyDashboard < Administrate::BaseDashboard
     contact_person: Field::String,
     contact_phone: Field::String,
     contract_status: Field::String,
+    contract_end_date: Field::Date,
     default_meal_count: Field::Number,
     delivery_address: Field::Text,
     delivery_day_of_week: Field::String,
@@ -39,6 +40,7 @@ class CompanyDashboard < Administrate::BaseDashboard
     monthly_fee_type: Field::String,
     name: Field::String,
     orders: Field::HasMany,
+    recurring_orders: NestedHasManyField,
     paypay_employee_rate_1: Field::Number,
     paypay_employee_rate_2: Field::Number,
     paypay_enabled: Field::Boolean,
@@ -46,7 +48,7 @@ class CompanyDashboard < Administrate::BaseDashboard
     pickup_time_goal: Field::String,
     remote_delivery_fee: Field::Number,
     special_delivery_fee: Field::Number,
-    staff: Field::BelongsTo,
+    admin_user: Field::BelongsTo,
     supply_stocks: Field::HasMany,
     trial_billable: Field::Boolean,
     trial_date: Field::Date,
@@ -64,7 +66,7 @@ class CompanyDashboard < Administrate::BaseDashboard
     name
     formal_name
     contract_status
-    staff
+    admin_user
   ].freeze
 
   # SHOW_PAGE_ATTRIBUTES
@@ -73,7 +75,7 @@ class CompanyDashboard < Administrate::BaseDashboard
     id
     name
     formal_name
-    staff
+    admin_user
     contract_status
     color
     contact_person
@@ -123,8 +125,11 @@ class CompanyDashboard < Administrate::BaseDashboard
   FORM_ATTRIBUTES = %i[
     name
     formal_name
-    staff
+    admin_user
     contract_status
+    first_delivery_date
+    contract_end_date
+    recurring_orders
     color
     contact_person
     contact_phone
@@ -139,7 +144,6 @@ class CompanyDashboard < Administrate::BaseDashboard
     delivery_time_goal
     pickup_time_goal
     has_setup
-    first_delivery_date
     paypay_enabled
     paypay_employee_rate_1
     paypay_employee_rate_2

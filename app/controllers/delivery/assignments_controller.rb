@@ -4,7 +4,7 @@ class Delivery::AssignmentsController < Delivery::BaseController
   # GET /delivery/assignments
   def index
     @assignments = current_delivery_user.delivery_assignments
-                                         .includes(:order => [:company, :restaurant, :menu])
+                                         .includes(:order => [:company, :restaurant, :menus])
                                          .order(scheduled_date: :asc, scheduled_time: :asc, sequence_number: :asc)
 
     # 日付フィルター

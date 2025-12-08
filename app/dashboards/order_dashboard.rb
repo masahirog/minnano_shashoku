@@ -10,21 +10,54 @@ class OrderDashboard < Administrate::BaseDashboard
   ATTRIBUTE_TYPES = {
     id: Field::Number,
     company: Field::BelongsTo,
-    confirmed_meal_count: Field::Number,
-    default_meal_count: Field::Number,
-    delivery_company: Field::BelongsTo,
-    delivery_company_status: Field::String,
-    delivery_group: Field::Number,
-    delivery_priority: Field::Number,
-    delivery_sheet_items: Field::HasMany,
-    menu: Field::BelongsTo,
-    options: Field::String.with_options(searchable: false),
-    order_type: Field::String,
     restaurant: Field::BelongsTo,
-    restaurant_status: Field::String,
+    delivery_company: Field::BelongsTo,
+    recurring_order: Field::BelongsTo,
+
+    # 関連
+    order_items: NestedHasManyField,
+    menus: Field::HasMany,
+    delivery_sheet_items: Field::HasMany,
+    invoice_items: Field::HasMany,
+    delivery_plan_items: Field::HasMany,
+
+    # 基本情報
     scheduled_date: Field::Date,
-    second_menu: Field::BelongsTo,
-    status: Field::String,
+    order_type: Field::Select.with_options(
+      collection: ::Order::ORDER_TYPES
+    ),
+    status: Field::Select.with_options(
+      collection: ::Order::STATUSES
+    ),
+
+    # ステータス
+    restaurant_status: Field::Select.with_options(
+      collection: ::Order::RESTAURANT_STATUSES
+    ),
+    delivery_company_status: Field::Select.with_options(
+      collection: ::Order::DELIVERY_COMPANY_STATUSES
+    ),
+
+    # 食数・金額
+    total_meal_count: Field::Number,
+    subtotal: ReadonlyNumberField,
+    tax_8_percent: ReadonlyNumberField,
+    tax_10_percent: ReadonlyNumberField,
+    tax: ReadonlyNumberField,
+    delivery_fee: Field::Number,
+    delivery_fee_tax: ReadonlyNumberField,
+    discount_amount: Field::Number,
+    total_price: ReadonlyNumberField,
+
+    # 配送フロー
+    collection_time: Field::DateTime,
+    warehouse_pickup_time: Field::DateTime,
+    return_location: Field::String,
+    equipment_notes: Field::Text,
+    is_trial: Field::Boolean,
+    memo: Field::Text,
+
+    # タイムスタンプ
     created_at: Field::DateTime,
     updated_at: Field::DateTime,
   }.freeze
@@ -36,9 +69,11 @@ class OrderDashboard < Administrate::BaseDashboard
   # Feel free to add, remove, or rearrange items.
   COLLECTION_ATTRIBUTES = %i[
     company
+    restaurant
     scheduled_date
     order_type
     status
+    total_meal_count
   ].freeze
 
   # SHOW_PAGE_ATTRIBUTES
@@ -47,20 +82,19 @@ class OrderDashboard < Administrate::BaseDashboard
     id
     company
     restaurant
-    menu
-    second_menu
+    recurring_order
     scheduled_date
     order_type
     status
-    restaurant_status
-    delivery_company
-    delivery_company_status
-    default_meal_count
-    confirmed_meal_count
-    delivery_group
-    delivery_priority
-    options
-    delivery_sheet_items
+    order_items
+    total_meal_count
+    subtotal
+    tax
+    delivery_fee
+    discount_amount
+    total_price
+    memo
+    delivery_plan_items
     created_at
     updated_at
   ].freeze
@@ -71,19 +105,11 @@ class OrderDashboard < Administrate::BaseDashboard
   FORM_ATTRIBUTES = %i[
     company
     restaurant
-    menu
-    second_menu
     scheduled_date
     order_type
     status
-    restaurant_status
-    delivery_company
-    delivery_company_status
-    default_meal_count
-    confirmed_meal_count
-    delivery_group
-    delivery_priority
-    options
+    order_items
+    memo
   ].freeze
 
   # COLLECTION_FILTERS
@@ -101,6 +127,6 @@ class OrderDashboard < Administrate::BaseDashboard
   # Overwrite this method to customize how orders are displayed
   # across all pages of the admin dashboard.
   def display_resource(order)
-    "#{order.company&.name} - #{order.scheduled_date}"
+    "Order ##{order.id} - #{order.company&.name} - #{order.scheduled_date}"
   end
 end

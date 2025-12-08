@@ -236,12 +236,16 @@ html lang=I18n.locale
       /* User panel styling */
       .user-panel .user-icon {
         font-size: 32px;
-        color: #c2c7d0;
+        color: #fbbf24;
         line-height: 40px;
       }
 
       .user-panel .user-link {
-        color: #c2c7d0;
+        color: #fbbf24 !important;
+      }
+
+      .user-panel .user-link:hover {
+        color: #ffffff !important;
       }
 
       /* サイドバーが閉じた時の調整 */
@@ -257,13 +261,29 @@ html lang=I18n.locale
 
       .sidebar-dark-primary .nav-sidebar > .nav-item.menu-open > .nav-link {
         background-color: transparent !important;
-        color: #c2c7d0 !important;
+        color: #60a5fa !important;
       }
 
       /* サブメニューの青い背景も削除 */
       .sidebar-dark-primary .nav-treeview > .nav-item > .nav-link.active {
         background-color: rgba(255,255,255,.1) !important;
         color: #fff !important;
+      }
+
+      /* サブメニューの視認性改善 */
+      .nav-treeview > .nav-item > .nav-link {
+        padding-left: 2.5rem !important;
+        font-size: 0.875rem;
+      }
+
+      /* 親メニュー（カテゴリ）の色を統一 */
+      .nav-sidebar > .nav-item.has-treeview > .nav-link {
+        color: #60a5fa !important;
+        font-weight: 500;
+      }
+
+      .nav-sidebar > .nav-item.has-treeview > .nav-link:hover {
+        color: #ffffff !important;
       }
 
   body.sidebar-mini.layout-fixed

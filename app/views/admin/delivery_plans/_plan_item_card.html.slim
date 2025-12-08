@@ -1,0 +1,21 @@
+.plan-item-card data-item-id=item.id
+  .card.mb-2 class=("border-success" if item.status == 'completed')
+    .card-body.p-2
+      .item-header
+        strong #{item.sequence}. #{item.action_type_ja}
+        span.badge.badge-sm.ml-2 class=item_status_badge_class(item)
+          = item.status_ja
+      .item-info
+        small
+          = item.location_name
+          br
+          - if item.orders.any?
+            = "Order: #{item.orders.map(&:id).join(', ')}"
+            br
+          - if item.scheduled_time
+            = "予定: #{item.scheduled_time.strftime('%H:%M')}"
+          - if item.meal_count
+            = " | #{item.meal_count}食"
+      .item-actions.mt-1
+        = link_to '編集', edit_admin_delivery_plan_delivery_plan_item_path(item.delivery_plan, item), class: 'btn btn-xs btn-secondary'
+        = link_to '削除', admin_delivery_plan_delivery_plan_item_path(item.delivery_plan, item), method: :delete, data: { confirm: '削除しますか？' }, class: 'btn btn-xs btn-danger'

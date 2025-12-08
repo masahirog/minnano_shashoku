@@ -1,0 +1,18 @@
+.board-column.plan-column data-plan-id=plan.id
+  .column-header
+    h4 = "ルート##{plan.id}"
+    .driver-info
+      small
+        = plan.driver&.name || '未アサイン'
+        br
+        = plan.delivery_company.name
+    .actions
+      = link_to '編集', edit_admin_delivery_plan_path(plan), class: 'btn btn-xs btn-secondary'
+      = link_to '削除', admin_delivery_plan_path(plan), method: :delete, data: { confirm: '本当に削除しますか？' }, class: 'btn btn-xs btn-danger'
+
+  .column-content data-sortable-group="items" data-plan-id=plan.id
+    - plan.delivery_plan_items.ordered.each do |item|
+      = render 'plan_item_card', item: item
+
+    .add-item-btn
+      = link_to '+ アイテム追加', new_admin_delivery_plan_delivery_plan_item_path(plan), class: 'btn btn-sm btn-light btn-block'

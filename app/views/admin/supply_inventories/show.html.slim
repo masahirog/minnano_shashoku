@@ -1,0 +1,72 @@
+/ Content Header
+.content-header
+  .container-fluid
+    .row.mb-2
+      .col-sm-6
+        h1.m-0 棚卸し詳細
+      .col-sm-6
+        ol.breadcrumb.float-sm-right
+          li.breadcrumb-item
+            = link_to '管理画面', admin_root_path
+          li.breadcrumb-item
+            = link_to '棚卸し一覧', admin_supply_inventories_path
+          li.breadcrumb-item.active 詳細
+
+/ Main content
+.container-fluid
+  .row
+    .col-12
+      .card
+        .card-header
+          h3.card-title 棚卸し情報
+          .card-tools
+            = link_to '戻る', admin_supply_inventories_path, class: 'btn btn-secondary btn-sm'
+
+        .card-body
+          dl.row
+            dt.col-sm-3 実施日
+            dd.col-sm-9 = l(@supply_inventory.inventory_date, format: :long)
+
+            dt.col-sm-3 備品
+            dd.col-sm-9
+              = @supply_inventory.supply.name
+              = " (#{@supply_inventory.supply.sku})"
+
+            dt.col-sm-3 拠点
+            dd.col-sm-9 = @supply_inventory.location_display_name
+
+            dt.col-sm-3 理論在庫
+            dd.col-sm-9
+              = @supply_inventory.theoretical_quantity
+              = " "
+              = @supply_inventory.supply.unit
+
+            dt.col-sm-3 実在庫
+            dd.col-sm-9
+              = @supply_inventory.actual_quantity
+              = " "
+              = @supply_inventory.supply.unit
+
+            dt.col-sm-3 差異
+            dd.col-sm-9 class=((@supply_inventory.difference.zero? ? '' : (@supply_inventory.difference.positive? ? 'text-success' : 'text-danger')))
+              strong
+                - if @supply_inventory.difference.positive?
+                  | +
+                = @supply_inventory.difference
+                = " "
+                = @supply_inventory.supply.unit
+              - if @supply_inventory.difference.positive?
+                span.ml-2.badge.badge-success 実在庫過多
+              - elsif @supply_inventory.difference.negative?
+                span.ml-2.badge.badge-danger 実在庫不足
+              - else
+                span.ml-2.badge.badge-secondary 差異なし
+
+            dt.col-sm-3 実施者
+            dd.col-sm-9 = @supply_inventory.admin_user&.email || '-'
+
+            dt.col-sm-3 備考
+            dd.col-sm-9 = @supply_inventory.notes.present? ? @supply_inventory.notes : '-'
+
+            dt.col-sm-3 登録日時
+            dd.col-sm-9 = l(@supply_inventory.created_at, format: :long)

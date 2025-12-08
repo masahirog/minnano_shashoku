@@ -1,0 +1,146 @@
+/ Content Header
+.content-header
+  .container-fluid
+    .row.mb-2
+      .col-sm-6
+        h1.m-0 在庫予測
+      .col-sm-6
+        ol.breadcrumb.float-sm-right
+          li.breadcrumb-item
+            = link_to '管理画面', admin_root_path
+          li.breadcrumb-item.active 在庫予測
+
+/ Main content
+.container-fluid
+  .row
+    .col-12
+      .card
+        .card-header
+          h3.card-title 拠点選択
+
+        .card-body
+          = form_with url: admin_supply_forecasts_path, method: :get, local: true do |f|
+            .row
+              .col-md-3
+                .form-group
+                  label 拠点区分
+                  = select_tag :location_type, options_for_select([['自社拠点', 'OwnLocation'], ['導入企業', 'Company'], ['飲食店', 'Restaurant'], ['配送会社', 'DeliveryCompany']], @location_type), class: 'form-control', onchange: 'updateLocationSelect(this.value)'
+
+              .col-md-3
+                .form-group
+                  label 拠点
+                  = select_tag :location_id, options_for_select([['選択してください', '']]), class: 'form-control', id: 'location_id'
+
+              .col-md-2
+                .form-group
+                  label 予測期間
+                  = select_tag :days_ahead, options_for_select([[' 7日後', 7], ['14日後', 14], ['30日後', 30]], @days_ahead), class: 'form-control'
+
+              .col-md-2
+                .form-group
+                  label &nbsp;
+                  br
+                  = submit_tag '在庫予測を表示', class: 'btn btn-primary btn-block'
+
+      - if @forecasts.present?
+        .card
+          .card-header
+            h3.card-title
+              = "在庫予測: #{@location.name}"
+              = " (#{@days_ahead}日後)"
+
+          .card-body.p-0
+            table.table.table-striped.table-hover.mb-0
+              thead
+                tr
+                  th 備品名
+                  th.text-right 現在在庫
+                  th.text-right 予測在庫
+                  th.text-right 発注点
+                  th 発注推奨日
+                  th 状態
+                  th 操作
+              tbody
+                - @forecasts.each do |forecast|
+                  tr class=(forecast[:needs_attention] ? 'table-warning' : '')
+                    td
+                      = forecast[:stock].supply.name
+                      = " (#{forecast[:stock].supply.sku})"
+                    td.text-right
+                      = forecast[:current_quantity]
+                      = " "
+                      = forecast[:stock].supply.unit
+                    td.text-right class=(forecast[:predicted_quantity] < 0 ? 'text-danger' : '')
+                      = forecast[:predicted_quantity]
+                      = " "
+                      = forecast[:stock].supply.unit
+                    td.text-right
+                      - if forecast[:stock].supply.reorder_point
+                        = forecast[:stock].supply.reorder_point
+                        = " "
+                        = forecast[:stock].supply.unit
+                      - else
+                        | -
+                    td
+                      - if forecast[:reorder_date]
+                        span.badge.badge-warning
+                          = l(forecast[:reorder_date], format: :short)
+                      - else
+                        | -
+                    td
+                      - if forecast[:needs_attention]
+                        span.badge.badge-danger ⚠️ 要発注
+                      - elsif forecast[:predicted_quantity] < 0
+                        span.badge.badge-danger 在庫不足予測
+                      - else
+                        span.badge.badge-success 正常
+                    td
+                      = link_to '推移グラフ', admin_supply_forecast_path(forecast[:stock], days_ahead: @days_ahead), class: 'btn btn-sm btn-info'
+
+      - elsif @location_type.present? && @location_id.present?
+        .card
+          .card-body.text-center.text-muted
+            p この拠点には在庫がありません
+
+javascript:
+  const companies = #{raw @companies.map { |c| { id: c.id, name: c.name } }.to_json};
+  const restaurants = #{raw @restaurants.map { |r| { id: r.id, name: r.name } }.to_json};
+  const deliveryCompanies = #{raw @delivery_companies.map { |d| { id: d.id, name: d.name } }.to_json};
+  const ownLocations = #{raw @own_locations.map { |o| { id: o.id, name: o.name } }.to_json};
+
+  function updateLocationSelect(type) {
+    const select = document.getElementById('location_id');
+    select.innerHTML = '<option value="">選択してください</option>';
+
+    let data = [];
+    if (type === 'Company') {
+      data = companies;
+    } else if (type === 'Restaurant') {
+      data = restaurants;
+    } else if (type === 'DeliveryCompany') {
+      data = deliveryCompanies;
+    } else if (type === 'OwnLocation') {
+      data = ownLocations;
+    }
+
+    data.forEach(item => {
+      const option = document.createElement('option');
+      option.value = item.id;
+      option.textContent = item.name;
+      select.appendChild(option);
+    });
+
+    // 選択値を復元
+    const currentLocationId = '#{@location_id}';
+    if (currentLocationId) {
+      select.value = currentLocationId;
+    }
+  }
+
+  // ページロード時に拠点セレクトボックスを設定
+  document.addEventListener('DOMContentLoaded', function() {
+    const locationType = document.getElementById('location_type').value;
+    if (locationType) {
+      updateLocationSelect(locationType);
+    }
+  });

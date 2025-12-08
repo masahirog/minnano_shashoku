@@ -16,39 +16,30 @@ aside.main-sidebar.sidebar-dark-primary.elevation-4
     / User Panel
     .user-panel.mt-3.pb-3.mb-3.d-flex
       .image
-        i.far.fa-user-circle.user-icon
+        - if current_admin_user&.photo&.attached?
+          = image_tag current_admin_user.photo, class: "img-circle elevation-2", alt: "User Image", style: "width: 40px; height: 40px; object-fit: cover;"
+        - else
+          i.far.fa-user-circle.user-icon
       .info
         = link_to edit_admin_user_registration_path, class: "d-block user-link" do
           - if current_admin_user
-            = current_admin_user&.email
+            = current_admin_user&.name || current_admin_user&.email
 
     / Sidebar Menu
     nav.mt-2
       ul.nav.nav-pills.nav-sidebar.flex-column data-widget="treeview" role="menu" data-accordion="false"
 
-        / 自社管理
-        li.nav-item.has-treeview id="menu-own-company"
+        / 企業管理
+        li.nav-item.has-treeview id="menu-companies"
           a.nav-link href="#"
             i.nav-icon.fas.fa-building
             p
-              | 自社管理
+              | 企業管理
               i.right.fas.fa-angle-left
           ul.nav.nav-treeview
             li.nav-item
               = link_to admin_own_locations_path, class: "nav-link #{nav_link_state(:own_locations) == 'active' ? 'active' : ''}" do
                 p 自社拠点
-            li.nav-item
-              = link_to admin_staffs_path, class: "nav-link #{nav_link_state(:staffs) == 'active' ? 'active' : ''}" do
-                p スタッフ
-
-        / 取引先管理
-        li.nav-item.has-treeview id="menu-partners"
-          a.nav-link href="#"
-            i.nav-icon.fas.fa-briefcase
-            p
-              | 取引先管理
-              i.right.fas.fa-angle-left
-          ul.nav.nav-treeview
             li.nav-item
               = link_to admin_companies_path, class: "nav-link #{nav_link_state(:companies) == 'active' ? 'active' : ''}" do
                 p 導入企業
@@ -91,6 +82,9 @@ aside.main-sidebar.sidebar-dark-primary.elevation-4
             li.nav-item
               = link_to admin_delivery_sheet_items_path, class: "nav-link #{nav_link_state(:delivery_sheet_items) == 'active' ? 'active' : ''}" do
                 p 配送シート明細
+            li.nav-item
+              = link_to admin_delivery_plans_path, class: "nav-link #{nav_link_state(:delivery_plans) == 'active' ? 'active' : ''}" do
+                p 配送計画
 
         / 経理管理
         li.nav-item.has-treeview id="menu-accounting"
@@ -118,6 +112,12 @@ aside.main-sidebar.sidebar-dark-primary.elevation-4
             li.nav-item
               = link_to admin_supply_movements_path, class: "nav-link #{nav_link_state(:supply_movements) == 'active' ? 'active' : ''}" do
                 p 備品移動登録
+            li.nav-item
+              = link_to admin_supply_inventories_path, class: "nav-link #{nav_link_state(:supply_inventories) == 'active' ? 'active' : ''}" do
+                p 棚卸し
+            li.nav-item
+              = link_to admin_supply_forecasts_path, class: "nav-link #{nav_link_state(:supply_forecasts) == 'active' ? 'active' : ''}" do
+                p 在庫予測
 
         / システム管理
         li.nav-item.has-treeview id="menu-system"
@@ -129,4 +129,4 @@ aside.main-sidebar.sidebar-dark-primary.elevation-4
           ul.nav.nav-treeview
             li.nav-item
               = link_to admin_admin_users_path, class: "nav-link #{nav_link_state(:admin_users) == 'active' ? 'active' : ''}" do
-                p 管理者
+                p 社内ユーザー一覧

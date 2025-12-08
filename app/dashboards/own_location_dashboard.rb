@@ -11,7 +11,9 @@ class OwnLocationDashboard < Administrate::BaseDashboard
     id: Field::Number,
     address: Field::String,
     is_active: Field::Boolean,
-    location_type: Field::String,
+    location_type: Field::Select.with_options(
+      collection: OwnLocation::LOCATION_TYPES
+    ),
     name: Field::String,
     phone: Field::String,
     supply_stocks: Field::HasMany,

@@ -12,9 +12,13 @@ class MenuDashboard < Administrate::BaseDashboard
     description: Field::Text,
     is_active: Field::Boolean,
     name: Field::String,
+    order_items: Field::HasMany,
     orders: Field::HasMany,
     photo: Field::ActiveStorage,
     price_per_meal: Field::Number,
+    tax_rate: Field::Select.with_options(
+      collection: ::Menu::TAX_RATE_OPTIONS
+    ),
     restaurant: Field::BelongsTo,
     created_at: Field::DateTime,
     updated_at: Field::DateTime,
@@ -29,6 +33,7 @@ class MenuDashboard < Administrate::BaseDashboard
     name
     restaurant
     price_per_meal
+    tax_rate
     is_active
   ].freeze
 
@@ -39,6 +44,7 @@ class MenuDashboard < Administrate::BaseDashboard
     name
     restaurant
     price_per_meal
+    tax_rate
     is_active
     description
     photo
@@ -54,6 +60,7 @@ class MenuDashboard < Administrate::BaseDashboard
     name
     restaurant
     price_per_meal
+    tax_rate
     is_active
     description
     photo

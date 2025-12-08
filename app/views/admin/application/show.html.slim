@@ -21,7 +21,7 @@
       .card
         .card-header
           h3.card-title 詳細情報
-          .card-tools
+          .card-tools style="display: flex; gap: 10px;"
             - if accessible_action?(page.resource, :edit)
               = link_to "編集", [:edit, namespace, page.resource], class: "btn btn-primary btn-sm"
 

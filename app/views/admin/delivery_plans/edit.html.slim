@@ -1,0 +1,35 @@
+.content-wrapper
+  .content-header
+    .container-fluid
+      h1.m-0 配送計画編集
+
+  .content
+    .container-fluid
+      .row
+        .col-md-8
+          .card
+            .card-body
+              = form_with model: [:admin, @delivery_plan], local: true do |f|
+                .form-group
+                  = f.label :delivery_date, '配送日'
+                  = f.date_field :delivery_date, class: 'form-control', required: true
+
+                .form-group
+                  = f.label :delivery_company_id, '配送会社'
+                  = f.collection_select :delivery_company_id, DeliveryCompany.where(is_active: true), :id, :name, {}, class: 'form-control', required: true
+
+                .form-group
+                  = f.label :driver_id, 'ドライバー'
+                  = f.collection_select :driver_id, DeliveryUser.where(is_active: true), :id, :name, { prompt: '未アサイン' }, class: 'form-control'
+
+                .form-group
+                  = f.label :status, 'ステータス'
+                  = f.select :status, DeliveryPlan::STATUSES.map { |s| [s, s] }, {}, class: 'form-control'
+
+                .form-group
+                  = f.label :notes, 'メモ'
+                  = f.text_area :notes, class: 'form-control', rows: 3
+
+                .form-group
+                  = f.submit '更新', class: 'btn btn-primary'
+                  = link_to 'キャンセル', admin_delivery_plans_path(date: @delivery_plan.delivery_date), class: 'btn btn-secondary ml-2'

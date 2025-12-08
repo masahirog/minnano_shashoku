@@ -37,6 +37,8 @@
                 = f.label attribute.name, "有効", class: "custom-control-label", for: "menu_is_active"
             - elsif attribute.attribute == :price_per_meal
               = f.number_field attribute.name, class: "form-control", step: 1, placeholder: t("helpers.placeholder.#{f.object_name}.#{attribute.name}", default: "")
+            - elsif attribute.attribute == :tax_rate
+              = f.select attribute.name, options_for_select(Menu::TAX_RATE_OPTIONS, f.object.tax_rate), {}, { class: "form-control" }
             - else
               = f.text_field attribute.name, class: "form-control", placeholder: t("helpers.placeholder.#{f.object_name}.#{attribute.name}", default: "")
 

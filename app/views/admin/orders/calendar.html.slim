@@ -65,7 +65,8 @@ section.content.calendar-content
               .calendar-events
                 - orders.each do |order|
                   - has_duplicate = order.duplicate_menu_in_week?
-                  .calendar-event data-order-id=order.id style="background-color: #{order.company&.color || '#2196f3'}20; border-left-color: #{order.company&.color || '#2196f3'};" data-toggle="tooltip" data-html="true" title="<strong>#{order.company&.name}</strong><br>#{order.restaurant&.name}<br>#{'メニュー: ' + order.menu.name + '<br>' if order.menu}食数: #{order.default_meal_count}食<br>ステータス: #{order.status}#{has_duplicate ? '<br><span class=\'text-warning\'><strong>注意: 同じ週に同じメニューが重複しています</strong></span>' : ''}"
+                  - first_menu = order.menus.first
+                  .calendar-event data-order-id=order.id style="background-color: #{order.company&.color || '#2196f3'}20; border-left-color: #{order.company&.color || '#2196f3'};" data-toggle="tooltip" data-html="true" title="<strong>#{order.company&.name}</strong><br>#{order.restaurant&.name}<br>#{'メニュー: ' + first_menu.name + '<br>' if first_menu}食数: #{order.total_meal_count}食<br>ステータス: #{order.status}#{has_duplicate ? '<br><span class=\'text-warning\'><strong>注意: 同じ週に同じメニューが重複しています</strong></span>' : ''}"
                     = link_to admin_order_path(order), class: 'calendar-event-link' do
                       .event-time
                         = order.collection_time&.strftime('%H:%M')
@@ -75,9 +76,9 @@ section.content.calendar-content
                         = order.company&.name
                       .event-restaurant
                         = order.restaurant&.name
-                      - if order.menu
+                      - if first_menu
                         .event-menu.text-muted.small
-                          = order.menu.name
+                          = first_menu.name
           - else
             = month_calendar(events: @orders, attribute: :scheduled_date, end_attribute: :scheduled_date) do |date, orders|
               .calendar-day-header
@@ -85,7 +86,8 @@ section.content.calendar-content
               .calendar-events
                 - orders.each do |order|
                   - has_duplicate = order.duplicate_menu_in_week?
-                  .calendar-event.calendar-event-small data-order-id=order.id style="background-color: #{order.company&.color || '#2196f3'}20; border-left-color: #{order.company&.color || '#2196f3'};" data-toggle="tooltip" data-html="true" title="<strong>#{order.company&.name}</strong><br>#{order.restaurant&.name}<br>#{'メニュー: ' + order.menu.name + '<br>' if order.menu}食数: #{order.default_meal_count}食<br>ステータス: #{order.status}#{has_duplicate ? '<br><span class=\'text-warning\'><strong>注意: 同じ週に同じメニューが重複しています</strong></span>' : ''}"
+                  - first_menu = order.menus.first
+                  .calendar-event.calendar-event-small data-order-id=order.id style="background-color: #{order.company&.color || '#2196f3'}20; border-left-color: #{order.company&.color || '#2196f3'};" data-toggle="tooltip" data-html="true" title="<strong>#{order.company&.name}</strong><br>#{order.restaurant&.name}<br>#{'メニュー: ' + first_menu.name + '<br>' if first_menu}食数: #{order.total_meal_count}食<br>ステータス: #{order.status}#{has_duplicate ? '<br><span class=\'text-warning\'><strong>注意: 同じ週に同じメニューが重複しています</strong></span>' : ''}"
                     = link_to admin_order_path(order), class: 'calendar-event-link' do
                       .event-time.small
                         = order.collection_time&.strftime('%H:%M')

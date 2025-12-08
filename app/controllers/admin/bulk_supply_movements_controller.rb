@@ -42,18 +42,12 @@ module Admin
       end
 
       # 移動種別による拠点チェック
-      if movement_type == '移動'
-        if params[:from_location_type].blank? && params[:from_location_id].blank?
-          # 本社倉庫からの移動はOK
-        elsif params[:to_location_type].blank? && params[:to_location_id].blank?
-          # 本社倉庫への移動はOK
-        end
-      elsif movement_type == '入荷'
-        # 入荷の場合、移動元は不要
+      if movement_type == '入荷'
+        # 入荷の場合、ピックアップ先は不要
         params[:from_location_type] = nil
         params[:from_location_id] = nil
       elsif movement_type == '消費'
-        # 消費の場合、移動先は不要
+        # 消費の場合、納品先は不要
         params[:to_location_type] = nil
         params[:to_location_id] = nil
       end
@@ -76,20 +70,17 @@ module Admin
           from_location_type = params[:from_location_type].presence
           from_location_id = params[:from_location_id].presence
 
-          stock = if from_location_type && from_location_id
-                    SupplyStock.find_by(
-                      supply_id: supply_id,
-                      location_type: from_location_type,
-                      location_id: from_location_id
-                    )
-                  else
-                    # 本社倉庫
-                    SupplyStock.find_by(
-                      supply_id: supply_id,
-                      location_type: nil,
-                      location_id: nil
-                    )
-                  end
+          if from_location_type.blank? || from_location_id.blank?
+            supply = Supply.find(supply_id)
+            errors << "#{supply.name}: ピックアップ先拠点が選択されていません"
+            next
+          end
+
+          stock = SupplyStock.find_by(
+            supply_id: supply_id,
+            location_type: from_location_type,
+            location_id: from_location_id
+          )
 
           if stock.nil? || stock.quantity < quantity
             supply = Supply.find(supply_id)
@@ -108,6 +99,7 @@ module Admin
           to_location_type: params[:to_location_type],
           to_location_id: params[:to_location_id],
           movement_date: params[:movement_date],
+          status: params[:status],
           notes: params[:notes]
         )
 
