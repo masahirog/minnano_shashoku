@@ -44,7 +44,9 @@
       "Read(//Users/yamashitamasahiro/.rbenv/versions/3.1.4/lib/ruby/gems/3.1.0/gems/administrate-field-active_storage-1.0.6/lib/administrate/field/**)",
       "Bash(psql:*)",
       "WebSearch",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(for file in /Users/yamashitamasahiro/projects/minnano_shashoku/app/controllers/admin/*_controller.rb:*)",
+      "Bash(xargs basename:*)"
     ],
     "deny": [],
     "ask": []

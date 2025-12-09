@@ -105,8 +105,6 @@ Rails.application.routes.draw do
       resource :report, only: [:new, :create]
     end
     resources :reports, only: [:show]
-    resources :histories, only: [:index]
-    resource :profile, only: [:show, :edit, :update]
   end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 

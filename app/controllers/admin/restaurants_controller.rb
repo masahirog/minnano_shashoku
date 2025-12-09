@@ -31,8 +31,5 @@ module Admin
         remove_pickup_photos: []
       )
     end
-
-    # See https://administrate-demo.herokuapp.com/customizing_controller_actions
-    # for more information
   end
 end

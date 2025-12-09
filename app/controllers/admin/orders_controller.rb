@@ -151,7 +151,5 @@ module Admin
                order_items_attributes: [:id, :menu_id, :quantity, :unit_price, :subtotal, :discount_type, :discount_value, :discount_amount, :tax_rate, :_destroy])
     end
 
-    # See https://administrate-demo.herokuapp.com/customizing_controller_actions
-    # for more information
   end
 end
