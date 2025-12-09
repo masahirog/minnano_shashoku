@@ -16,18 +16,28 @@ OrderItem.destroy_all
 RecurringOrder.destroy_all
 SupplyStock.destroy_all
 SupplyMovement.destroy_all
-DeliverySheetItem.destroy_all
 
 # =====================================================
 # 管理者ユーザー
 # =====================================================
-admin = AdminUser.create!(
-  email: 'admin@example.com',
-  password: 'password',
-  password_confirmation: 'password',
-  name: '管理者'
-)
-puts "管理者ユーザー作成: #{admin.email}"
+admin_users_data = [
+  { name: '齋藤', email: 'saito@example.com' },
+  { name: '熊本', email: 'kumamoto@example.com' },
+  { name: '服部', email: 'hattori@example.com' },
+  { name: '片山', email: 'katayama@example.com' },
+  { name: '榎本', email: 'enomoto@example.com' },
+  { name: '山下', email: 'yamashita@example.com' }
+]
+
+admin_users_data.each do |user_data|
+  admin = AdminUser.create!(
+    email: user_data[:email],
+    password: 'password',
+    password_confirmation: 'password',
+    name: user_data[:name]
+  )
+  puts "管理者ユーザー作成: #{admin.name} (#{admin.email})"
+end
 
 # =====================================================
 # 自社拠点
@@ -110,22 +120,22 @@ end
 # =====================================================
 restaurants = []
 [
-  { name: '和食処 さくら', genre: '和食', contract_status: 'active', max_capacity: 100 },
-  { name: 'イタリアンキッチン ベラ', genre: 'イタリアン', contract_status: 'active', max_capacity: 80 },
-  { name: '中華料理 龍門', genre: '中華', contract_status: 'active', max_capacity: 120 },
-  { name: 'カフェ&ダイニング オリーブ', genre: 'カフェ', contract_status: 'active', max_capacity: 60 },
-  { name: '寿司割烹 海', genre: '和食', contract_status: 'active', max_capacity: 50 },
-  { name: 'フレンチビストロ ル・ソレイユ', genre: 'フレンチ', contract_status: 'active', max_capacity: 40 },
-  { name: '焼肉ダイニング 牛角', genre: '焼肉', contract_status: 'active', max_capacity: 90 },
-  { name: 'タイ料理 バンコク', genre: 'タイ料理', contract_status: 'active', max_capacity: 70 },
-  { name: 'パスタ工房 ポモドーロ', genre: 'イタリアン', contract_status: 'active', max_capacity: 85 },
-  { name: '定食屋 まごころ', genre: '定食', contract_status: 'active', max_capacity: 110 }
+  { name: '和食処 さくら', genre: '和食', contract_status: 'active', capacity_per_day: 100 },
+  { name: 'イタリアンキッチン ベラ', genre: 'イタリアン', contract_status: 'active', capacity_per_day: 80 },
+  { name: '中華料理 龍門', genre: '中華', contract_status: 'active', capacity_per_day: 120 },
+  { name: 'カフェ&ダイニング オリーブ', genre: 'カフェ', contract_status: 'active', capacity_per_day: 60 },
+  { name: '寿司割烹 海', genre: '和食', contract_status: 'active', capacity_per_day: 50 },
+  { name: 'フレンチビストロ ル・ソレイユ', genre: 'フレンチ', contract_status: 'active', capacity_per_day: 40 },
+  { name: '焼肉ダイニング 牛角', genre: '焼肉', contract_status: 'active', capacity_per_day: 90 },
+  { name: 'タイ料理 バンコク', genre: 'タイ料理', contract_status: 'active', capacity_per_day: 70 },
+  { name: 'パスタ工房 ポモドーロ', genre: 'イタリアン', contract_status: 'active', capacity_per_day: 85 },
+  { name: '定食屋 まごころ', genre: '定食', contract_status: 'active', capacity_per_day: 110 }
 ].each do |rest|
   restaurant = Restaurant.create!(
     name: rest[:name],
     genre: rest[:genre],
     contract_status: rest[:contract_status],
-    max_capacity: rest[:max_capacity],
+    capacity_per_day: rest[:capacity_per_day],
     phone: "03-#{rand(1000..9999)}-#{rand(1000..9999)}",
     contact_person: '店長'
   )
@@ -182,6 +192,7 @@ companies.select { |c| ['active', 'trial'].include?(c.contract_status) }.each do
       day_of_week: day,
       meal_count: rand(10..50),
       delivery_time: Time.zone.parse("#{['10:00', '11:00', '12:00'].sample}"),
+      collection_time: Time.zone.parse("#{['14:00', '15:00', '16:00'].sample}"),
       is_active: true,
       status: 'active',
       notes: ['通常配送', '特急配送', nil].sample
@@ -336,39 +347,6 @@ orders = []
 end
 puts "注文作成完了: #{orders.count}件"
 
-# =====================================================
-# 配送シート項目
-# =====================================================
-orders.each_with_index do |order, idx|
-  # 飲食店から企業への配送
-  DeliverySheetItem.create!(
-    order: order,
-    delivery_date: order.scheduled_date,
-    sequence: idx * 2 + 1,
-    action_type: '配送',
-    delivery_type: order.order_type,
-    scheduled_time: order.scheduled_date.to_time + 11.hours,
-    location_type: 'Company',
-    location_name: order.company.name,
-    address: order.company.delivery_address,
-    phone: order.company.contact_phone
-  )
-
-  # 企業から飲食店への回収
-  DeliverySheetItem.create!(
-    order: order,
-    delivery_date: order.scheduled_date,
-    sequence: idx * 2 + 2,
-    action_type: '回収',
-    delivery_type: order.order_type,
-    scheduled_time: order.scheduled_date.to_time + 14.hours,
-    location_type: 'Restaurant',
-    location_name: order.restaurant.name,
-    address: order.restaurant.pickup_address,
-    phone: order.restaurant.phone
-  )
-end
-puts "配送シート項目作成完了"
 
 puts "\n=========================================="
 puts "seedデータ作成完了！"
@@ -386,7 +364,12 @@ puts "SupplyStock: #{SupplyStock.count}件"
 puts "SupplyMovement: #{SupplyMovement.count}件"
 puts "Order: #{Order.count}件"
 puts "OrderItem: #{OrderItem.count}件"
-puts "DeliverySheetItem: #{DeliverySheetItem.count}件"
 puts "=========================================="
-puts "ログイン情報: admin@example.com / password"
+puts "ログイン情報: 各ユーザーのメールアドレス / password"
+puts "  - saito@example.com"
+puts "  - kumamoto@example.com"
+puts "  - hattori@example.com"
+puts "  - katayama@example.com"
+puts "  - enomoto@example.com"
+puts "  - yamashita@example.com"
 puts "=========================================="
