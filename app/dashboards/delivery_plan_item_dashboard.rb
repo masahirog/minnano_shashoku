@@ -4,21 +4,19 @@ class DeliveryPlanItemDashboard < Administrate::BaseDashboard
   ATTRIBUTE_TYPES = {
     id: Field::Number,
     delivery_plan: Field::BelongsTo,
-    sequence: Field::Number,
+    order: Field::BelongsTo,
     action_type: Field::Select.with_options(
-      collection: ['pickup', 'delivery', 'collection', 'return', 'supply_pickup', 'supply_return']
+      collection: ::DeliveryPlanItem::ACTION_TYPES
     ),
-    location_type: Field::String,
-    location_id: Field::Number,
+    restaurant: Field::BelongsTo,
+    company: Field::BelongsTo,
+    own_location: Field::BelongsTo,
     scheduled_time: Field::DateTime,
     actual_time: Field::DateTime,
     status: Field::Select.with_options(
-      collection: ['pending', 'in_progress', 'completed', 'skipped']
+      collection: ::DeliveryPlanItem::STATUSES
     ),
-    meal_count: Field::Number,
-    supplies_info: Field::String.with_options(searchable: false),
     notes: Field::Text,
-    orders: Field::HasMany,
     created_at: Field::DateTime,
     updated_at: Field::DateTime,
   }.freeze
@@ -26,7 +24,7 @@ class DeliveryPlanItemDashboard < Administrate::BaseDashboard
   COLLECTION_ATTRIBUTES = %i[
     id
     delivery_plan
-    sequence
+    order
     action_type
     status
   ].freeze
@@ -34,36 +32,34 @@ class DeliveryPlanItemDashboard < Administrate::BaseDashboard
   SHOW_PAGE_ATTRIBUTES = %i[
     id
     delivery_plan
-    sequence
+    order
     action_type
-    location_type
-    location_id
+    restaurant
+    company
+    own_location
     scheduled_time
     actual_time
     status
-    meal_count
-    supplies_info
     notes
-    orders
     created_at
     updated_at
   ].freeze
 
   FORM_ATTRIBUTES = %i[
     delivery_plan
-    sequence
+    order
     action_type
-    location_type
-    location_id
+    restaurant
+    company
+    own_location
     scheduled_time
     status
-    meal_count
     notes
   ].freeze
 
   COLLECTION_FILTERS = {}.freeze
 
   def display_resource(delivery_plan_item)
-    "#{delivery_plan_item.sequence}. #{delivery_plan_item.action_type}"
+    "#{delivery_plan_item.action_type_ja} - #{delivery_plan_item.location_name}"
   end
 end

@@ -27,7 +27,7 @@ section.content
           = link_to '翌日', daily_view_admin_orders_path(date: @date + 1), class: 'btn btn-sm btn-default ml-2'
         .right-buttons.ml-auto
           = link_to '案件追加', new_admin_order_path(scheduled_date: @date), class: 'btn btn-sm btn-success'
-          = link_to '配送計画作成', '#', class: 'btn btn-sm btn-info ml-2'
+          = link_to '配送計画', admin_delivery_plans_path(date: @date), class: 'btn btn-sm btn-info ml-2'
 
     / Orders List
     - if @orders.any?
@@ -52,7 +52,7 @@ section.content
                   tr.order-row style="border-left: 4px solid #{order.order_type_color};"
                     td.text-center.align-middle
                       strong.text-primary
-                        = order.collection_time&.strftime('%H:%M') || '未設定'
+                        = order.delivery_plan_items.find_by(action_type: 'delivery')&.scheduled_time&.strftime('%H:%M') || '未設定'
                     td.text-center.align-middle
                       span.badge style="background-color: #{order.order_type_color}; color: white;"
                         = order.order_type

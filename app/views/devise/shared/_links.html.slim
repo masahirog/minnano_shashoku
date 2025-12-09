@@ -2,7 +2,7 @@
   = link_to "ログイン", new_session_path(resource_name), class: "btn btn-link"
   br
 
-- if devise_mapping.registerable? && controller_name != 'registrations'
+- if devise_mapping.registerable? && controller_name != 'registrations' && resource_name != :admin_user
   = link_to "新規登録", new_registration_path(resource_name), class: "btn btn-link"
   br
 

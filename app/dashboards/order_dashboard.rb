@@ -19,7 +19,7 @@ class OrderDashboard < Administrate::BaseDashboard
     menus: Field::HasMany,
     delivery_sheet_items: Field::HasMany,
     invoice_items: Field::HasMany,
-    delivery_plan_items: Field::HasMany,
+    delivery_plan_items: DeliveryPlanItemsSummaryField,
 
     # 基本情報
     scheduled_date: Field::Date,
@@ -44,14 +44,12 @@ class OrderDashboard < Administrate::BaseDashboard
     tax_8_percent: ReadonlyNumberField,
     tax_10_percent: ReadonlyNumberField,
     tax: ReadonlyNumberField,
-    delivery_fee: Field::Number,
+    delivery_fee: CurrencyField,
     delivery_fee_tax: ReadonlyNumberField,
-    discount_amount: Field::Number,
+    discount_amount: CurrencyField,
     total_price: ReadonlyNumberField,
 
     # 配送フロー
-    collection_time: Field::DateTime,
-    warehouse_pickup_time: Field::DateTime,
     return_location: Field::String,
     equipment_notes: Field::Text,
     is_trial: Field::Boolean,

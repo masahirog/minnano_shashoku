@@ -1,21 +1,39 @@
-.plan-item-card data-item-id=item.id
-  .card.mb-2 class=("border-success" if item.status == 'completed')
-    .card-body.p-2
-      .item-header
-        strong #{item.sequence}. #{item.action_type_ja}
-        span.badge.badge-sm.ml-2 class=item_status_badge_class(item)
-          = item.status_ja
-      .item-info
-        small
-          = item.location_name
-          br
-          - if item.orders.any?
-            = "Order: #{item.orders.map(&:id).join(', ')}"
-            br
+.plan-item-card data-item-id=item.id data-order-id=item.order_id
+  - status_class = case item.status
+  - when 'pending'
+    - status_class = ''
+  - when 'in_progress'
+    - status_class = 'bg-warning bg-opacity-25'
+  - when 'completed'
+    - status_class = 'bg-success bg-opacity-10'
+  - when 'skipped'
+    - status_class = 'bg-secondary bg-opacity-25'
+  - else
+    - status_class = ''
+  - if item.order
+    = link_to admin_order_path(item.order), class: 'text-decoration-none plan-item-link', data: { item_id: item.id } do
+      .card.mb-2 class=status_class
+        .card-body.py-1.px-2
+          .d-flex.justify-content-between.align-items-start.mb-1
+            .d-flex.align-items-center
+              - if item.scheduled_time
+                span.text-dark.font-weight-bold.mr-2 style="font-size: 0.9rem;"
+                  = item.scheduled_time.strftime('%H:%M')
+              span.text-dark style="font-size: 0.85rem;"
+                = item.action_type_ja
+            .d-flex.align-items-center
+              span.badge.badge-primary.ml-1 style="font-size: 0.7rem;"
+                = item.order.id
+          div.text-muted style="font-size: 0.8rem;"
+            = item.location_name
+  - else
+    .card.mb-2 class=status_class
+      .card-body.py-1.px-2
+        .d-flex.align-items-center.mb-1
           - if item.scheduled_time
-            = "予定: #{item.scheduled_time.strftime('%H:%M')}"
-          - if item.meal_count
-            = " | #{item.meal_count}食"
-      .item-actions.mt-1
-        = link_to '編集', edit_admin_delivery_plan_delivery_plan_item_path(item.delivery_plan, item), class: 'btn btn-xs btn-secondary'
-        = link_to '削除', admin_delivery_plan_delivery_plan_item_path(item.delivery_plan, item), method: :delete, data: { confirm: '削除しますか？' }, class: 'btn btn-xs btn-danger'
+            span.text-dark.font-weight-bold.mr-2 style="font-size: 0.9rem;"
+              = item.scheduled_time.strftime('%H:%M')
+          span.text-dark style="font-size: 0.85rem;"
+            = item.action_type_ja
+        div.text-muted style="font-size: 0.8rem;"
+          = item.location_name

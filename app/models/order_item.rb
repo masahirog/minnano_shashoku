@@ -9,7 +9,7 @@ class OrderItem < ApplicationRecord
   validates :quantity, presence: true, numericality: { greater_than: 0 }
   validates :unit_price, presence: true, numericality: { greater_than_or_equal_to: 0 }
   validates :subtotal, presence: true, numericality: { greater_than_or_equal_to: 0 }
-  validates :discount_type, inclusion: { in: DISCOUNT_TYPES, allow_nil: true }
+  validates :discount_type, inclusion: { in: DISCOUNT_TYPES, allow_blank: true }
   validates :tax_rate, presence: true, inclusion: { in: TAX_RATES }
 
   validate :menu_matches_restaurant
@@ -38,26 +38,36 @@ class OrderItem < ApplicationRecord
   def calculate_discount
     return unless quantity && unit_price && discount_type && discount_value
 
-    base_amount = quantity.to_i * unit_price.to_f
-
-    case discount_type
+    # 割引後の単価を計算
+    discounted_unit_price = case discount_type
     when 'percentage'
-      # パーセント引き
-      self.discount_amount = (base_amount * discount_value.to_f / 100.0).round
+      # %引き: 単価 × (100 - 割引率) / 100
+      unit_price.to_f * (100 - discount_value.to_f) / 100.0
     when 'fixed_amount'
-      # 円引き
-      self.discount_amount = discount_value.to_f.round
+      # 円引き: 単価 - 割引額
+      unit_price.to_f - discount_value.to_f
     else
-      self.discount_amount = 0
+      unit_price.to_f
     end
+
+    # 割引額 = (元の単価 - 割引後単価) × 数量
+    self.discount_amount = ((unit_price.to_f - discounted_unit_price) * quantity.to_i).round
   end
 
   def calculate_subtotal
     if quantity && unit_price
-      base_amount = quantity.to_i * unit_price.to_f
-      discount = discount_amount.to_f
-      # 小計は整数に丸める
-      self.subtotal = (base_amount - discount).round
+      # 割引後の単価を計算
+      discounted_unit_price = case discount_type
+      when 'percentage'
+        unit_price.to_f * (100 - discount_value.to_f) / 100.0
+      when 'fixed_amount'
+        unit_price.to_f - discount_value.to_f
+      else
+        unit_price.to_f
+      end
+
+      # 小計 = 数量 × 割引後単価（整数に丸める）
+      self.subtotal = (quantity.to_i * discounted_unit_price).round
     end
   end
 

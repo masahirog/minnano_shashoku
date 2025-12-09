@@ -6,8 +6,14 @@ class OrderItemDashboard < Administrate::BaseDashboard
     order: Field::BelongsTo,
     menu: Field::BelongsTo,
     quantity: Field::Number,
-    unit_price: Field::Number.with_options(decimals: 2),
-    subtotal: Field::Number.with_options(decimals: 2),
+    unit_price: Field::Number,
+    subtotal: Field::Number,
+    discount_type: Field::Select.with_options(
+      collection: ::OrderItem::DISCOUNT_TYPES
+    ),
+    discount_value: Field::Number,
+    discount_amount: Field::Number,
+    tax_rate: Field::Number,
     created_at: Field::DateTime,
     updated_at: Field::DateTime,
   }.freeze
@@ -26,6 +32,10 @@ class OrderItemDashboard < Administrate::BaseDashboard
     menu
     quantity
     unit_price
+    discount_type
+    discount_value
+    discount_amount
+    tax_rate
     subtotal
     created_at
     updated_at
@@ -36,6 +46,9 @@ class OrderItemDashboard < Administrate::BaseDashboard
     menu
     quantity
     unit_price
+    discount_type
+    discount_value
+    tax_rate
   ].freeze
 
   COLLECTION_FILTERS = {}.freeze

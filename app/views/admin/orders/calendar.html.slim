@@ -55,9 +55,8 @@ section.content.calendar-content
                   - first_menu = order.menus.first
                   .calendar-event data-order-id=order.id style="background-color: #{order.order_type_color}20; border-left-color: #{order.order_type_color};" data-toggle="tooltip" data-html="true" title="<strong>#{order.company&.name}</strong><br>#{order.restaurant&.name}<br>#{'メニュー: ' + first_menu.name + '<br>' if first_menu}食数: #{order.total_meal_count}食<br>ステータス: #{order.status}#{has_duplicate ? '<br><span class=\'text-warning\'><strong>注意: 同じ週に同じメニューが重複しています</strong></span>' : ''}"
                     = link_to admin_order_path(order), class: 'calendar-event-link' do
-                      .event-time
-                        = order.collection_time&.strftime('%H:%M')
-                        - if has_duplicate
+                      - if has_duplicate
+                        .event-time
                           i.fas.fa-exclamation-triangle.text-warning.ml-1 title="メニュー重複"
                       .event-company
                         = order.company&.name
@@ -76,9 +75,8 @@ section.content.calendar-content
                   - first_menu = order.menus.first
                   .calendar-event.calendar-event-small data-order-id=order.id style="background-color: #{order.order_type_color}20; border-left-color: #{order.order_type_color};" data-toggle="tooltip" data-html="true" title="<strong>#{order.company&.name}</strong><br>#{order.restaurant&.name}<br>#{'メニュー: ' + first_menu.name + '<br>' if first_menu}食数: #{order.total_meal_count}食<br>ステータス: #{order.status}#{has_duplicate ? '<br><span class=\'text-warning\'><strong>注意: 同じ週に同じメニューが重複しています</strong></span>' : ''}"
                     = link_to admin_order_path(order), class: 'calendar-event-link' do
-                      .event-time.small
-                        = order.collection_time&.strftime('%H:%M')
-                        - if has_duplicate
+                      - if has_duplicate
+                        .event-time.small
                           i.fas.fa-exclamation-triangle.text-warning.ml-1 title="メニュー重複"
                       .event-company.small
                         = truncate(order.company&.name, length: 15)

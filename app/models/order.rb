@@ -8,14 +8,13 @@ class Order < ApplicationRecord
   has_many :delivery_sheet_items
   has_many :invoice_items
   has_one :delivery_assignment, dependent: :destroy
-  has_many :delivery_plan_item_orders, dependent: :destroy
-  has_many :delivery_plan_items, through: :delivery_plan_item_orders
+  has_many :delivery_plan_items, dependent: :destroy
   has_many :delivery_plans, through: :delivery_plan_items
 
   accepts_nested_attributes_for :order_items, allow_destroy: true
 
   ORDER_TYPES = ['定期', 'スポット', 'トライアル', '試食会'].freeze
-  STATUSES = ['確認待ち', '確定', '準備中', '配送中', '完了'].freeze
+  STATUSES = ['未完了', '完了', 'キャンセル'].freeze
   RESTAURANT_STATUSES = ['未確認', '確認済み', '調理中', '完成'].freeze
   DELIVERY_COMPANY_STATUSES = ['未配送', '配送準備', '配送中', '配送完了'].freeze
 
@@ -26,10 +25,10 @@ class Order < ApplicationRecord
   # カスタムバリデーション
   validate :restaurant_capacity_check, if: -> { restaurant_id.present? && scheduled_date.present? && total_meal_count.present? }
   validate :restaurant_not_closed, if: -> { restaurant_id.present? && scheduled_date.present? }
-  validate :delivery_time_feasible, if: -> { collection_time.present? && warehouse_pickup_time.present? }
 
   # コールバック
   before_save :calculate_totals
+  after_save :ensure_delivery_plan_items
 
   def self.ransackable_attributes(auth_object = nil)
     ["company_id", "created_at", "total_meal_count",
@@ -104,6 +103,16 @@ class Order < ApplicationRecord
   # 後方互換性のための一時的なdefault_meal_countメソッド
   def default_meal_count
     total_meal_count
+  end
+
+  # 回収時刻（delivery_plan_itemsから取得）
+  def collection_time
+    delivery_plan_items.find_by(action_type: 'collection')&.scheduled_time
+  end
+
+  # 倉庫集荷時刻（delivery_plan_itemsから取得）
+  def warehouse_pickup_time
+    delivery_plan_items.find { |item| item.action_type == 'pickup' && item.own_location_id.present? }&.scheduled_time
   end
 
   # 案件種別に応じた色を返す
@@ -185,18 +194,14 @@ class Order < ApplicationRecord
     # 配送料の消費税（10%）
     self.delivery_fee_tax = (delivery_fee.to_f * 0.1).round
 
-    # 割引額: 手動入力がなければ自動計算（整数に丸める）
-    if discount_amount.nil? || discount_amount.zero?
-      apply_discounts
-    else
-      self.discount_amount = discount_amount.to_f.round
-    end
+    # 割引額: 未設定の場合は0
+    self.discount_amount = (discount_amount || 0).to_f.round
 
     # 合計税額（互換性のため）
     self.tax = tax_8_percent.to_f + tax_10_percent.to_f + delivery_fee_tax.to_f
 
-    # 合計金額も整数に丸める
-    self.total_price = (subtotal.to_f + tax.to_f + delivery_fee.to_f - discount_amount.to_f).round
+    # 合計金額も整数に丸める（案件レベルの割引を反映）
+    self.total_price = (subtotal.to_f + tax.to_f + delivery_fee.to_f + delivery_fee_tax.to_f - discount_amount.to_f).round
   end
 
   # 8%と10%の消費税を分けて計算
@@ -260,22 +265,50 @@ class Order < ApplicationRecord
     end
   end
 
-  # 配送時間の妥当性チェック
-  def delivery_time_feasible
-    return unless collection_time && warehouse_pickup_time
+  # Order作成時に4つのDeliveryPlanItemを自動生成
+  def ensure_delivery_plan_items
+    return unless restaurant_id.present? && company_id.present? && scheduled_date.present?
 
-    # 倉庫集荷時刻が回収時刻よりも前である必要がある
-    # Time型の比較なので、日付部分は無視される
-    if warehouse_pickup_time >= collection_time
-      errors.add(:warehouse_pickup_time,
-                 "倉庫集荷時刻（#{warehouse_pickup_time.strftime('%H:%M')}）は飲食店回収時刻（#{collection_time.strftime('%H:%M')}）よりも前である必要があります")
-    end
+    # 基準日時を作成
+    base_date = scheduled_date
 
-    # 最低でも30分の余裕が必要
-    time_diff = (collection_time.hour * 60 + collection_time.min) - (warehouse_pickup_time.hour * 60 + warehouse_pickup_time.min)
-    if time_diff < 30
-      errors.add(:collection_time,
-                 "倉庫集荷から飲食店回収まで最低30分の余裕が必要です（現在: #{time_diff}分）")
+    # 既存のDeliveryPlanItemsを取得
+    existing_items = delivery_plan_items.reload
+
+    # 各アクションタイプと対応する情報
+    default_items = [
+      { action_type: 'pickup', location_type: :restaurant, location_id: restaurant_id, time: '10:00' },
+      { action_type: 'delivery', location_type: :company, location_id: company_id, time: '11:00' },
+      { action_type: 'collection', location_type: :company, location_id: company_id, time: '13:00' },
+      { action_type: 'return', location_type: :restaurant, location_id: restaurant_id, time: '15:00' }
+    ]
+
+    default_items.each do |item_config|
+      existing_item = existing_items.find { |ei| ei.action_type == item_config[:action_type] }
+
+      if existing_item
+        # 既存アイテムがある場合、場所を更新
+        location_attr = "#{item_config[:location_type]}_id"
+        updates = { location_attr => item_config[:location_id] }
+
+        # scheduled_timeがnilの場合、デフォルト時刻を設定
+        if existing_item.scheduled_time.nil?
+          updates[:scheduled_time] = Time.zone.parse("#{base_date} #{item_config[:time]}")
+        end
+
+        existing_item.update!(updates)
+      else
+        # 新規作成の場合、デフォルト時刻を設定
+        scheduled_time = Time.zone.parse("#{base_date} #{item_config[:time]}")
+        location_attr = "#{item_config[:location_type]}_id"
+
+        delivery_plan_items.create!(
+          action_type: item_config[:action_type],
+          location_attr => item_config[:location_id],
+          scheduled_time: scheduled_time,
+          status: 'pending'
+        )
+      end
     end
   end
 end

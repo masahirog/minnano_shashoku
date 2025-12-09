@@ -1,24 +1,31 @@
 module Admin
   class DeliveryPlansController < Admin::ApplicationController
-    before_action :set_delivery_plan, only: [:show, :edit, :update, :destroy, :add_orders, :reorder_items]
+    before_action :set_delivery_plan, only: [:show, :edit, :update, :destroy, :add_orders, :reorder_items, :move_items, :update_item_time]
 
     def index
       @date = params[:date]&.to_date || Date.today
 
-      # 未アサインのOrder（確定済みでDeliveryPlanに未割り当て）
-      @unassigned_orders = Order.where(scheduled_date: @date, status: '確定')
-                                .left_joins(:delivery_plan_item_orders)
-                                .where(delivery_plan_item_orders: { id: nil })
-                                .includes(:company, :restaurant)
+      # 未アサインのOrder（DeliveryPlanItemsがすべて未アサインのOrder）
+      # DeliveryPlanItemsが1つでもdelivery_plan_idを持つOrderは除外
+      assigned_order_ids = DeliveryPlanItem.where.not(delivery_plan_id: nil)
+                                           .joins(:order)
+                                           .where(orders: { scheduled_date: @date })
+                                           .distinct
+                                           .pluck(:order_id)
+
+      @unassigned_orders = Order.where(scheduled_date: @date)
+                                .where.not(id: assigned_order_ids)
+                                .includes(:company, :restaurant, :delivery_company)
+                                .order(:id)
 
       # 該当日のDeliveryPlans
-      @delivery_plans = DeliveryPlan.includes(:delivery_company, :driver, delivery_plan_items: [:location, :orders])
+      @delivery_plans = DeliveryPlan.includes(:delivery_company, :driver, delivery_plan_items: [:restaurant, :company, :own_location, :order])
                                     .where(delivery_date: @date)
                                     .order(:id)
     end
 
     def show
-      @delivery_plan_items = @delivery_plan.delivery_plan_items.includes(:location, :orders).ordered
+      @delivery_plan_items = @delivery_plan.delivery_plan_items.includes(:restaurant, :company, :own_location, :order).ordered
     end
 
     def new
@@ -34,7 +41,7 @@ module Admin
       if @delivery_plan.save
         respond_to do |format|
           format.html { redirect_to admin_delivery_plans_path(date: @delivery_plan.delivery_date), notice: '配送計画を作成しました' }
-          format.turbo_stream { render turbo_stream: turbo_stream.prepend('delivery-plans', partial: 'delivery_plan_column', locals: { delivery_plan: @delivery_plan }) }
+          format.turbo_stream { render turbo_stream: turbo_stream.prepend('delivery-plans', partial: 'plan_column', locals: { plan: @delivery_plan }) }
         end
       else
         render :new, status: :unprocessable_entity
@@ -75,13 +82,51 @@ module Admin
       end
     end
 
-    # DeliveryPlanItemsの順序を変更
+    # DeliveryPlanItemsの順序を変更（現在は時間で管理するため実質不要だが、互換性のため残す）
     def reorder_items
-      params[:items].each_with_index do |item_id, index|
-        DeliveryPlanItem.where(id: item_id).update_all(sequence: index + 1)
+      # scheduled_timeで順序が管理されているため、特に処理不要
+      head :ok
+    end
+
+    # DeliveryPlanItemsを別のプランに一括移動（時間は保持）
+    def move_items
+      item_ids = params[:item_ids] || []
+      from_plan_id = params[:from_plan_id]
+      to_plan_id = @delivery_plan.id
+
+      if item_ids.empty?
+        render json: { success: false, message: '移動するアイテムが指定されていません' }, status: :unprocessable_entity
+        return
       end
 
-      head :ok
+      # 指定されたアイテムを新しいプランに移動（時間は変更しない）
+      DeliveryPlanItem.where(id: item_ids, delivery_plan_id: from_plan_id)
+                      .update_all(delivery_plan_id: to_plan_id)
+
+      render json: { success: true, message: "#{item_ids.size}件のアイテムを移動しました" }
+    rescue => e
+      render json: { success: false, message: e.message }, status: :unprocessable_entity
+    end
+
+    # DeliveryPlanItemの時間を更新
+    def update_item_time
+      item_id = params[:item_id]
+      scheduled_time = params[:scheduled_time]
+
+      if item_id.blank? || scheduled_time.blank?
+        render json: { success: false, message: 'パラメータが不足しています' }, status: :unprocessable_entity
+        return
+      end
+
+      item = @delivery_plan.delivery_plan_items.find(item_id)
+      date = @delivery_plan.delivery_date
+      time_obj = Time.zone.parse("#{date} #{scheduled_time}")
+
+      item.update(scheduled_time: time_obj)
+
+      render json: { success: true, message: '時間を更新しました' }
+    rescue => e
+      render json: { success: false, message: e.message }, status: :unprocessable_entity
     end
 
     # 配送計画を自動生成

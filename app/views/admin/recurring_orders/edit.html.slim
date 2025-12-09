@@ -1,45 +1,155 @@
-- content_for(:title) do
-  = t("administrate.actions.edit_resource", name: page.page_title)
-
-- breadcrumb :admin_recurring_orders
-- breadcrumb page.resource
-
-/ Content Header
-.content-header
+section.content-header
   .container-fluid
     .row.mb-2
       .col-sm-6
         h1.m-0
-          = t("administrate.actions.edit_resource", name: display_resource_name(page.resource_name))
+          = @company.name
+          |  の定期案件編集
       .col-sm-6
         ol.breadcrumb.float-sm-right
-          = breadcrumbs separator: " / ", autoroot: false
+          li.breadcrumb-item
+            = link_to 'ホーム', admin_root_path
+          li.breadcrumb-item
+            = link_to '定期案件', admin_recurring_orders_path
+          li.breadcrumb-item.active 編集
 
-/ Main content
-.container-fluid
-  .row
-    .col-12
-      .card
-        .card-header
-          h3.card-title
-            = t("administrate.actions.edit_resource", name: display_resource_name(page.resource_name))
+section.content
+  .container-fluid
+    .row
+      .col-12
+        .card
+          .card-header
+            h3.card-title 曜日別定期配送設定
 
-        .card-body
-          = form_for [namespace, page.resource], html: { class: "form" } do |f|
-            / 企業は変更不可として表示
-            .field-unit
-              label.field-unit__label 導入企業
-              .field-unit__field
-                p.form-control-plaintext = page.resource.company&.name
-                = f.hidden_field :company_id
+          = form_with model: @company, url: admin_recurring_order_path(@company), method: :patch, local: true do |f|
+            .card-body
+              .alert.alert-info
+                p.mb-0
+                  i.fas.fa-info-circle.mr-1
+                  | 登録済みの定期案件を編集できます。新しい曜日を追加する場合は「+ 定期案件を追加」ボタンをクリックしてください。
 
-            / company以外のフィールドを表示
-            - page.attributes.each do |title, attributes|
-              - attributes.each do |attribute|
-                - next if attribute.attribute == :company
-                div class="field-unit field-unit--#{attribute.html_class}"
-                  = render_field attribute, f: f
+              table#recurring-orders-table.table.table-bordered
+                thead
+                  tr
+                    th.text-center style="width: 10%;" 曜日
+                    th.text-center style="width: 10%;" 配送有無
+                    th.text-center style="width: 15%;" 食数
+                    th.text-center style="width: 15%;" 配送時間
+                    th.text-center style="width: 15%;" ステータス
+                    th 備考
+                    th.text-center style="width: 10%;" 削除
+                tbody#recurring-orders-body
+                  - @recurring_orders.each do |ro|
+                    = f.fields_for :recurring_orders, ro do |ro_f|
+                      tr.recurring-order-row
+                        td.text-center.align-middle
+                          strong = %w[日 月 火 水 木 金 土][ro.day_of_week]
+                          = ro_f.hidden_field :id
+                          = ro_f.hidden_field :day_of_week
+                        td.text-center.align-middle
+                          .custom-control.custom-checkbox
+                            = ro_f.check_box :is_active, class: 'custom-control-input', id: "recurring_order_#{ro.id}_is_active"
+                            label.custom-control-label for="recurring_order_#{ro.id}_is_active"
+                              | 配送する
+                        td.align-middle
+                          = ro_f.number_field :meal_count, class: 'form-control form-control-sm', placeholder: '食数', min: 1
+                        td.align-middle
+                          = ro_f.time_field :delivery_time, class: 'form-control form-control-sm'
+                        td.align-middle
+                          = ro_f.select :status, [['有効', 'active'], ['停止中', 'paused'], ['終了', 'ended']], {}, class: 'form-control form-control-sm'
+                        td.align-middle
+                          = ro_f.text_area :notes, class: 'form-control form-control-sm', rows: 1, placeholder: '備考'
+                        td.text-center.align-middle
+                          = ro_f.check_box :_destroy, class: 'form-check-input', style: 'width: 20px; height: 20px;'
 
-            .form-actions
-              = f.submit "更新", class: "btn btn-primary btn-sm", style: "margin-right: 10px;"
-              = link_to "戻る", [namespace, page.resource], class: "btn btn-default btn-sm"
+              .mt-3
+                button#add-recurring-order.btn.btn-success.btn-sm type="button"
+                  i.fas.fa-plus.mr-1
+                  | 定期案件を追加
+
+            .card-footer
+              = f.submit '更新', class: 'btn btn-primary'
+              = link_to 'キャンセル', admin_recurring_orders_path, class: 'btn btn-secondary ml-2'
+
+/ 新規行のテンプレート（非表示）
+template#recurring-order-template
+  tr.recurring-order-row
+    td.text-center.align-middle
+      = select_tag 'day_of_week_select', options_for_select(%w[日 月 火 水 木 金 土].map.with_index { |name, idx| [name, idx] }), class: 'form-control form-control-sm day-of-week-select'
+    td.text-center.align-middle
+      .custom-control.custom-checkbox
+        input.custom-control-input type="checkbox" checked="checked"
+        label.custom-control-label
+          | 配送する
+    td.align-middle
+      input.form-control.form-control-sm type="number" placeholder="食数" min="1"
+    td.align-middle
+      input.form-control.form-control-sm type="time"
+    td.align-middle
+      select.form-control.form-control-sm
+        option value="active" 有効
+        option value="paused" 停止中
+        option value="ended" 終了
+    td.align-middle
+      textarea.form-control.form-control-sm rows="1" placeholder="備考"
+    td.text-center.align-middle
+      button.btn.btn-sm.btn-danger.remove-row type="button"
+        i.fas.fa-times
+
+javascript:
+  document.addEventListener('DOMContentLoaded', function() {
+    let newRecordIndex = new Date().getTime();
+
+    // 追加ボタン
+    document.getElementById('add-recurring-order').addEventListener('click', function() {
+      const template = document.getElementById('recurring-order-template');
+      const tbody = document.getElementById('recurring-orders-body');
+      const clone = template.content.cloneNode(true);
+
+      const tr = clone.querySelector('tr');
+
+      // fields_for用の属性を設定
+      const daySelect = clone.querySelector('.day-of-week-select');
+      const dayOfWeek = daySelect.value;
+
+      // 既に存在する曜日かチェック
+      const existingDays = Array.from(tbody.querySelectorAll('input[name*="[day_of_week]"]')).map(input => input.value);
+      if (existingDays.includes(dayOfWeek)) {
+        alert('この曜日は既に登録されています');
+        return;
+      }
+
+      // フィールド名を設定
+      const prefix = `company[recurring_orders_attributes][${newRecordIndex}]`;
+
+      tr.querySelector('td:nth-child(1)').innerHTML = `
+        <strong>${daySelect.options[daySelect.selectedIndex].text}</strong>
+        <input type="hidden" name="${prefix}[day_of_week]" value="${dayOfWeek}">
+      `;
+
+      const checkbox = tr.querySelector('input[type="checkbox"]');
+      checkbox.name = `${prefix}[is_active]`;
+      checkbox.id = `company_recurring_orders_attributes_${newRecordIndex}_is_active`;
+      checkbox.value = '1';
+      tr.querySelector('.custom-control-label').setAttribute('for', checkbox.id);
+
+      const hiddenCheckbox = document.createElement('input');
+      hiddenCheckbox.type = 'hidden';
+      hiddenCheckbox.name = `${prefix}[is_active]`;
+      hiddenCheckbox.value = '0';
+      tr.querySelector('td:nth-child(2) .custom-control').prepend(hiddenCheckbox);
+
+      tr.querySelector('input[type="number"]').name = `${prefix}[meal_count]`;
+      tr.querySelector('input[type="time"]').name = `${prefix}[delivery_time]`;
+      tr.querySelector('select').name = `${prefix}[status]`;
+      tr.querySelector('textarea').name = `${prefix}[notes]`;
+
+      // 削除ボタン
+      tr.querySelector('.remove-row').addEventListener('click', function() {
+        tr.remove();
+      });
+
+      tbody.appendChild(tr);
+      newRecordIndex++;
+    });
+  });

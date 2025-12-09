@@ -1,0 +1,17 @@
+- if field.data.any?
+  table.table.table-sm.table-bordered style="margin-top: 0;"
+    thead
+      tr
+        th アクション
+        th 拠点
+        th 予定時刻
+        th ステータス
+    tbody
+      - field.data.ordered.each do |item|
+        tr
+          td= item.action_type_ja
+          td= item.location_name
+          td= item.scheduled_time&.strftime('%H:%M')
+          td= item.status_ja
+- else
+  p.text-muted style="margin-top: 0;" 配送計画アイテムがありません

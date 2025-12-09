@@ -48,7 +48,7 @@ module Admin
       start_date = params.fetch(:start_date, Date.today).to_date
       @orders = Order.includes(:company, :restaurant, :menus)
                      .where(scheduled_date: start_date.beginning_of_month..start_date.end_of_month)
-                     .order(:scheduled_date, :collection_time)
+                     .order(:scheduled_date, :id)
     end
 
     # 1日の詳細表示アクション
@@ -56,7 +56,7 @@ module Admin
       @date = params.fetch(:date, Date.today).to_date
       @orders = Order.includes(:company, :restaurant, :menus, :delivery_company, order_items: :menu)
                      .where(scheduled_date: @date)
-                     .order(:collection_time, :company_id)
+                     .order(:id, :company_id)
     end
 
     # スケジュール調整画面
@@ -72,7 +72,7 @@ module Admin
       @orders = @orders.where(restaurant_id: params[:restaurant_id]) if params[:restaurant_id].present?
       @orders = @orders.where(status: params[:status]) if params[:status].present?
 
-      @orders = @orders.order(:scheduled_date, :collection_time)
+      @orders = @orders.order(:scheduled_date, :id)
     end
 
     # スケジュール一括更新
@@ -85,7 +85,7 @@ module Admin
         order = Order.find_by(id: order_id)
         next unless order
 
-        if order.update(attributes.permit(:scheduled_date, :collection_time))
+        if order.update(attributes.permit(:scheduled_date))
           success_count += 1
         else
           errors << "Order ##{order_id}: #{order.errors.full_messages.join(', ')}"
@@ -113,7 +113,7 @@ module Admin
       @orders = @orders.where(restaurant_id: params[:restaurant_id]) if params[:restaurant_id].present?
       @orders = @orders.where(delivery_company_id: params[:delivery_company_id]) if params[:delivery_company_id].present?
 
-      @orders = @orders.order(:scheduled_date, :collection_time)
+      @orders = @orders.order(:scheduled_date, :id)
     end
 
     # 配送シートPDF出力
@@ -130,7 +130,7 @@ module Admin
       @orders = @orders.where(restaurant_id: params[:restaurant_id]) if params[:restaurant_id].present?
       @orders = @orders.where(delivery_company_id: params[:delivery_company_id]) if params[:delivery_company_id].present?
 
-      @orders = @orders.order(:scheduled_date, :collection_time)
+      @orders = @orders.order(:scheduled_date, :id)
 
       # PDF生成
       pdf = DeliverySheetPdfGenerator.new(@orders, start_date: start_date, end_date: end_date).generate
@@ -146,7 +146,9 @@ module Admin
     def resource_params
       params.require(resource_class.model_name.param_key).
         permit(dashboard.permitted_attributes(action_name),
-               order_items_attributes: [:id, :menu_id, :quantity, :unit_price, :subtotal, :_destroy])
+               :delivery_fee,
+               :discount_amount,
+               order_items_attributes: [:id, :menu_id, :quantity, :unit_price, :subtotal, :discount_type, :discount_value, :discount_amount, :tax_rate, :_destroy])
     end
 
     # See https://administrate-demo.herokuapp.com/customizing_controller_actions

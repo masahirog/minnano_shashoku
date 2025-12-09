@@ -1,18 +1,49 @@
 .board-column.plan-column data-plan-id=plan.id
   .column-header
-    h4 = "ルート##{plan.id}"
-    .driver-info
-      small
-        = plan.driver&.name || '未アサイン'
-        br
-        = plan.delivery_company.name
-    .actions
-      = link_to '編集', edit_admin_delivery_plan_path(plan), class: 'btn btn-xs btn-secondary'
-      = link_to '削除', admin_delivery_plan_path(plan), method: :delete, data: { confirm: '本当に削除しますか？' }, class: 'btn btn-xs btn-danger'
+    .d-flex.justify-content-between.align-items-center.mb-1
+      strong
+        = link_to plan.delivery_company.name, admin_delivery_company_path(plan.delivery_company), class: 'text-dark', style: 'text-decoration: none;', target: :_blank
+      = link_to edit_admin_delivery_plan_path(plan), class: 'text-secondary', target: :_blank do
+        i.fas.fa-pencil-alt
+    .mb-1 style="font-size: 0.8rem;"
+      span.badge.badge-info.mr-1
+        i.fas.fa-file-alt.mr-1
+        | 案件: #{plan.delivery_plan_items.select(:order_id).distinct.count}件
+      span.badge.badge-secondary
+        i.fas.fa-list.mr-1
+        | アイテム: #{plan.delivery_plan_items.count}件
+    .text-muted style="font-size: 0.85rem;"
+      - if plan.driver
+        i.fas.fa-user.mr-1
+        = plan.driver.name
+        - if plan.driver.phone.present?
+          |  (
+          = plan.driver.phone
+          | )
+      - else
+        = link_to '配送員未アサイン', edit_admin_delivery_plan_path(plan), class: 'text-muted', style: 'text-decoration: none;', target: :_blank
+    - if plan.notes.present?
+      .mt-2.px-2.py-1 style="background-color: #fff3cd; border-left: 3px solid #ffc107; font-size: 0.75rem; border-radius: 3px; white-space: pre-line;"
+        i.fas.fa-sticky-note.text-warning.mr-1
+        span.text-dark = plan.notes.truncate(50)
 
-  .column-content data-sortable-group="items" data-plan-id=plan.id
-    - plan.delivery_plan_items.ordered.each do |item|
-      = render 'plan_item_card', item: item
+  .column-content.with-timeline data-plan-id=plan.id
+    / タイムスロット（08:00〜20:00、15分刻み）
+    - (8..19).each do |hour|
+      - [0, 15, 30, 45].each do |minute|
+        - time_str = sprintf('%02d:%02d', hour, minute)
+        - slot_time = Time.zone.parse("#{@date} #{time_str}")
+        .time-slot data-sortable-group="items" data-plan-id=plan.id data-time=time_str
+          .time-label = time_str
+          .slot-cards
+            - plan.delivery_plan_items.ordered.select { |item| item.scheduled_time && item.scheduled_time.strftime('%H:%M') == time_str }.each do |item|
+              = render 'plan_item_card', item: item
+    / 20:00のスロット
+    .time-slot data-sortable-group="items" data-plan-id=plan.id data-time="20:00"
+      .time-label 20:00
+      .slot-cards
+        - plan.delivery_plan_items.ordered.select { |item| item.scheduled_time && item.scheduled_time.strftime('%H:%M') == '20:00' }.each do |item|
+          = render 'plan_item_card', item: item
 
-    .add-item-btn
+    .add-item-btn.mt-3
       = link_to '+ アイテム追加', new_admin_delivery_plan_delivery_plan_item_path(plan), class: 'btn btn-sm btn-light btn-block'

@@ -1,75 +1,201 @@
-.content-wrapper
-  .content-header
-    .container-fluid
-      .row.mb-2
-        .col-sm-6
-          h1.m-0 配送計画ボード
-        .col-sm-6
-          .float-sm-right
-            = form_with url: admin_delivery_plans_path, method: :get, local: true, class: 'form-inline' do |f|
-              = f.date_field :date, value: @date, class: 'form-control mr-2'
-              = f.submit '表示', class: 'btn btn-primary btn-sm'
+section.content-header
+  .container-fluid
+    .row.mb-2
+      .col-sm-12
+        h1.m-0 配送計画ボード
 
-  .content
-    .container-fluid
-      .delivery-board data-controller="sortable" data-date=@date
-        .board-header.mb-3
-          h3 = @date.strftime('%Y年%m月%d日（%a）')
-          .btn-group
-            = link_to '+ 新規ルート', new_admin_delivery_plan_path(date: @date), class: 'btn btn-success btn-sm', data: { turbo_frame: 'modal' }
-            / 自動生成ボタン（一旦無効化）
-            / button.btn.btn-primary.btn-sm type="button" data-toggle="modal" data-target="#autoGenerateModal"
-            /   i.fas.fa-magic.mr-1
-            /   | 自動生成
+section.content
+  .delivery-board data-controller="sortable" data-date=@date
+    .board-header.mb-3.d-flex.justify-content-between.align-items-center
+      .left-nav
+        = form_with url: admin_delivery_plans_path, method: :get, local: true, class: 'form-inline' do |f|
+          = link_to '前日', admin_delivery_plans_path(date: @date - 1), class: 'btn btn-sm btn-default'
+          = f.date_field :date, value: @date, class: 'form-control form-control-sm mx-2', onchange: 'this.form.submit()'
+          = link_to '翌日', admin_delivery_plans_path(date: @date + 1), class: 'btn btn-sm btn-default'
+      .right-nav
+        = link_to '+ 新規ルート', new_admin_delivery_plan_path(date: @date), class: 'btn btn-success btn-sm', data: { turbo_frame: 'modal' }
+        / 自動生成ボタン（無効化）
+        / button.btn.btn-primary.btn-sm type="button" data-toggle="modal" data-target="#autoGenerateModal"
+        /   i.fas.fa-magic.mr-1
+        /   | 自動生成
 
-        .board-columns
-          / 未アサインカラム
-          .board-column.unassigned-column
-            .column-header
-              h4 未アサイン
-              span.badge.badge-info = @unassigned_orders.count
+    .board-columns
+      / 未アサインカラム
+      .board-column.unassigned-column
+        .column-header
+          .d-flex.justify-content-between.align-items-center
+            .left-side
+              = link_to new_admin_order_path(scheduled_date: @date), class: 'text-success mr-2', style: 'text-decoration: none; font-size: 1.2em;' do
+                i.fas.fa-plus-circle
+              strong 案件未アサイン
+            span.badge.badge-info = @unassigned_orders.count
 
-            .column-content data-sortable-group="orders"
-              - @unassigned_orders.each do |order|
-                = render 'order_card', order: order
+        .column-content data-sortable-group="orders"
+          - @unassigned_orders.each do |order|
+            = render 'order_card', order: order
 
-          / DeliveryPlanカラム
-          - @delivery_plans.each do |plan|
-            = render 'plan_column', plan: plan
+      / DeliveryPlanカラム
+      - @delivery_plans.each do |plan|
+        = render 'plan_column', plan: plan
 
-/ 自動生成モーダル（一旦無効化）
-/ #autoGenerateModal.modal.fade tabindex="-1" role="dialog"
-/   .modal-dialog role="document"
-/     .modal-content
-/       = form_with url: auto_generate_admin_delivery_plans_path, method: :post, local: true do |f|
-/         .modal-header
-/           h5.modal-title 配送計画を自動生成
-/           button.close type="button" data-dismiss="modal" aria-label="Close"
-/             span aria-hidden="true" &times;
-/
-/         .modal-body
-/           .form-group
-/             = f.label :date, '対象日'
-/             = f.date_field :date, value: @date, class: 'form-control', required: true
-/             small.form-text.text-muted この日の「確定」ステータスのOrderから配送計画を自動生成します
-/
-/           .form-group
-/             = f.label :delivery_company_id, '配送会社（オプション）'
-/             = f.collection_select :delivery_company_id, DeliveryCompany.order(:name), :id, :name, { include_blank: '全ての配送会社' }, class: 'form-control'
-/             small.form-text.text-muted 指定すると、その配送会社のみ生成します
-/
-/           .alert.alert-info
-/             strong 自動生成の仕様:
-/             ul.mb-0.small
-/               li 「確定」ステータスのOrdersを対象
-/               li 配送会社ごとにDeliveryPlanを作成
-/               li 各Orderに4つのアクション（pickup → delivery → collection → return）を自動追加
-/               li collection_time順に最適化して配置
-/               li 既にDeliveryPlanに割り当て済みのOrdersは除外
-/
-/         .modal-footer
-/           button.btn.btn-secondary type="button" data-dismiss="modal" キャンセル
-/           = f.submit '自動生成', class: 'btn btn-primary', data: { confirm: '配送計画を自動生成します。よろしいですか？' }
+#autoGenerateModal.modal.fade tabindex="-1" role="dialog"
+  .modal-dialog role="document"
+    .modal-content
+      = form_with url: auto_generate_admin_delivery_plans_path, method: :post, local: true do |f|
+        .modal-header
+          h5.modal-title 配送計画を自動生成
+          button.close type="button" data-dismiss="modal" aria-label="Close"
+            span aria-hidden="true" &times;
+
+        .modal-body
+          .form-group
+            = f.label :date, '対象日'
+            = f.date_field :date, value: @date, class: 'form-control', required: true
+            small.form-text.text-muted この日の「確定」ステータスのOrderから配送計画を自動生成します
+
+          .form-group
+            = f.label :delivery_company_id, '配送会社（オプション）'
+            = f.collection_select :delivery_company_id, DeliveryCompany.order(:name), :id, :name, { include_blank: '全ての配送会社' }, class: 'form-control'
+            small.form-text.text-muted 指定すると、その配送会社のみ生成します
+
+          .alert.alert-info
+            strong 自動生成の仕様:
+            ul.mb-0.small
+              li 「確定」ステータスのOrdersを対象
+              li 配送会社ごとにDeliveryPlanを作成
+              li 各Orderに4つのアクション（pickup → delivery → collection → return）を自動追加
+              li collection_time順に最適化して配置
+              li 既にDeliveryPlanに割り当て済みのOrdersは除外
+
+        .modal-footer
+          button.btn.btn-secondary type="button" data-dismiss="modal" キャンセル
+          = f.submit '自動生成', class: 'btn btn-primary', data: { confirm: '配送計画を自動生成します。よろしいですか？' }
 
 / モーダル用のturbo-frame
 = turbo_frame_tag 'modal'
+
+css:
+  /* 配送計画ボード専用のスタイル */
+  .content-wrapper {
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+  }
+
+  .delivery-board {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .board-columns {
+    display: flex;
+    gap: 15px;
+    min-height: 500px;
+  }
+
+  .board-column {
+    flex: 0 0 300px;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  .column-header {
+    padding: 12px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    font-weight: 600;
+  }
+
+  .column-content {
+    padding: 12px;
+    min-height: 400px;
+  }
+
+  /* カード全体はドラッグ&クリック可能 */
+  .order-card,
+  .plan-item-card {
+    cursor: grab;
+  }
+
+  .order-card:active,
+  .plan-item-card:active {
+    cursor: grabbing;
+  }
+
+  .order-card a,
+  .plan-item-card a {
+    display: block;
+    cursor: pointer;
+  }
+
+  .order-card .card:hover,
+  .plan-item-card .card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: box-shadow 0.2s;
+  }
+
+  /* ステータス別の背景色 */
+  .bg-opacity-10 {
+    background-color: rgba(40, 167, 69, 0.1) !important;
+  }
+
+  .bg-opacity-25 {
+    opacity: 0.9;
+  }
+
+  .sortable-ghost {
+    opacity: 0.4;
+    background-color: #f0f0f0;
+  }
+
+  .sortable-drag {
+    opacity: 0.8;
+    cursor: grabbing !important;
+  }
+
+  /* タイムスロットのスタイル */
+  .time-slot {
+    display: flex;
+    min-height: 40px;
+    border-bottom: 1px solid #e9ecef;
+    position: relative;
+  }
+
+  .time-slot:hover {
+    background-color: #f8f9fa;
+  }
+
+  .time-label {
+    flex: 0 0 60px;
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    color: #6c757d;
+    font-weight: 500;
+    border-right: 2px solid #dee2e6;
+    background-color: #f8f9fa;
+    display: flex;
+    align-items: flex-start;
+  }
+
+  .slot-cards {
+    flex: 1;
+    padding: 4px;
+    min-height: 40px;
+  }
+
+  .slot-cards:empty::after {
+    content: '';
+    display: block;
+    height: 100%;
+  }
+
+  /* カラムの幅を広げる */
+  .board-column.plan-column {
+    flex: 0 0 350px;
+  }
+
+  /* タイムライン付きカラムのスクロール */
+  .column-content.with-timeline {
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+  }

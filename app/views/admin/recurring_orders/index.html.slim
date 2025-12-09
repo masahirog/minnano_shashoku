@@ -1,16 +1,82 @@
-= render("index_header", resources: resources, search_term: search_term, page: page, show_search_bar: show_search_bar, filters: filters)
+section.content-header
+  .container-fluid
+    .row.mb-2
+      .col-sm-6
+        h1.m-0 定期案件管理
+      .col-sm-6
+        ol.breadcrumb.float-sm-right
+          li.breadcrumb-item
+            = link_to 'ホーム', admin_root_path
+          li.breadcrumb-item.active 定期案件
 
-= content_for(:before_main)
+section.content
+  .container-fluid
+    .row.mb-3
+      .col-12.text-right
+        button.btn.btn-success.btn-sm type="button" data-toggle="modal" data-target="#bulkGenerateModal"
+          i.fas.fa-calendar-plus.mr-1
+          | 注文一括生成
 
-- if content_for?(:main)
-  = content_for(:main)
-- else
-  section.main-content__body.main-content__body--flush
-    = render("collection", collection_presenter: page, collection_field_name: resource_name, page: page, resources: resources, table_title: "page-title")
+    .row
+      .col-12
+        .card
+          .card-header
+            h3.card-title 企業別定期案件一覧
 
-    = render("pagination", resources: resources)
-
-= content_for(:after_main)
+          .card-body.p-0
+            table.table.table-sm.table-hover
+              thead
+                tr
+                  th 企業名
+                  th.text-center ステータス
+                  th.text-center 開始日
+                  th.text-center 終了日
+                  th.text-center 日
+                  th.text-center 月
+                  th.text-center 火
+                  th.text-center 水
+                  th.text-center 木
+                  th.text-center 金
+                  th.text-center 土
+                  th.text-center アクション
+              tbody
+                - @companies.each do |company|
+                  - recurring_orders_by_day = (0..6).map { |day| company.recurring_orders.find { |ro| ro.day_of_week == day } }
+                  tr
+                    td
+                      strong = company.name
+                    td.text-center
+                      - case company.contract_status
+                      - when 'active'
+                        span.badge.badge-success 契約中
+                      - when 'trial'
+                        span.badge.badge-info トライアル
+                      - when 'prospect'
+                        span.badge.badge-warning 見込み
+                      - when 'paused'
+                        span.badge.badge-secondary 休止中
+                      - when 'ended'
+                        span.badge.badge-dark 終了
+                      - else
+                        span.badge.badge-light = company.contract_status
+                    td.text-center style="font-size: 0.85rem;"
+                      = company.first_delivery_date&.strftime('%Y/%m/%d') || '-'
+                    td.text-center style="font-size: 0.85rem;"
+                      = company.contract_end_date&.strftime('%Y/%m/%d') || '-'
+                    - recurring_orders_by_day.each do |ro|
+                      td.text-center style="vertical-align: middle;"
+                        - if ro && ro.persisted? && ro.is_active
+                          div
+                            i.fas.fa-circle.text-success
+                          div style="font-size: 0.75rem;"
+                            = "#{ro.meal_count}食"
+                          - if ro.delivery_time.present?
+                            div style="font-size: 0.7rem; color: #6c757d;"
+                              = ro.delivery_time.strftime('%H:%M')
+                        - else
+                          span.text-muted -
+                    td.text-center
+                      = link_to '編集', edit_admin_recurring_order_path(company), class: 'btn btn-sm btn-info'
 
 / 一括生成モーダル
 - next_sunday = Date.today.beginning_of_week(:sunday) + (Date.today.sunday? ? 0 : 7)

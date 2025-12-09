@@ -1,6 +1,6 @@
 require "administrate/field/number"
 
-class ReadonlyNumberField < Administrate::Field::Number
+class CurrencyField < Administrate::Field::Number
   def to_s
     # カンマ区切りで表示
     number_with_delimiter(data)

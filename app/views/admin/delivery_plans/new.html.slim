@@ -1,31 +1,34 @@
-.content-wrapper
-  .content-header
-    .container-fluid
-      h1.m-0 新規配送計画
+= turbo_frame_tag 'modal' do
+  .modal.fade.show style="display: block; background-color: rgba(0,0,0,0.5);"
+    .modal-dialog
+      .modal-content
+        .modal-header
+          h5.modal-title 新規配送計画
+          = link_to admin_delivery_plans_path(date: @delivery_plan.delivery_date), class: 'close', data: { turbo_frame: '_top' } do
+            span &times;
 
-  .content
-    .container-fluid
-      .row
-        .col-md-8
-          .card
-            .card-body
-              = form_with model: [:admin, @delivery_plan], local: true do |f|
-                .form-group
-                  = f.label :delivery_date, '配送日'
-                  = f.date_field :delivery_date, class: 'form-control', required: true
+        = form_with model: [:admin, @delivery_plan], local: true, data: { controller: 'delivery-plan-form', turbo: false } do |f|
+          .modal-body
+            .form-group
+              = f.label :delivery_date, '配送日'
+              = f.date_field :delivery_date, class: 'form-control', required: true
 
-                .form-group
-                  = f.label :delivery_company_id, '配送会社'
-                  = f.collection_select :delivery_company_id, DeliveryCompany.where(is_active: true), :id, :name, { prompt: '選択してください' }, class: 'form-control', required: true
+            .form-group
+              = f.label :delivery_company_id, '配送会社'
+              = f.collection_select :delivery_company_id, DeliveryCompany.order(:name), :id, :name, { prompt: '選択してください' }, class: 'form-control', required: true, data: { delivery_plan_form_target: 'deliveryCompany', action: 'change->delivery-plan-form#filterDrivers' }
 
-                .form-group
-                  = f.label :driver_id, 'ドライバー（後で指定可）'
-                  = f.collection_select :driver_id, DeliveryUser.where(is_active: true), :id, :name, { prompt: '未アサイン' }, class: 'form-control'
+            .form-group
+              = f.label :driver_id, 'ドライバー（後で指定可）'
+              select.form-control name="delivery_plan[driver_id]" data-delivery-plan-form-target="driver"
+                option value="" 未アサイン
+                - Driver.order(:name).each do |driver|
+                  option value=driver.id data-delivery-company-id="#{driver.delivery_company_id}"
+                    = driver.name
 
-                .form-group
-                  = f.label :notes, 'メモ'
-                  = f.text_area :notes, class: 'form-control', rows: 3
+            .form-group
+              = f.label :notes, 'メモ'
+              = f.text_area :notes, class: 'form-control', rows: 3
 
-                .form-group
-                  = f.submit '作成', class: 'btn btn-primary'
-                  = link_to 'キャンセル', admin_delivery_plans_path(date: @delivery_plan.delivery_date), class: 'btn btn-secondary ml-2'
+          .modal-footer
+            = link_to 'キャンセル', admin_delivery_plans_path(date: @delivery_plan.delivery_date), class: 'btn btn-secondary', data: { turbo_frame: '_top' }
+            = f.submit '作成', class: 'btn btn-primary'

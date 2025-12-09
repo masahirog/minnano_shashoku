@@ -33,7 +33,10 @@
       "Read(//Users/yamashitamasahiro/.rbenv/versions/3.1.4/lib/ruby/gems/3.1.0/gems/administrate-1.0.0/app/views/fields/**)",
       "Bash(bin/rails routes:*)",
       "Bash(curl:*)",
-      "Read(//private/tmp/**)"
+      "Read(//private/tmp/**)",
+      "Bash(bin/rails db:schema:dump:*)",
+      "Bash(bin/rails db:drop:*)",
+      "Bash(bin/rails:*)"
     ],
     "deny": [],
     "ask": []

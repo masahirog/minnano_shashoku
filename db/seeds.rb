@@ -1,173 +1,163 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-
-# 既存データをクリア（開発環境のみ）
-if Rails.env.development?
-  puts "既存データをクリア中..."
-  DeliverySheetItem.destroy_all
-  Order.destroy_all
-  Menu.destroy_all
-  SupplyMovement.destroy_all
-  SupplyStock.destroy_all
-  Supply.destroy_all
-  Driver.destroy_all
-  DeliveryCompany.destroy_all
-  Restaurant.destroy_all
-  Company.destroy_all
-  OwnLocation.destroy_all
-  Staff.destroy_all
-  AdminUser.destroy_all
-end
+# frozen_string_literal: true
 
 puts "seedデータ作成開始..."
 
+# 既存データをクリア
+AdminUser.destroy_all
+OwnLocation.destroy_all
+DeliveryCompany.destroy_all
+Driver.destroy_all
+Company.destroy_all
+Restaurant.destroy_all
+Menu.destroy_all
+Supply.destroy_all
+Order.destroy_all
+OrderItem.destroy_all
+RecurringOrder.destroy_all
+SupplyStock.destroy_all
+SupplyMovement.destroy_all
+DeliverySheetItem.destroy_all
+
+# =====================================================
 # 管理者ユーザー
-admin = AdminUser.find_or_create_by!(email: 'admin@example.com') do |user|
-  user.password = 'password'
-  user.password_confirmation = 'password'
-end
+# =====================================================
+admin = AdminUser.create!(
+  email: 'admin@example.com',
+  password: 'password',
+  password_confirmation: 'password',
+  name: '管理者'
+)
 puts "管理者ユーザー作成: #{admin.email}"
 
-# スタッフ
-staffs = []
-['山田太郎', '佐藤花子', '鈴木一郎', '田中美咲', '高橋健二'].each do |name|
-  staff = Staff.create!(
-    name: name,
-    email: "#{name.tr('ぁ-ん', 'a-z')}@shashoku.com",
-    role: ['営業', 'カスタマーサポート', 'マネージャー'].sample
-  )
-  staffs << staff
-  puts "スタッフ作成: #{staff.name}"
-end
-
-# 自社拠点（みんなの食堂）
+# =====================================================
+# 自社拠点
+# =====================================================
 own_locations = []
 [
-  { name: '本社倉庫', location_type: '倉庫', address: '東京都港区虎ノ門1-1-1' },
-  { name: '虎ノ門本社', location_type: 'オフィス', address: '東京都港区虎ノ門1-1-2' },
-  { name: '第二倉庫', location_type: '倉庫', address: '東京都江東区豊洲2-1-1' },
-  { name: '品川営業所', location_type: 'オフィス', address: '東京都品川区東品川3-1-1' }
-].each do |location_data|
+  { name: '本社倉庫', address: '東京都港区虎ノ門1-1-1', location_type: '倉庫' },
+  { name: '虎ノ門本社', address: '東京都港区虎ノ門2-2-2', location_type: 'オフィス' },
+  { name: '第二倉庫', address: '東京都品川区大井3-3-3', location_type: '倉庫' },
+  { name: '品川営業所', address: '東京都品川区北品川4-4-4', location_type: 'オフィス' }
+].each do |loc|
   location = OwnLocation.create!(
-    name: location_data[:name],
-    location_type: location_data[:location_type],
-    address: location_data[:address],
-    phone: "03-#{rand(1000..9999)}-#{rand(1000..9999)}",
-    is_active: true
+    name: loc[:name],
+    address: loc[:address],
+    location_type: loc[:location_type]
   )
   own_locations << location
   puts "自社拠点作成: #{location.name}"
 end
 
+# =====================================================
 # 配送会社
+# =====================================================
 delivery_companies = []
-['東京配送サービス', '関東運輸', '首都圏デリバリー'].each do |name|
-  dc = DeliveryCompany.create!(
-    name: name,
-    contact_person: ['山田', '佐藤', '鈴木'].sample + '配送責任者',
-    email: "#{name.tr('ぁ-ん', 'a-z')}@delivery.com",
-    phone: "03-#{rand(1000..9999)}-#{rand(1000..9999)}",
-    is_active: true
+[
+  { name: '東京配送サービス', phone: '03-1111-2222' },
+  { name: '関東運輸', phone: '03-3333-4444' },
+  { name: '首都圏デリバリー', phone: '03-5555-6666' }
+].each do |dc|
+  company = DeliveryCompany.create!(
+    name: dc[:name],
+    phone: dc[:phone]
   )
-  delivery_companies << dc
-  puts "配送会社作成: #{dc.name}"
+  delivery_companies << company
+  puts "配送会社作成: #{company.name}"
 end
 
+# =====================================================
 # ドライバー
+# =====================================================
 drivers = []
 delivery_companies.each do |dc|
-  ['A', 'B', 'C'].each do |suffix|
+  3.times do |i|
     driver = Driver.create!(
+      name: "#{dc.name.split('').first(2).join}ドライバー#{('A'.ord + i).chr}",
       delivery_company: dc,
-      name: "#{dc.name[0..1]}ドライバー#{suffix}",
-      phone: "090-#{rand(1000..9999)}-#{rand(1000..9999)}",
-      is_active: true
+      phone: "090-#{rand(1000..9999)}-#{rand(1000..9999)}"
     )
     drivers << driver
     puts "ドライバー作成: #{driver.name}"
   end
 end
 
+# =====================================================
 # 導入企業
+# =====================================================
 companies = []
 [
-  { name: 'テック株式会社', formal: '株式会社テック', status: '契約中' },
-  { name: 'サンプル商事', formal: 'サンプル商事株式会社', status: '契約中' },
-  { name: 'ABC工業', formal: 'ABC工業株式会社', status: '契約中' },
-  { name: 'デジタルソリューションズ', formal: '株式会社デジタルソリューションズ', status: 'トライアル' },
-  { name: 'グリーン物産', formal: 'グリーン物産株式会社', status: '契約中' }
-].each do |company_data|
+  { name: 'テック株式会社', formal_name: '株式会社テック', contract_status: 'active' },
+  { name: 'サンプル商事', formal_name: 'サンプル商事株式会社', contract_status: 'active' },
+  { name: 'ABC工業', formal_name: 'ABC工業株式会社', contract_status: 'trial' },
+  { name: 'デジタルソリューションズ', formal_name: '株式会社デジタルソリューションズ', contract_status: 'active' },
+  { name: 'グリーン物産', formal_name: 'グリーン物産株式会社', contract_status: 'prospect' }
+].each do |comp|
   company = Company.create!(
-    name: company_data[:name],
-    formal_name: company_data[:formal],
-    staff: staffs.sample,
-    contract_status: company_data[:status],
-    contact_person: ['総務部', '人事部', '管理部'].sample + '担当者',
+    name: comp[:name],
+    formal_name: comp[:formal_name],
+    contract_status: comp[:contract_status],
+    contact_person: '担当者',
     contact_phone: "03-#{rand(1000..9999)}-#{rand(1000..9999)}",
-    contact_email: "contact@#{company_data[:name].tr('ぁ-ん', 'a-z')}.co.jp",
-    default_meal_count: [10, 15, 20, 25, 30].sample,
-    delivery_day_of_week: ['月,水,金', '火,木', '月,水,金', '毎日'].sample,
-    has_setup: true,
-    trial_billable: company_data[:status] == 'トライアル',
-    employee_burden_enabled: [true, false].sample,
-    employee_burden_amount: [200, 300, 400, 500].sample
+    contact_email: "contact@#{comp[:name].gsub(/[^a-z0-9]/i, '').downcase}.co.jp",
+    first_delivery_date: Date.today - rand(30..180).days
   )
   companies << company
   puts "導入企業作成: #{company.name}"
 end
 
+# =====================================================
 # 飲食店
+# =====================================================
 restaurants = []
 [
-  { name: '和食処 さくら', genre: '和食' },
-  { name: 'イタリアンキッチン ベラ', genre: 'イタリアン' },
-  { name: '中華料理 龍門', genre: '中華' },
-  { name: 'カフェ&ダイニング オリーブ', genre: '洋食' },
-  { name: '寿司割烹 海', genre: '寿司' },
-  { name: 'フレンチビストロ ル・ソレイユ', genre: 'フレンチ' },
-  { name: '焼肉ダイニング 牛角', genre: '焼肉' },
-  { name: 'タイ料理 バンコク', genre: 'エスニック' },
-  { name: 'パスタ工房 ポモドーロ', genre: 'イタリアン' },
-  { name: '定食屋 まごころ', genre: '定食' }
-].each do |restaurant_data|
+  { name: '和食処 さくら', genre: '和食', contract_status: 'active', max_capacity: 100 },
+  { name: 'イタリアンキッチン ベラ', genre: 'イタリアン', contract_status: 'active', max_capacity: 80 },
+  { name: '中華料理 龍門', genre: '中華', contract_status: 'active', max_capacity: 120 },
+  { name: 'カフェ&ダイニング オリーブ', genre: 'カフェ', contract_status: 'active', max_capacity: 60 },
+  { name: '寿司割烹 海', genre: '和食', contract_status: 'active', max_capacity: 50 },
+  { name: 'フレンチビストロ ル・ソレイユ', genre: 'フレンチ', contract_status: 'active', max_capacity: 40 },
+  { name: '焼肉ダイニング 牛角', genre: '焼肉', contract_status: 'active', max_capacity: 90 },
+  { name: 'タイ料理 バンコク', genre: 'タイ料理', contract_status: 'active', max_capacity: 70 },
+  { name: 'パスタ工房 ポモドーロ', genre: 'イタリアン', contract_status: 'active', max_capacity: 85 },
+  { name: '定食屋 まごころ', genre: '定食', contract_status: 'active', max_capacity: 110 }
+].each do |rest|
   restaurant = Restaurant.create!(
-    name: restaurant_data[:name],
-    staff: staffs.sample,
-    genre: restaurant_data[:genre],
-    contract_status: '契約中',
-    max_capacity: [50, 80, 100, 120, 150].sample,
-    contact_person: 'オーナー',
-    contact_phone: "03-#{rand(1000..9999)}-#{rand(1000..9999)}",
-    contact_email: "#{restaurant_data[:name].tr('ぁ-ん', 'a-z')}@restaurant.jp",
-    supplier_code: "R#{sprintf('%04d', restaurants.length + 1)}"
+    name: rest[:name],
+    genre: rest[:genre],
+    contract_status: rest[:contract_status],
+    max_capacity: rest[:max_capacity],
+    phone: "03-#{rand(1000..9999)}-#{rand(1000..9999)}",
+    contact_person: '店長'
   )
   restaurants << restaurant
   puts "飲食店作成: #{restaurant.name}"
 end
 
-# メニュー
+# =====================================================
+# メニュー（各飲食店3つずつ）
+# =====================================================
 menus = []
-restaurants.each do |restaurant|
-  menu_names = case restaurant.genre
-               when '和食' then ['日替わり定食', '焼魚定食', '天ぷら定食', '刺身定食']
-               when 'イタリアン' then ['ミートソースパスタ', 'カルボナーラ', 'マルゲリータピザ', 'ペペロンチーノ']
-               when '中華' then ['麻婆豆腐定食', '回鍋肉定食', '酢豚定食', 'チャーハンセット']
-               when '洋食' then ['ハンバーグプレート', 'オムライス', 'ビーフシチュー', 'グリルチキン']
-               when '寿司' then ['にぎり寿司セット', 'ちらし寿司', '海鮮丼', '特上にぎり']
-               when 'フレンチ' then ['本日の魚料理', '牛肉のロースト', 'キッシュランチ', 'コース料理']
-               when '焼肉' then ['焼肉定食', 'カルビ定食', 'ロース定食', 'ミックス定食']
-               when 'エスニック' then ['グリーンカレー', 'ガパオライス', 'パッタイ', 'トムヤムクン']
-               when '定食' then ['日替わり定食', '唐揚げ定食', '生姜焼き定食', 'サバの味噌煮定食']
-               else ['ランチセット', 'ディナーセット', '日替わりメニュー']
-               end
+menu_names = {
+  '和食処 さくら' => ['刺身定食', '天ぷら定食', '日替わり定食'],
+  'イタリアンキッチン ベラ' => ['カルボナーラ', 'ミートソースパスタ', 'マルゲリータピザ'],
+  '中華料理 龍門' => ['回鍋肉定食', '麻婆豆腐定食', 'チャーハンセット'],
+  'カフェ&ダイニング オリーブ' => ['オムライス', 'ハンバーグプレート', 'ビーフシチュー'],
+  '寿司割烹 海' => ['ちらし寿司', 'にぎり寿司セット', '海鮮丼'],
+  'フレンチビストロ ル・ソレイユ' => ['キッシュランチ', 'コース料理', '本日の魚料理'],
+  '焼肉ダイニング 牛角' => ['焼肉定食', 'カルビ定食', 'ミックス定食'],
+  'タイ料理 バンコク' => ['ガパオライス', 'パッタイ', 'トムヤムクン'],
+  'パスタ工房 ポモドーロ' => ['ペペロンチーノ', 'マルゲリータピザ', 'ミートソースパスタ'],
+  '定食屋 まごころ' => ['唐揚げ定食', '日替わり定食', '生姜焼き定食']
+}
 
-  menu_names.sample(3).each do |menu_name|
+restaurants.each do |restaurant|
+  menu_list = menu_names[restaurant.name] || ['メニューA', 'メニューB', 'メニューC']
+  menu_list.each do |menu_name|
     menu = Menu.create!(
       restaurant: restaurant,
       name: menu_name,
-      description: "#{restaurant.name}の人気メニューです。",
-      price_per_meal: [600, 700, 800, 900, 1000, 1200].sample,
+      price_per_meal: rand(800..1500),
+      tax_rate: [8, 10].sample,
       is_active: true
     )
     menus << menu
@@ -175,7 +165,35 @@ restaurants.each do |restaurant|
   end
 end
 
-# 備品
+# =====================================================
+# 定期案件
+# =====================================================
+recurring_orders = []
+# 契約中とトライアルの企業に定期案件を作成
+companies.select { |c| ['active', 'trial'].include?(c.contract_status) }.each do |company|
+  # ランダムに2〜4曜日で定期案件を作成
+  rand(2..4).times do
+    day = rand(0..6)
+    # 既に同じ曜日の定期案件がある場合はスキップ
+    next if company.recurring_orders.exists?(day_of_week: day)
+
+    ro = RecurringOrder.create!(
+      company: company,
+      day_of_week: day,
+      meal_count: rand(10..50),
+      delivery_time: Time.zone.parse("#{['10:00', '11:00', '12:00'].sample}"),
+      is_active: true,
+      status: 'active',
+      notes: ['通常配送', '特急配送', nil].sample
+    )
+    recurring_orders << ro
+    puts "定期案件作成: #{company.name} - #{%w[日 月 火 水 木 金 土][day]}曜日"
+  end
+end
+
+# =====================================================
+# 備品マスター
+# =====================================================
 supplies = []
 [
   { name: '割り箸', sku: 'SUP-001', category: '使い捨て備品', unit: '膳' },
@@ -184,11 +202,11 @@ supplies = []
   { name: 'プラスチック容器（大）', sku: 'SUP-004', category: '使い捨て備品', unit: '個' },
   { name: 'プラスチック容器（小）', sku: 'SUP-005', category: '使い捨て備品', unit: '個' },
   { name: '保温バッグ', sku: 'SUP-006', category: '企業貸与備品', unit: '個' },
-  { name: '保冷剤', sku: 'SUP-007', category: '企業貸与備品', unit: '個' },
+  { name: '保冷剤', sku: 'SUP-007', category: '使い捨て備品', unit: '個' },
   { name: '配送ボックス', sku: 'SUP-008', category: '企業貸与備品', unit: '個' },
   { name: 'ステンレストレー', sku: 'SUP-009', category: '飲食店貸与備品', unit: '個' },
-  { name: '温度計', sku: 'SUP-010', category: '飲食店貸与備品', unit: '個' },
-  { name: 'タオル', sku: 'SUP-011', category: '飲食店貸与備品', unit: '枚' },
+  { name: '温度計', sku: 'SUP-010', category: '企業貸与備品', unit: '個' },
+  { name: 'タオル', sku: 'SUP-011', category: '企業貸与備品', unit: '枚' },
   { name: '使い捨て手袋', sku: 'SUP-012', category: '使い捨て備品', unit: '枚' },
   { name: '配送伝票', sku: 'SUP-013', category: '使い捨て備品', unit: '枚' },
   { name: 'アルコール消毒液', sku: 'SUP-014', category: '使い捨て備品', unit: 'ml' },
@@ -206,48 +224,36 @@ supplies = []
   puts "備品作成: #{supply.name}"
 end
 
+# =====================================================
 # 備品在庫
+# =====================================================
 # 自社拠点の在庫
 own_locations.each do |own_location|
-  supplies.each do |supply|
+  supplies.sample(rand(5..10)).each do |supply|
     SupplyStock.create!(
       supply: supply,
       location: own_location,
-      quantity: rand(100..500),
-      physical_count: nil,
-      last_updated_at: Time.current
+      quantity: rand(100..500)
     )
   end
   puts "#{own_location.name}の在庫作成完了"
 end
 
-# 企業在庫
-companies.sample(3).each do |company|
-  supplies.select { |s| s.category == '企業貸与備品' }.each do |supply|
+# 一部の企業と飲食店の在庫
+(companies.sample(3) + restaurants.sample(5)).each do |location|
+  supplies.sample(rand(3..8)).each do |supply|
     SupplyStock.create!(
       supply: supply,
-      location: company,
-      quantity: rand(5..30),
-      last_updated_at: Time.current
+      location: location,
+      quantity: rand(10..100)
     )
   end
-  puts "#{company.name}の在庫作成完了"
+  puts "#{location.name}の在庫作成完了"
 end
 
-# 飲食店在庫
-restaurants.sample(5).each do |restaurant|
-  supplies.select { |s| ['飲食店貸与備品', '使い捨て備品'].include?(s.category) }.sample(3).each do |supply|
-    SupplyStock.create!(
-      supply: supply,
-      location: restaurant,
-      quantity: rand(10..50),
-      last_updated_at: Time.current
-    )
-  end
-  puts "#{restaurant.name}の在庫作成完了"
-end
-
-# 備品移動履歴
+# =====================================================
+# 備品移動履歴（status: '予定'で在庫更新を無効化）
+# =====================================================
 10.times do
   from_company = companies.sample
   to_company = companies.sample
@@ -274,72 +280,92 @@ end
     from_location: from_loc,
     to_location: to_loc,
     movement_date: Date.today - rand(30).days,
+    status: '予定',
     notes: ['通常配送', '緊急補充', '定期補充', '返却品', '初回配送'].sample
   )
 end
 puts "備品移動履歴作成完了"
 
+# =====================================================
 # 注文
+# =====================================================
 orders = []
 20.times do
   company = companies.sample
   restaurant = restaurants.sample
-  menu = restaurant.menus.sample
+  menus_for_order = restaurant.menus.sample(rand(1..2))
 
   order = Order.create!(
     company: company,
     restaurant: restaurant,
-    menu: menu,
-    second_menu: restaurant.menus.where.not(id: menu.id).sample,
     delivery_company: delivery_companies.sample,
     order_type: ['定期', 'スポット', 'トライアル'].sample,
     scheduled_date: Date.today + rand(-7..7).days,
-    default_meal_count: company.default_meal_count,
-    confirmed_meal_count: nil,
-    status: ['確認待ち', '確定', '準備中', '配送中', '完了'].sample,
+    status: '未完了',
     restaurant_status: ['未確認', '確認済み', '調理中', '完成'].sample,
     delivery_company_status: ['未配送', '配送準備', '配送中', '配送完了'].sample,
-    delivery_group: rand(1..5),
-    delivery_priority: rand(1..10)
+    total_meal_count: 0,  # calculate_totalsで自動計算
+    subtotal: 0,
+    tax: 0,
+    tax_8_percent: 0,
+    tax_10_percent: 0,
+    delivery_fee: rand(0..500),
+    delivery_fee_tax: 0,
+    discount_amount: 0,
+    total_price: 0
   )
+
+  # 注文明細を作成
+  menus_for_order.each do |menu|
+    quantity = rand(5..25)
+    unit_price = menu.price_per_meal
+    OrderItem.create!(
+      order: order,
+      menu: menu,
+      quantity: quantity,
+      unit_price: unit_price,
+      subtotal: quantity * unit_price,
+      tax_rate: menu.tax_rate
+    )
+  end
+
+  # 合計を再計算して保存
+  order.save!
+
   orders << order
 end
 puts "注文作成完了: #{orders.count}件"
 
+# =====================================================
 # 配送シート項目
-orders.each do |order|
+# =====================================================
+orders.each_with_index do |order, idx|
   # 飲食店から企業への配送
   DeliverySheetItem.create!(
     order: order,
-    driver: drivers.sample,
     delivery_date: order.scheduled_date,
-    sequence: 1,
-    action_type: '引取',
-    location_type: 'Restaurant',
-    location_name: order.restaurant.name,
-    address: '東京都渋谷区〇〇',
-    phone: order.restaurant.contact_phone,
-    scheduled_time: '10:00',
-    meal_info: "#{order.menu.name} #{order.default_meal_count}食",
-    supplies_info: '保温バッグ 2個',
-    has_setup: false
-  )
-
-  DeliverySheetItem.create!(
-    order: order,
-    driver: drivers.sample,
-    delivery_date: order.scheduled_date,
-    sequence: 2,
+    sequence: idx * 2 + 1,
     action_type: '配送',
+    delivery_type: order.order_type,
+    scheduled_time: order.scheduled_date.to_time + 11.hours,
     location_type: 'Company',
     location_name: order.company.name,
-    address: '東京都千代田区〇〇',
-    phone: order.company.contact_phone,
-    scheduled_time: '12:00',
-    meal_info: "#{order.menu.name} #{order.default_meal_count}食",
-    supplies_info: '保温バッグ 2個',
-    has_setup: order.company.has_setup,
-    notes: order.company.has_setup ? nil : '初回配送につきセットアップ要'
+    address: order.company.delivery_address,
+    phone: order.company.contact_phone
+  )
+
+  # 企業から飲食店への回収
+  DeliverySheetItem.create!(
+    order: order,
+    delivery_date: order.scheduled_date,
+    sequence: idx * 2 + 2,
+    action_type: '回収',
+    delivery_type: order.order_type,
+    scheduled_time: order.scheduled_date.to_time + 14.hours,
+    location_type: 'Restaurant',
+    location_name: order.restaurant.name,
+    address: order.restaurant.pickup_address,
+    phone: order.restaurant.phone
   )
 end
 puts "配送シート項目作成完了"
@@ -348,17 +374,18 @@ puts "\n=========================================="
 puts "seedデータ作成完了！"
 puts "=========================================="
 puts "AdminUser: #{AdminUser.count}件"
-puts "Staff: #{Staff.count}件"
 puts "OwnLocation: #{OwnLocation.count}件"
 puts "Company: #{Company.count}件"
 puts "Restaurant: #{Restaurant.count}件"
 puts "DeliveryCompany: #{DeliveryCompany.count}件"
 puts "Driver: #{Driver.count}件"
 puts "Menu: #{Menu.count}件"
+puts "RecurringOrder: #{RecurringOrder.count}件"
 puts "Supply: #{Supply.count}件"
 puts "SupplyStock: #{SupplyStock.count}件"
 puts "SupplyMovement: #{SupplyMovement.count}件"
 puts "Order: #{Order.count}件"
+puts "OrderItem: #{OrderItem.count}件"
 puts "DeliverySheetItem: #{DeliverySheetItem.count}件"
 puts "=========================================="
 puts "ログイン情報: admin@example.com / password"

@@ -1,7 +1,9 @@
 .content-wrapper
   .content-header
     .container-fluid
-      h1.m-0 配送計画編集
+      .d-flex.justify-content-between.align-items-center
+        h1.m-0 配送計画編集
+        = button_to '削除', admin_delivery_plan_path(@delivery_plan), method: :delete, class: 'btn btn-danger', data: { confirm: 'この配送計画を削除してよろしいですか？紐づくアイテムは未アサインに戻ります。', turbo_confirm: 'この配送計画を削除してよろしいですか？紐づくアイテムは未アサインに戻ります。' }
 
   .content
     .container-fluid
@@ -9,18 +11,22 @@
         .col-md-8
           .card
             .card-body
-              = form_with model: [:admin, @delivery_plan], local: true do |f|
+              = form_with model: [:admin, @delivery_plan], local: true, data: { controller: 'delivery-plan-form' } do |f|
                 .form-group
                   = f.label :delivery_date, '配送日'
                   = f.date_field :delivery_date, class: 'form-control', required: true
 
                 .form-group
                   = f.label :delivery_company_id, '配送会社'
-                  = f.collection_select :delivery_company_id, DeliveryCompany.where(is_active: true), :id, :name, {}, class: 'form-control', required: true
+                  = f.collection_select :delivery_company_id, DeliveryCompany.order(:name), :id, :name, {}, class: 'form-control', required: true, data: { delivery_plan_form_target: 'deliveryCompany', action: 'change->delivery-plan-form#filterDrivers' }
 
                 .form-group
                   = f.label :driver_id, 'ドライバー'
-                  = f.collection_select :driver_id, DeliveryUser.where(is_active: true), :id, :name, { prompt: '未アサイン' }, class: 'form-control'
+                  select.form-control name="delivery_plan[driver_id]" data-delivery-plan-form-target="driver"
+                    option value="" selected=(@delivery_plan.driver_id.blank?) 未アサイン
+                    - Driver.order(:name).each do |driver|
+                      option value=driver.id selected=(driver.id == @delivery_plan.driver_id) data-delivery-company-id="#{driver.delivery_company_id}"
+                        = driver.name
 
                 .form-group
                   = f.label :status, 'ステータス'

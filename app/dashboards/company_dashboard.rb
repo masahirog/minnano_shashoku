@@ -17,7 +17,15 @@ class CompanyDashboard < Administrate::BaseDashboard
     contact_email: Field::String,
     contact_person: Field::String,
     contact_phone: Field::String,
-    contract_status: Field::String,
+    contract_status: Field::Select.with_options(
+      collection: [
+        ['契約中', 'active'],
+        ['トライアル', 'trial'],
+        ['見込み', 'prospect'],
+        ['休止中', 'paused'],
+        ['終了', 'ended']
+      ]
+    ),
     contract_end_date: Field::Date,
     default_meal_count: Field::Number,
     delivery_address: Field::Text,
@@ -39,8 +47,9 @@ class CompanyDashboard < Administrate::BaseDashboard
     initial_fee_waived: Field::Boolean,
     monthly_fee_type: Field::String,
     name: Field::String,
+    notes: Field::Text,
     orders: Field::HasMany,
-    recurring_orders: NestedHasManyField,
+    recurring_orders: Field::HasMany,
     paypay_employee_rate_1: Field::Number,
     paypay_employee_rate_2: Field::Number,
     paypay_enabled: Field::Boolean,
@@ -113,6 +122,7 @@ class CompanyDashboard < Administrate::BaseDashboard
     digital_signage_id
     delivery_notes
     pickup_notes
+    notes
     orders
     supply_stocks
     created_at
@@ -129,7 +139,6 @@ class CompanyDashboard < Administrate::BaseDashboard
     contract_status
     first_delivery_date
     contract_end_date
-    recurring_orders
     color
     contact_person
     contact_phone
@@ -165,6 +174,7 @@ class CompanyDashboard < Administrate::BaseDashboard
     digital_signage_id
     delivery_notes
     pickup_notes
+    notes
   ].freeze
 
   # COLLECTION_FILTERS

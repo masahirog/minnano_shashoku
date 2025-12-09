@@ -83,8 +83,9 @@ ja:
         employee_burden_amount: 従業員負担額
         delivery_time_goal: 納品時間目安
         pickup_time_goal: 集荷時間目安
-        delivery_notes: 納品時備考
-        pickup_notes: 集荷時間備考
+        delivery_notes: 納品時メモ
+        pickup_notes: ピックアップ時メモ
+        notes: メモ
         monthly_fee_type: 月額利用料種別
         initial_fee_amount: 初期費用金額
         delivery_fee_campaign_end_date: 配送料サービスキャンペーン末日

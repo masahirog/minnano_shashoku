@@ -4,6 +4,7 @@ Rails.application.routes.draw do
       resources :companies
       resources :delivery_companies
       resources :delivery_sheet_items
+      resources :delivery_plan_items
       resources :drivers
       resources :delivery_users
       resources :delivery_assignments do
@@ -73,6 +74,8 @@ Rails.application.routes.draw do
         member do
           post :add_orders
           patch :reorder_items
+          patch :move_items
+          patch :update_item_time
         end
         resources :delivery_plan_items, only: [:new, :create, :edit, :update, :destroy]
       end

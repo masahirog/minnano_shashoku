@@ -1,33 +1,29 @@
 module Admin
   class RecurringOrdersController < Admin::ApplicationController
-    # Overwrite any of the RESTful controller actions to implement custom behavior
-    # For example, you may want to send an email after a foo is updated.
-    #
-    # def update
-    #   super
-    #   send_foo_updated_email(requested_resource)
-    # end
+    # 企業ごとにグループ化して表示（契約中・トライアル・見込みの企業をすべて表示）
+    def index
+      @companies = Company.includes(:recurring_orders)
+                          .where(contract_status: ['active', 'trial', 'prospect'])
+                          .order(:name)
+    end
 
-    # Override this method to specify custom lookup behavior.
-    # This will be used to set the resource for the `show`, `edit`, and `update`
-    # actions.
-    #
-    # def find_resource(param)
-    #   Foo.find_by!(slug: param)
-    # end
+    # 企業単位で定期案件を編集
+    def edit
+      @company = Company.find(params[:id])
+      # 登録済みの定期案件のみ取得
+      @recurring_orders = @company.recurring_orders.order(:day_of_week)
+    end
 
-    # The result of this lookup will be available as `requested_resource`
+    def update
+      @company = Company.find(params[:id])
 
-    # Override this if you have certain roles that require a subset
-    # this will be used to set the records shown on the `index` action.
-    #
-    # def scoped_resource
-    #   if current_user.super_admin?
-    #     resource_class
-    #   else
-    #     resource_class.with_less_stuff
-    #   end
-    # end
+      if @company.update(company_params)
+        redirect_to admin_recurring_orders_path, notice: "#{@company.name}の定期案件を更新しました"
+      else
+        @recurring_orders = @company.recurring_orders.order(:day_of_week)
+        render :edit, status: :unprocessable_entity
+      end
+    end
 
     # 一括注文生成アクション
     def bulk_generate
@@ -45,34 +41,26 @@ module Admin
       redirect_to admin_recurring_orders_path
     end
 
-    # 新規作成（company_idパラメータがあれば企業を自動設定）
+    # 新規作成（company_idパラメータが必須）
     def new
-      if params[:company_id].present?
-        @company = Company.find(params[:company_id])
-        resource = RecurringOrder.new(company: @company)
-      else
-        resource = RecurringOrder.new
+      if params[:company_id].blank?
+        redirect_to admin_recurring_orders_path, alert: '企業を選択してください'
+        return
       end
 
-      authorize_resource(resource)
-      render locals: {
-        page: Administrate::Page::Form.new(dashboard, resource),
-      }
+      @company = Company.find(params[:company_id])
+      # 登録済みの定期案件のみ取得（初回は空）
+      @recurring_orders = @company.recurring_orders.order(:day_of_week)
     end
 
     def create
-      resource = RecurringOrder.new(resource_params)
-      authorize_resource(resource)
+      @company = Company.find(params[:company_id])
 
-      if resource.save
-        redirect_to(
-          [namespace, resource],
-          notice: translate_with_resource("create.success"),
-        )
+      if @company.update(company_params)
+        redirect_to admin_recurring_orders_path, notice: "#{@company.name}の定期案件を登録しました"
       else
-        render :new, locals: {
-          page: Administrate::Page::Form.new(dashboard, resource),
-        }, status: :unprocessable_entity
+        @recurring_orders = @company.recurring_orders.order(:day_of_week)
+        render :new, status: :unprocessable_entity
       end
     end
 
@@ -106,6 +94,15 @@ module Admin
     end
 
     private
+
+    def company_params
+      params.require(:company).permit(
+        recurring_orders_attributes: [
+          :id, :day_of_week, :meal_count, :delivery_time,
+          :is_active, :status, :notes, :_destroy
+        ]
+      )
+    end
 
     def resource_params
       params.require(:recurring_order).permit(

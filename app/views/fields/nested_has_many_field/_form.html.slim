@@ -21,13 +21,13 @@
                         =< "- #{menu.restaurant&.name}"
               .col-md-1
                 = ff.label :tax_rate, "税率", class: "form-label small mb-1"
-                = ff.number_field :tax_rate, class: "form-control form-control-sm bg-light text-center", readonly: true, data: { nested_order_items_target: "taxRate" }
+                = ff.number_field :tax_rate, class: "form-control form-control-sm bg-secondary-subtle text-center", readonly: true, data: { nested_order_items_target: "taxRate" }
               .col-md-1
                 = ff.label :quantity, "数量", class: "form-label small mb-1"
                 = ff.number_field :quantity, class: "form-control form-control-sm", min: 0, value: ff.object.quantity || 0, data: { nested_order_items_target: "quantity", action: "input->nested-order-items#calculateSubtotal" }
               .col-md-1
                 = ff.label :unit_price, "単価", class: "form-label small mb-1"
-                = ff.number_field :unit_price, class: "form-control form-control-sm bg-light", readonly: true, data: { nested_order_items_target: "unitPrice" }
+                = ff.number_field :unit_price, class: "form-control form-control-sm bg-secondary-subtle", readonly: true, data: { nested_order_items_target: "unitPrice" }
               .col-md-2
                 = ff.label :discount_type, "割引種別", class: "form-label small mb-1"
                 = ff.select :discount_type, options_for_select([["割引なし", ""], ["%引き", "percentage"], ["円引き", "fixed_amount"]], ff.object.discount_type), {}, class: "form-control form-control-sm", data: { nested_order_items_target: "discountType", action: "change->nested-order-items#calculateSubtotal" }
@@ -36,7 +36,9 @@
                 = ff.number_field :discount_value, class: "form-control form-control-sm", min: 0, value: ff.object.discount_value || 0, data: { nested_order_items_target: "discountValue", action: "input->nested-order-items#calculateSubtotal" }
               .col-md-2
                 = ff.label :subtotal, "小計", class: "form-label small mb-1"
-                = ff.number_field :subtotal, class: "form-control form-control-sm bg-light", readonly: true, data: { nested_order_items_target: "subtotal" }
+                input.form-control.form-control-sm.bg-secondary-subtle type="number" readonly="" data-nested-order-items-target="subtotalDisplay" value="#{ff.object.subtotal || 0}"
+                = ff.hidden_field :subtotal, data: { nested_order_items_target: "subtotal" }
+                = ff.hidden_field :discount_amount, value: ff.object.discount_amount || 0, data: { nested_order_items_target: "discountAmount" }
               .col-md-1.text-center
                 = ff.label :_destroy, "削除", class: "form-label small mb-1 d-block"
                 = ff.hidden_field :_destroy, value: '0'
@@ -54,13 +56,13 @@
                 option value="" メニューを選択
             .col-md-1
               label.form-label.small.mb-1 税率
-              input.form-control.form-control-sm.bg-light.text-center type="number" name="#{f.object_name}[#{field.attribute}_attributes][NEW_RECORD][tax_rate]" readonly="" data-nested-order-items-target="taxRate" value=""
+              input.form-control.form-control-sm.bg-secondary-subtle.text-center type="number" name="#{f.object_name}[#{field.attribute}_attributes][NEW_RECORD][tax_rate]" readonly="" data-nested-order-items-target="taxRate" value=""
             .col-md-1
               label.form-label.small.mb-1 数量
               input.form-control.form-control-sm type="number" name="#{f.object_name}[#{field.attribute}_attributes][NEW_RECORD][quantity]" min="0" value="0" data-nested-order-items-target="quantity" data-action="input->nested-order-items#calculateSubtotal"
             .col-md-1
               label.form-label.small.mb-1 単価
-              input.form-control.form-control-sm.bg-light type="number" name="#{f.object_name}[#{field.attribute}_attributes][NEW_RECORD][unit_price]" readonly="" data-nested-order-items-target="unitPrice"
+              input.form-control.form-control-sm.bg-secondary-subtle type="number" name="#{f.object_name}[#{field.attribute}_attributes][NEW_RECORD][unit_price]" readonly="" data-nested-order-items-target="unitPrice"
             .col-md-2
               label.form-label.small.mb-1 割引種別
               select.form-control.form-control-sm name="#{f.object_name}[#{field.attribute}_attributes][NEW_RECORD][discount_type]" data-nested-order-items-target="discountType" data-action="change->nested-order-items#calculateSubtotal"
@@ -72,15 +74,15 @@
               input.form-control.form-control-sm type="number" name="#{f.object_name}[#{field.attribute}_attributes][NEW_RECORD][discount_value]" min="0" value="0" data-nested-order-items-target="discountValue" data-action="input->nested-order-items#calculateSubtotal"
             .col-md-2
               label.form-label.small.mb-1 小計
-              input.form-control.form-control-sm.bg-light type="number" name="#{f.object_name}[#{field.attribute}_attributes][NEW_RECORD][subtotal]" readonly="" data-nested-order-items-target="subtotal"
+              input.form-control.form-control-sm.bg-secondary-subtle type="number" readonly="" data-nested-order-items-target="subtotalDisplay" value="0"
+              input type="hidden" name="#{f.object_name}[#{field.attribute}_attributes][NEW_RECORD][subtotal]" data-nested-order-items-target="subtotal" value="0"
+              input type="hidden" name="#{f.object_name}[#{field.attribute}_attributes][NEW_RECORD][discount_amount]" value="0" data-nested-order-items-target="discountAmount"
             .col-md-1.text-center
               label.form-label.small.mb-1.d-block 削除
               button.btn.btn-danger.btn-sm type="button" data-action="click->nested-order-items#removeItem" style="width: 40px; height: 31px;" ×
 
       javascript:
         (function() {
-          console.log('✅ ネストフォーム JavaScript 初期化');
-
           const wrapper = document.querySelector('[data-controller="nested-order-items"]');
           const container = document.querySelector('[data-nested-order-items-target="container"]');
           const template = document.querySelector('[data-nested-order-items-target="template"]');
@@ -93,18 +95,11 @@
 
           // 全メニューデータを取得
           const allMenus = JSON.parse(wrapper.getAttribute('data-all-menus') || '[]');
-          console.log('📋 全メニュー数:', allMenus.length);
-
-          // レストランが変更された時の処理（Selectize対応）
-          console.log('✅ レストランselectにイベントリスナーを設定します（Selectize対応）');
 
           // メニュー更新処理
           function updateMenuSelects(newRestaurantId) {
-            console.log('🏪 レストランが変更されました:', newRestaurantId, '(型:', typeof newRestaurantId + ')');
-
             // 既存の全メニューselectを更新
             const menuSelects = container.querySelectorAll('[data-nested-order-items-target="menuSelect"]');
-            console.log('📝 更新対象のメニューselect数:', menuSelects.length);
 
             menuSelects.forEach(select => {
               // selectを初期化
@@ -114,7 +109,6 @@
               if (newRestaurantId) {
                 // 型変換して比較（文字列と数値の両方に対応）
                 const filteredMenus = allMenus.filter(m => String(m.restaurant_id) === String(newRestaurantId));
-                console.log('🔍 フィルター結果:', filteredMenus.length, '件', filteredMenus.map(m => m.name));
 
                 filteredMenus.forEach(menu => {
                   const option = document.createElement('option');
@@ -124,7 +118,6 @@
                   option.textContent = menu.name;
                   select.appendChild(option);
                 });
-                console.log('✅ メニューを', filteredMenus.length, '件更新しました');
               }
 
               // 単価と小計もクリア
@@ -136,7 +129,6 @@
                 if (subtotalInput) subtotalInput.value = '';
               }
             });
-            console.log('🔄 全メニューselectを更新しました');
           }
 
           // Selectizeの初期化を待ってイベントリスナーを設定
@@ -145,8 +137,6 @@
 
             if (restaurantSelectElement && restaurantSelectElement.selectize) {
               const selectizeInstance = restaurantSelectElement.selectize;
-              console.log('✅ Selectizeインスタンスを取得しました');
-
               selectizeInstance.on('change', updateMenuSelects);
               return true;
             }
@@ -158,7 +148,6 @@
           const maxAttempts = 10;
           const checkInterval = setInterval(function() {
             attempts++;
-            console.log('🔄 Selectize初期化チェック (試行', attempts, '/', maxAttempts + ')');
 
             if (setupSelectizeListener()) {
               clearInterval(checkInterval);
@@ -168,17 +157,13 @@
             }
           }, 100);
 
-          console.log('✅ 要素が見つかりました');
-
           // メニュー追加
           addBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            console.log('➕ メニュー追加ボタンがクリックされました');
 
             // その時点でのレストランselectを取得
             const restaurantSelect = document.querySelector('select[name*="[restaurant_id]"]');
             const currentRestaurantId = restaurantSelect ? restaurantSelect.value : null;
-            console.log('🏪 現在のレストランID:', currentRestaurantId);
 
             const timestamp = new Date().getTime();
             let content = template.innerHTML.replace(/NEW_RECORD/g, timestamp);
@@ -197,7 +182,6 @@
               if (currentRestaurantId) {
                 // 型変換して比較（文字列と数値の両方に対応）
                 const filteredMenus = allMenus.filter(m => String(m.restaurant_id) === String(currentRestaurantId));
-                console.log('🔍 メニュー追加時のフィルター:', filteredMenus.length, '件');
 
                 filteredMenus.forEach(menu => {
                   const option = document.createElement('option');
@@ -207,17 +191,11 @@
                   option.textContent = menu.name;
                   newMenuSelect.appendChild(option);
                 });
-                console.log('✅ レストラン用メニュー', filteredMenus.length, '件を追加しました');
-              } else {
-                // レストランが未選択の場合は空のまま
-                console.log('⚠️ レストランが未選択のため、メニューは空です');
               }
             }
 
             // 新しく追加された要素にイベントリスナーを設定
             setupItemEvents(newItem);
-
-            console.log('✅ メニュー行を追加しました');
           });
 
           // 既存のアイテムにイベント設定
@@ -229,7 +207,9 @@
             const unitPriceInput = item.querySelector('[data-nested-order-items-target="unitPrice"]');
             const discountTypeSelect = item.querySelector('[data-nested-order-items-target="discountType"]');
             const discountValueInput = item.querySelector('[data-nested-order-items-target="discountValue"]');
+            const discountAmountInput = item.querySelector('[data-nested-order-items-target="discountAmount"]');
             const subtotalInput = item.querySelector('[data-nested-order-items-target="subtotal"]');
+            const subtotalDisplay = item.querySelector('[data-nested-order-items-target="subtotalDisplay"]');
             const destroyCheckbox = item.querySelector('input[name$="[_destroy]"]');
             const removeBtn = item.querySelector('.btn-danger');
 
@@ -261,7 +241,13 @@
 
             // 割引種別変更時に小計を再計算
             if (discountTypeSelect) {
-              discountTypeSelect.addEventListener('change', calculateSubtotal);
+              discountTypeSelect.addEventListener('change', function() {
+                // 割引なしの場合、割引値を空にする
+                if (this.value === '' && discountValueInput) {
+                  discountValueInput.value = '';
+                }
+                calculateSubtotal();
+              });
             }
 
             // 割引値変更時に小計を再計算
@@ -294,24 +280,49 @@
               const discountType = discountTypeSelect ? discountTypeSelect.value : '';
               const discountValue = parseFloat(discountValueInput?.value) || 0;
 
-              // 基本金額
-              let baseAmount = quantity * unitPrice;
-
-              // 割引計算
-              let discountAmount = 0;
+              // 割引後の単価を計算
+              let discountedUnitPrice = unitPrice;
               if (discountType === 'percentage') {
-                // パーセント引き
-                discountAmount = baseAmount * (discountValue / 100);
+                // %引き: 単価 × (100 - 割引率) / 100
+                discountedUnitPrice = unitPrice * (100 - discountValue) / 100;
               } else if (discountType === 'fixed_amount') {
-                // 円引き
-                discountAmount = discountValue;
+                // 円引き: 単価 - 割引額
+                discountedUnitPrice = unitPrice - discountValue;
               }
 
-              // 小計（整数に丸める）
-              const subtotal = Math.round(baseAmount - discountAmount);
+              // 小計 = 数量 × 割引後単価（整数に丸める）
+              const subtotal = Math.round(quantity * discountedUnitPrice);
 
+              // 割引額 = (元の単価 - 割引後単価) × 数量（整数に丸める）
+              const discountAmount = Math.round((unitPrice - discountedUnitPrice) * quantity);
+
+              console.log('🧮 割引計算:', {
+                quantity, unitPrice,
+                discountType, discountValue,
+                割引後単価: discountedUnitPrice,
+                割引額合計: discountAmount,
+                小計: subtotal
+              });
+
+              // hidden fieldに設定
               if (subtotalInput) {
                 subtotalInput.value = subtotal;
+              }
+
+              // 表示用フィールドに設定
+              if (subtotalDisplay) {
+                subtotalDisplay.value = subtotal;
+                console.log('✅ subtotal表示更新:', subtotal);
+              } else {
+                console.error('❌ subtotalDisplay が見つかりません');
+              }
+
+              // 割引額をhidden fieldに設定
+              if (discountAmountInput) {
+                discountAmountInput.value = discountAmount;
+                console.log('✅ discount_amount設定:', discountAmount);
+              } else {
+                console.error('❌ discountAmountInput が見つかりません');
               }
 
               // Order全体の金額を再計算
@@ -327,6 +338,8 @@
             let subtotal8 = 0;  // 8%対象の小計
             let subtotal10 = 0; // 10%対象の小計
 
+            console.log('💰 calculateOrderTotals実行開始');
+
             allSubtotalInputs.forEach((subtotalInput, index) => {
               const item = subtotalInput.closest('[data-nested-order-items-target="item"]');
               if (!item) return;
@@ -336,6 +349,7 @@
               if (destroyCheckbox && destroyCheckbox.value === '1') return;
 
               const subtotal = parseFloat(subtotalInput.value) || 0;
+              console.log(`📝 Item ${index}: subtotal読取 = ${subtotal}, name = ${subtotalInput.name}`);
               orderSubtotal += subtotal;
 
               // 税率を取得（デフォルトは8%）
@@ -359,11 +373,11 @@
             const deliveryFee = deliveryFeeInput ? Math.round(parseFloat(deliveryFeeInput.value) || 0) : 0;
             const deliveryFeeTax = Math.round(deliveryFee * 0.10);
 
-            // 割引額を取得
+            // 案件割引を取得
             const discountAmountInput = document.querySelector('input[name="order[discount_amount]"]');
             const discountAmount = discountAmountInput ? Math.round(parseFloat(discountAmountInput.value) || 0) : 0;
 
-            // 合計金額を計算
+            // 合計金額を計算（案件レベルの割引を反映）
             const totalPrice = Math.round(orderSubtotal + totalTax + deliveryFee + deliveryFeeTax - discountAmount);
 
             // 各フィールドを更新
@@ -373,6 +387,14 @@
             updateReadonlyField('order[tax]', totalTax);
             updateReadonlyField('order[delivery_fee_tax]', deliveryFeeTax);
             updateReadonlyField('order[total_price]', totalPrice);
+
+            // 小計フィールド（商品小計 + 配送料）も更新
+            const calculatedSubtotal = orderSubtotal + deliveryFee;
+            updateFieldById('calculated_subtotal', calculatedSubtotal);
+
+            // 10%税合計フィールド（商品の10% + 配送料の税）も更新
+            const tax10Total = tax10 + deliveryFeeTax;
+            updateFieldById('calculated_tax_10_total', tax10Total);
           }
 
           // Readonlyフィールドを更新
@@ -383,31 +405,30 @@
             }
           }
 
-          // 配送料や割引額の変更を監視（要素が読み込まれるまで待機）
+          // IDでフィールドを更新
+          function updateFieldById(id, value) {
+            const input = document.getElementById(id);
+            if (input) {
+              input.value = value;
+            }
+          }
+
+          // 配送料と案件割引の変更を監視（要素が読み込まれるまで待機）
           function setupOrderFieldListeners() {
             const deliveryFeeInput = document.querySelector('input[name="order[delivery_fee]"]');
             const discountAmountInput = document.querySelector('input[name="order[discount_amount]"]');
 
-            console.log('配送料input:', deliveryFeeInput);
-            console.log('割引金額input:', discountAmountInput);
-
-            let setupComplete = false;
-
             if (deliveryFeeInput) {
               deliveryFeeInput.addEventListener('input', calculateOrderTotals);
               deliveryFeeInput.addEventListener('change', calculateOrderTotals);
-              console.log('✅ 配送料のイベントリスナーを設定しました');
-              setupComplete = true;
             }
 
             if (discountAmountInput) {
               discountAmountInput.addEventListener('input', calculateOrderTotals);
               discountAmountInput.addEventListener('change', calculateOrderTotals);
-              console.log('✅ 割引金額のイベントリスナーを設定しました');
-              setupComplete = true;
             }
 
-            return deliveryFeeInput && discountAmountInput;
+            return deliveryFeeInput;
           }
 
           // 初期化を試行（最大20回、200msごと）
@@ -415,14 +436,13 @@
           const maxOrderFieldAttempts = 20;
           const orderFieldCheckInterval = setInterval(function() {
             orderFieldAttempts++;
-            console.log('🔄 配送料・割引金額フィールドチェック (試行', orderFieldAttempts, '/', maxOrderFieldAttempts + ')');
 
             if (setupOrderFieldListeners()) {
               clearInterval(orderFieldCheckInterval);
               // ページロード時に一度計算
               setTimeout(calculateOrderTotals, 100);
             } else if (orderFieldAttempts >= maxOrderFieldAttempts) {
-              console.error('❌ 配送料・割引金額のinputが見つかりませんでした（タイムアウト）');
+              console.error('❌ 配送料のinputが見つかりませんでした（タイムアウト）');
               clearInterval(orderFieldCheckInterval);
               // 見つからなくても一度計算
               setTimeout(calculateOrderTotals, 100);
@@ -435,7 +455,7 @@
   .field-unit__label.col-md-2 style='margin:0;'
     label 商品小計
   .field-unit__field.col-md-10 style='margin: 0;'
-    input.form-control.text-end.bg-light type="number" name="order[subtotal]" readonly="" value="#{f.object.subtotal}"
+    input.form-control.text-end.bg-secondary-subtle type="number" name="order[subtotal]" readonly="" value="#{f.object.subtotal}"
 
 .field-unit.col-md-12
   .field-unit__label.col-md-2 style='margin:0;'
@@ -445,33 +465,33 @@
 
 .field-unit.col-md-12
   .field-unit__label.col-md-2 style='margin:0;'
-    label 割引
-  .field-unit__field.col-md-10 style='margin: 0;'
-    input.form-control.text-end type="number" name="order[discount_amount]" value="#{f.object.discount_amount}"
-
-.field-unit.col-md-12
-  .field-unit__label.col-md-2 style='margin:0;'
     label 小計
   .field-unit__field.col-md-10 style='margin: 0;'
-    input.form-control.text-end.bg-light type="number" id="calculated_subtotal" readonly="" value="#{f.object.subtotal.to_i + f.object.delivery_fee.to_i - f.object.discount_amount.to_i}"
+    input.form-control.text-end.bg-secondary-subtle type="number" id="calculated_subtotal" readonly="" value="#{f.object.subtotal.to_i + f.object.delivery_fee.to_i}"
 
 .field-unit.col-md-12
   .field-unit__label.col-md-2 style='margin:0;'
     label 8%税
   .field-unit__field.col-md-10 style='margin: 0;'
-    input.form-control.text-end.bg-light type="number" name="order[tax_8_percent]" readonly="" value="#{f.object.tax_8_percent}"
+    input.form-control.text-end.bg-secondary-subtle type="number" name="order[tax_8_percent]" readonly="" value="#{f.object.tax_8_percent}"
 
 .field-unit.col-md-12
   .field-unit__label.col-md-2 style='margin:0;'
     label 10%税
   .field-unit__field.col-md-10 style='margin: 0;'
-    input.form-control.text-end.bg-light type="number" id="calculated_tax_10_total" readonly="" value="#{f.object.tax_10_percent.to_i + f.object.delivery_fee_tax.to_i}"
+    input.form-control.text-end.bg-secondary-subtle type="number" id="calculated_tax_10_total" readonly="" value="#{f.object.tax_10_percent.to_i + f.object.delivery_fee_tax.to_i}"
+
+.field-unit.col-md-12
+  .field-unit__label.col-md-2 style='margin:0;'
+    label 案件割引
+  .field-unit__field.col-md-10 style='margin: 0;'
+    input.form-control.text-end type="number" name="order[discount_amount]" value="#{f.object.discount_amount}" placeholder="0"
 
 .field-unit.col-md-12
   .field-unit__label.col-md-2 style='margin:0;'
     label.fw-bold 合計
   .field-unit__field.col-md-10 style='margin: 0;'
-    input.form-control.text-end.bg-light.fw-bold type="number" name="order[total_price]" readonly="" value="#{f.object.total_price}"
+    input.form-control.text-end.bg-secondary-subtle.fw-bold type="number" name="order[total_price]" readonly="" value="#{f.object.total_price}"
 
 / 非表示フィールド
 input type="hidden" name="order[tax_10_percent]" value="#{f.object.tax_10_percent}"
@@ -480,42 +500,6 @@ input type="hidden" name="order[tax]" value="#{f.object.tax}"
 
 javascript:
   (function() {
-    function updateCalculatedFields() {
-      const subtotal = parseFloat(document.querySelector('input[name="order[subtotal]"]')?.value) || 0;
-      const deliveryFee = parseFloat(document.querySelector('input[name="order[delivery_fee]"]')?.value) || 0;
-      const discountAmount = parseFloat(document.querySelector('input[name="order[discount_amount]"]')?.value) || 0;
-      const tax10 = parseFloat(document.querySelector('input[name="order[tax_10_percent]"]')?.value) || 0;
-      const deliveryFeeTax = parseFloat(document.querySelector('input[name="order[delivery_fee_tax]"]')?.value) || 0;
-
-      // 小計（商品小計 + 配送料 - 割引）
-      const calculatedSubtotal = subtotal + deliveryFee - discountAmount;
-      const calculatedSubtotalField = document.getElementById('calculated_subtotal');
-      if (calculatedSubtotalField) {
-        calculatedSubtotalField.value = calculatedSubtotal;
-      }
-
-      // 10%税（商品の10% + 配送料の税）
-      const tax10Total = tax10 + deliveryFeeTax;
-      const tax10TotalField = document.getElementById('calculated_tax_10_total');
-      if (tax10TotalField) {
-        tax10TotalField.value = tax10Total;
-      }
-    }
-
-    // 初期表示
-    setTimeout(updateCalculatedFields, 600);
-
-    // 値の変更を監視
-    setTimeout(() => {
-      ['order[subtotal]', 'order[delivery_fee]', 'order[discount_amount]', 'order[tax_10_percent]', 'order[delivery_fee_tax]'].forEach(name => {
-        const field = document.querySelector(`input[name="${name}"]`);
-        if (field) {
-          field.addEventListener('change', updateCalculatedFields);
-          field.addEventListener('input', updateCalculatedFields);
-        }
-      });
-    }, 600);
-
     // 送信ボタンにBootstrapクラスを適用
     setTimeout(() => {
       const submitButton = document.querySelector('input[type="submit"]');
