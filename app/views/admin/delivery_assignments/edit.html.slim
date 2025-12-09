@@ -34,7 +34,7 @@ section.content
                 .input-group
                   input.form-control type="text" value="Order ##{@delivery_assignment.order.id} - #{@delivery_assignment.order.company&.name} - #{@delivery_assignment.order.scheduled_date.strftime('%Y/%m/%d')} - #{@delivery_assignment.order.menu&.name} (#{@delivery_assignment.order.default_meal_count}食)" readonly=""
                   .input-group-append
-                    = link_to admin_order_path(@delivery_assignment.order), target: '_blank', class: 'btn btn-info' do
+                    = link_to admin_order_path(@delivery_assignment.order), target: '_blank', class: 'btn btn-sm btn-info' do
                       i.fas.fa-external-link-alt
                       |  詳細
                 small.form-text.text-muted
@@ -90,8 +90,8 @@ section.content
                   strong 完了済みの案件です
                   p.mb-0.mt-2 完了済みの案件の変更は推奨されません。
             .card-footer
-              = f.submit '更新', class: 'btn btn-primary'
-              = link_to 'キャンセル', admin_delivery_assignment_path(@delivery_assignment), class: 'btn btn-default ml-2'
+              = f.submit '更新', class: 'btn btn-sm btn-primary'
+              = link_to 'キャンセル', admin_delivery_assignment_path(@delivery_assignment), class: 'btn btn-sm btn-secondary ml-2'
 
       .col-md-4
         / 案件詳細情報
@@ -176,14 +176,14 @@ section.content
           .card-header
             h3.card-title その他の操作
           .card-body
-            = link_to admin_delivery_assignment_path(@delivery_assignment), class: 'btn btn-block btn-default' do
+            = link_to admin_delivery_assignment_path(@delivery_assignment), class: 'btn btn-sm btn-block btn-secondary' do
               i.fas.fa-arrow-left.mr-2
               | 詳細に戻る
-            = link_to admin_delivery_assignments_path, class: 'btn btn-block btn-secondary' do
+            = link_to admin_delivery_assignments_path, class: 'btn btn-sm btn-block btn-secondary' do
               i.fas.fa-list.mr-2
               | 一覧に戻る
             - if @delivery_assignment.status == 'pending'
-              = link_to admin_delivery_assignment_path(@delivery_assignment), method: :delete, data: { confirm: '本当に削除しますか？' }, class: 'btn btn-block btn-danger mt-3' do
+              = link_to admin_delivery_assignment_path(@delivery_assignment), method: :delete, data: { confirm: '本当に削除しますか？' }, class: 'btn btn-sm btn-block btn-danger mt-3' do
                 i.fas.fa-trash.mr-2
                 | 削除
 

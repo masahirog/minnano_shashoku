@@ -3,7 +3,7 @@
     .container-fluid
       .d-flex.justify-content-between.align-items-center
         h1.m-0 配送計画編集
-        = button_to '削除', admin_delivery_plan_path(@delivery_plan), method: :delete, class: 'btn btn-danger', data: { confirm: 'この配送計画を削除してよろしいですか？紐づくアイテムは未アサインに戻ります。', turbo_confirm: 'この配送計画を削除してよろしいですか？紐づくアイテムは未アサインに戻ります。' }
+        = button_to '削除', admin_delivery_plan_path(@delivery_plan), method: :delete, class: 'btn btn-sm btn-danger', data: { confirm: 'この配送計画を削除してよろしいですか？紐づくアイテムは未アサインに戻ります。', turbo_confirm: 'この配送計画を削除してよろしいですか？紐づくアイテムは未アサインに戻ります。' }
 
   .content
     .container-fluid
@@ -37,5 +37,5 @@
                   = f.text_area :notes, class: 'form-control', rows: 3
 
                 .form-group
-                  = f.submit '更新', class: 'btn btn-primary'
-                  = link_to 'キャンセル', admin_delivery_plans_path(date: @delivery_plan.delivery_date), class: 'btn btn-secondary ml-2'
+                  = f.submit '更新', class: 'btn btn-sm btn-primary'
+                  = link_to 'キャンセル', admin_delivery_plans_path(date: @delivery_plan.delivery_date), class: 'btn btn-sm btn-secondary ml-2'

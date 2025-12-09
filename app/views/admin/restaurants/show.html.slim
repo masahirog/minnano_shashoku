@@ -1,0 +1,256 @@
+- content_for(:title) { t("administrate.actions.show_resource", name: page.page_title) }
+- breadcrumb :admin_restaurant, page.resource
+
+/ Content Header
+.content-header
+  .container-fluid
+    .row.mb-2
+      .col-sm-6
+        h1.m-0
+          = page.page_title
+          - if accessible_action?(page.resource, :edit)
+            = link_to [:edit, namespace, page.resource], class: "btn btn-sm btn-outline-secondary ml-3", title: "編集" do
+              i.fas.fa-pencil-alt
+      .col-sm-6
+        ol.breadcrumb.float-sm-right
+          = breadcrumbs separator: " / ", autoroot: false
+
+/ Main content
+.container-fluid
+  .row
+    / 左カラム - 基本情報
+    .col-md-6
+      / 基本情報カード
+      .card
+        .card-header
+          h3.card-title 基本情報
+
+        .card-body
+          dl.row
+            dt.col-sm-4 ID
+            dd.col-sm-8 = page.resource.id
+
+            dt.col-sm-4 = Restaurant.human_attribute_name(:name)
+            dd.col-sm-8 = page.resource.name
+
+            dt.col-sm-4 = Restaurant.human_attribute_name(:admin_user)
+            dd.col-sm-8
+              - if page.resource.admin_user
+                = link_to page.resource.admin_user.name, [:admin, page.resource.admin_user]
+              - else
+                | 未設定
+
+            dt.col-sm-4 = Restaurant.human_attribute_name(:genre)
+            dd.col-sm-8
+              - if page.resource.genre
+                span.badge.badge-info = page.resource.genre
+              - else
+                | 未設定
+
+            dt.col-sm-4 = Restaurant.human_attribute_name(:contract_status)
+            dd.col-sm-8
+              - if page.resource.contract_status
+                - status_class = case page.resource.contract_status
+                - when 'active'
+                  - 'success'
+                - when 'pending'
+                  - 'warning'
+                - when 'suspended'
+                  - 'secondary'
+                - when 'terminated'
+                  - 'danger'
+                - else
+                  - 'secondary'
+                span.badge class="badge-#{status_class}" = Restaurant::CONTRACT_STATUSES[page.resource.contract_status]
+
+            dt.col-sm-4 = Restaurant.human_attribute_name(:capacity_per_day)
+            dd.col-sm-8 = "#{page.resource.capacity_per_day}食"
+
+          hr
+
+          / 連絡先情報
+          h5.mt-3.mb-3 連絡先情報
+          dl.row
+            dt.col-sm-4 = Restaurant.human_attribute_name(:contact_person)
+            dd.col-sm-8 = page.resource.contact_person.presence || '未設定'
+
+            dt.col-sm-4 = Restaurant.human_attribute_name(:contact_phone)
+            dd.col-sm-8 = page.resource.contact_phone.presence || '未設定'
+
+            dt.col-sm-4 = Restaurant.human_attribute_name(:contact_email)
+            dd.col-sm-8 = page.resource.contact_email.presence || '未設定'
+
+            dt.col-sm-4 = Restaurant.human_attribute_name(:phone)
+            dd.col-sm-8 = page.resource.phone.presence || '未設定'
+
+          hr
+
+          / その他情報
+          h5.mt-3.mb-3 その他情報
+          dl.row
+            dt.col-sm-4 = Restaurant.human_attribute_name(:supplier_code)
+            dd.col-sm-8 = page.resource.supplier_code.presence || '未設定'
+
+            dt.col-sm-4 = Restaurant.human_attribute_name(:invoice_number)
+            dd.col-sm-8 = page.resource.invoice_number.presence || '未設定'
+
+            dt.col-sm-4 = Restaurant.human_attribute_name(:closed_days)
+            dd.col-sm-8
+              - if page.resource.closed_days.present?
+                - day_names = { 'sunday' => '日', 'monday' => '月', 'tuesday' => '火', 'wednesday' => '水', 'thursday' => '木', 'friday' => '金', 'saturday' => '土' }
+                - page.resource.closed_days.each do |day|
+                  - if day_names[day]
+                    span.badge.badge-secondary.mr-1 = day_names[day]
+              - else
+                | 未設定
+
+            dt.col-sm-4 = Restaurant.human_attribute_name(:default_pickup_time)
+            dd.col-sm-8 = page.resource.default_pickup_time&.strftime('%H:%M') || '未設定'
+
+            dt.col-sm-4 = Restaurant.human_attribute_name(:default_return_time)
+            dd.col-sm-8 = page.resource.default_return_time&.strftime('%H:%M') || '未設定'
+
+    / 右カラム - 集荷情報
+    .col-md-6
+      / 集荷情報カード
+      .card
+        .card-header
+          h3.card-title 集荷情報
+
+        .card-body
+          dl.row
+            dt.col-sm-4 = Restaurant.human_attribute_name(:pickup_address)
+            dd.col-sm-8
+              = page.resource.pickup_address.presence || '未設定'
+              / 座標がない場合のみ住所でマップリンクを表示
+              - if page.resource.pickup_address.present? && page.resource.pickup_coordinates.blank?
+                = link_to "https://www.google.com/maps/search/?api=1&query=#{ERB::Util.url_encode(page.resource.pickup_address)}", target: '_blank', class: 'ml-2', title: '地図を開く' do
+                  i.fas.fa-map-marker-alt.text-primary
+
+            dt.col-sm-4 = Restaurant.human_attribute_name(:pickup_building_info)
+            dd.col-sm-8 = page.resource.pickup_building_info.presence || '未設定'
+
+            dt.col-sm-4 = Restaurant.human_attribute_name(:pickup_coordinates)
+            dd.col-sm-8
+              = page.resource.pickup_coordinates.presence || '未設定'
+              / 座標がある場合は座標でマップリンクを表示
+              - if page.resource.pickup_coordinates.present?
+                = link_to "https://www.google.com/maps?q=#{page.resource.pickup_coordinates}", target: '_blank', class: 'ml-2', title: '地図を開く' do
+                  i.fas.fa-map-marker-alt.text-primary
+
+            dt.col-sm-4 = Restaurant.human_attribute_name(:pickup_notes)
+            dd.col-sm-8
+              - if page.resource.pickup_notes.present?
+                = simple_format(page.resource.pickup_notes)
+              - else
+                | 未設定
+
+          / 集荷先写真
+          - if page.resource.pickup_photos.attached?
+            hr
+            h5.mt-3.mb-3 = Restaurant.human_attribute_name(:pickup_photos)
+            .row
+              - page.resource.pickup_photos.each_with_index do |photo, index|
+                .col-md-6.mb-3
+                  .card style="cursor: pointer;" data-toggle="modal" data-target="#photoModal#{index}"
+                    - if photo.image?
+                      = image_tag photo.variant(resize_to_limit: [400, 400]), class: 'card-img-top', style: 'object-fit: cover; height: 200px;'
+                    - else
+                      .card-body.text-center
+                        i.fas.fa-file.fa-3x.text-muted
+                        p.mt-2 = photo.filename
+
+            / モーダル
+            - page.resource.pickup_photos.each_with_index do |photo, index|
+              .modal.fade id="photoModal#{index}" tabindex="-1" role="dialog" aria-labelledby="photoModalLabel#{index}" aria-hidden="true"
+                .modal-dialog.modal-lg.modal-dialog-centered role="document"
+                  .modal-content
+                    .modal-header
+                      h5.modal-title id="photoModalLabel#{index}" = photo.filename.to_s
+                      button.close type="button" data-dismiss="modal" aria-label="Close"
+                        span aria-hidden="true" &times;
+                    .modal-body.text-center
+                      - if photo.image?
+                        = image_tag photo, style: 'max-width: 100%; height: auto;'
+                      - else
+                        p このファイルはプレビューできません
+                        = link_to 'ダウンロード', rails_blob_path(photo, disposition: "attachment"), class: 'btn btn-primary', target: '_blank'
+
+  / 関連データセクション
+  .row.mt-3
+    .col-12
+      / メニュー
+      .card
+        .card-header
+          h3.card-title
+            = Restaurant.human_attribute_name(:menus)
+            span.badge.badge-primary.ml-2 = page.resource.menus.count
+          .card-tools
+            = link_to "すべて表示", admin_menus_path(search: page.resource.name), class: 'btn btn-sm btn-outline-primary'
+        .card-body
+          - if page.resource.menus.any?
+            table.table.table-hover
+              thead
+                tr
+                  th メニュー名
+                  th 1食あたり価格
+                  th 有効
+                  th 操作
+              tbody
+                - page.resource.menus.limit(5).each do |menu|
+                  tr
+                    td = menu.name
+                    td = "¥#{menu.price_per_meal}"
+                    td
+                      - if menu.is_active
+                        span.badge.badge-success 有効
+                      - else
+                        span.badge.badge-secondary 無効
+                    td
+                      = link_to "表示", [:admin, menu], class: 'btn btn-xs btn-outline-primary'
+          - else
+            p.text-muted メニューがありません
+
+    .col-12.mt-3
+      / 案件
+      .card
+        .card-header
+          h3.card-title
+            = Restaurant.human_attribute_name(:orders)
+            span.badge.badge-primary.ml-2 = page.resource.orders.count
+          .card-tools
+            = link_to "すべて表示", admin_orders_path(search: page.resource.name), class: 'btn btn-sm btn-outline-primary'
+        .card-body
+          - if page.resource.orders.any?
+            table.table.table-hover
+              thead
+                tr
+                  th 納品日
+                  th 導入企業
+                  th 案件種別
+                  th 合計食数
+                  th ステータス
+                  th 操作
+              tbody
+                - page.resource.orders.order(scheduled_date: :desc).limit(5).each do |order|
+                  tr
+                    td = order.scheduled_date&.strftime('%Y/%m/%d')
+                    td
+                      = link_to order.company.name, [:admin, order.company]
+                    td = order.order_type
+                    td = "#{order.total_meal_count}食"
+                    td
+                      - status_class = case order.status
+                      - when '確定'
+                        - 'success'
+                      - when '確認待ち'
+                        - 'warning'
+                      - when '完了'
+                        - 'secondary'
+                      - else
+                        - 'info'
+                      span.badge class="badge-#{status_class}" = order.status
+                    td
+                      = link_to "表示", [:admin, order], class: 'btn btn-xs btn-outline-primary'
+          - else
+            p.text-muted 案件がありません

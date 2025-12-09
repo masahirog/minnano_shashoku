@@ -30,5 +30,5 @@
               = f.text_area :notes, class: 'form-control', rows: 3
 
           .modal-footer
-            = link_to 'キャンセル', admin_delivery_plans_path(date: @delivery_plan.delivery_date), class: 'btn btn-secondary', data: { turbo_frame: '_top' }
-            = f.submit '作成', class: 'btn btn-primary'
+            = link_to 'キャンセル', admin_delivery_plans_path(date: @delivery_plan.delivery_date), class: 'btn btn-sm btn-secondary', data: { turbo_frame: '_top' }
+            = f.submit '作成', class: 'btn btn-sm btn-primary'

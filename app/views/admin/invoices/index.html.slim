@@ -6,14 +6,15 @@ header.main-content__header role="banner"
     = content_for(:title)
 
   div
-    = link_to [:new, namespace, page.resource_path.to_sym], class: "button" do
+    = link_to [:new, namespace, page.resource_path.to_sym], class: "btn btn-sm btn-success" do
+      i.fas.fa-plus.mr-1
       | 新規作成
 
     span style="margin-left: 20px;"
       = form_with url: admin_invoice_generations_path, method: :post, local: true, style: "display: inline-block;" do |f|
         = f.select :year, (2020..2030).to_a, { selected: Date.today.year }, style: "height: 35px;"
         = f.select :month, (1..12).to_a, { selected: Date.today.month }, style: "height: 35px;"
-        = f.submit "請求書一括生成", class: "button", data: { confirm: "選択した年月の請求書を一括生成しますか？" }, style: "margin-left: 5px;"
+        = f.submit "請求書一括生成", class: "btn btn-sm btn-primary", data: { confirm: "選択した年月の請求書を一括生成しますか？" }, style: "margin-left: 5px;"
 
 section.main-content__body.main-content__body--flush
   = render("search", search_term: search_term, resource_name: display_resource_name(page.resource_name))

@@ -41,8 +41,8 @@ section.content
                 = f.select :status, options_for_select([['待機中', 'pending'], ['配送中', 'in_transit'], ['完了', 'completed']], params[:status]), { include_blank: '全て' }, class: 'form-control'
           .row
             .col-md-12
-              = f.submit 'フィルター適用', class: 'btn btn-primary'
-              = link_to 'リセット', admin_delivery_assignments_path, class: 'btn btn-default ml-2'
+              = f.submit 'フィルター適用', class: 'btn btn-sm btn-primary'
+              = link_to 'リセット', admin_delivery_assignments_path, class: 'btn btn-sm btn-secondary ml-2'
 
     / Delivery Assignments Card
     .card
@@ -104,10 +104,10 @@ section.content
                       - else
                         span.badge.badge-secondary = assignment.status
                     td.text-center
-                      = link_to '詳細', admin_delivery_assignment_path(assignment), class: 'btn btn-xs btn-info'
-                      = link_to '編集', edit_admin_delivery_assignment_path(assignment), class: 'btn btn-xs btn-primary'
+                      = link_to '詳細', admin_delivery_assignment_path(assignment), class: 'btn btn-sm btn-info'
+                      = link_to '編集', edit_admin_delivery_assignment_path(assignment), class: 'btn btn-sm btn-primary'
                       - if assignment.status == 'pending'
-                        = link_to '削除', admin_delivery_assignment_path(assignment), method: :delete, data: { confirm: '本当に削除しますか？' }, class: 'btn btn-xs btn-danger'
+                        = link_to '削除', admin_delivery_assignment_path(assignment), method: :delete, data: { confirm: '本当に削除しますか？' }, class: 'btn btn-sm btn-danger'
 
           / Pagination
           .mt-3

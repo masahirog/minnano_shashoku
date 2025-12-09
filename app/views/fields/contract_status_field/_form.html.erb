@@ -1,0 +1,9 @@
+<div class="field-unit__label">
+  <%= f.label field.attribute, "契約ステータス" %>
+</div>
+<div class="field-unit__field">
+  <%= f.select field.attribute,
+      options_for_select(Restaurant::CONTRACT_STATUSES.map { |k, v| [v, k] }, f.object.contract_status),
+      { include_blank: '選択してください' },
+      class: "field-unit__input form-control" %>
+</div>

@@ -45,6 +45,7 @@ gem "sassc-rails"
 gem "devise"
 gem "slim-rails"
 gem "gretel"
+gem "ransack"
 
 # バックグラウンド処理
 gem "sidekiq"

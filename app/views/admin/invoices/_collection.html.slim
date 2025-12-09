@@ -30,7 +30,7 @@ table aria-labelledby=collection_presenter.resource_name
             = render_field field
 
         td
-          = link_to 'PDF', admin_invoice_pdf_path(resource), class: 'action-show', target: '_blank'
-          = link_to t("administrate.actions.show"), [namespace, resource], class: "action-show"
-          = link_to t("administrate.actions.edit"), [:edit, namespace, resource], class: "action-edit"
-          = link_to t("administrate.actions.destroy"), [namespace, resource], class: "action-destroy", method: :delete, data: { confirm: t("administrate.actions.confirm") }
+          = link_to 'PDF', admin_invoice_pdf_path(resource), class: 'btn btn-sm btn-success', target: '_blank'
+          = link_to t("administrate.actions.show"), [namespace, resource], class: "btn btn-sm btn-info"
+          = link_to t("administrate.actions.edit"), [:edit, namespace, resource], class: "btn btn-sm btn-primary"
+          = link_to t("administrate.actions.destroy"), [namespace, resource], class: "btn btn-sm btn-danger", method: :delete, data: { confirm: t("administrate.actions.confirm") }

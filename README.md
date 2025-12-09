@@ -135,16 +135,21 @@ docker-compose exec web rails import:all
 
 ## データベース構成
 
+### 基盤・認証
+- admin_users（管理者）
+- own_locations（自社拠点）
+
 ### Phase 1: 案件管理・配送シート
-- staff（スタッフ）
 - companies（導入企業）
 - restaurants（飲食店）
 - menus（メニュー）
 - delivery_companies（配送会社）
 - drivers（ドライバー）
 - orders（案件）
+- order_items（案件明細）
 - recurring_orders（定期注文）
-- delivery_sheet_items（配送シート明細）
+- delivery_plans（配送計画）
+- delivery_plan_items（配送計画アイテム）
 
 ### Phase 2: 請求・支払い・在庫管理
 - invoices（請求書）
@@ -153,6 +158,14 @@ docker-compose exec web rails import:all
 - supplies（備品）
 - supply_stocks（拠点別在庫）
 - supply_movements（入出庫履歴）
+- supply_inventories（在庫棚卸し）
+
+### Phase 3: 配送会社向け機能
+- delivery_users（配送担当者）
+- delivery_assignments（配送割当）
+- delivery_reports（配送報告）
+- delivery_routes（配送ルート記録）
+- push_subscriptions（プッシュ通知購読）
 
 ## ドキュメント
 
@@ -203,6 +216,60 @@ docker-compose exec web rails import:all
 - Web Push通知（新規配送依頼、配送時刻リマインダー）
 - PWA対応（ホーム画面追加、オフライン動作）
 - レスポンシブデザイン（スマホ・タブレット対応）
+
+### Phase 3 Week 5-6 Day 18-21（2025-12-05）
+**配送報告機能実装**
+- DeliveryReportモデル拡張
+  - ActiveStorageによる写真添付機能（形式・サイズバリデーション）
+  - has_photos?メソッド実装
+- Delivery::ReportsController作成
+  - 報告フォーム表示・作成・詳細表示
+  - 適切な認可処理実装
+- モバイル最適化ビュー作成
+  - カメラアクセス機能（写真撮影）
+  - 位置情報取得機能（GPS）
+  - 写真プレビュー機能
+  - 問題種別の条件付き表示
+- RSpecテスト作成（17 examples, 0 failures）
+  - spec/models/delivery_report_spec.rb
+  - spec/requests/delivery/reports_spec.rb
+
+### 定期案件機能改善（2025-12-08）
+**定期案件の作成フロー実装・ビュー統一**
+- 企業選択モーダル経由での定期案件作成機能
+- 企業詳細ページから定期案件登録ボタン追加
+- new/createアクションの標準化（company_idパラメータ対応）
+- 時間入力フィールドを秒なし（時:分のみ）に変更
+- 全ERBビューファイルをSlim形式に統一
+- pickup_timeの日本語を「集荷時間」から「回収時間」に変更
+
+### マイグレーション統合・配送計画機能改善（2025-12-09）
+**マイグレーション統合**
+- 全マイグレーションファイルを削除し、InitialSchemaに統合
+- db:drop, db:create, db:migrate, db:seedで環境を再構築可能に
+
+**配送計画機能の改善**
+- 配送会社とドライバーの連動機能実装
+  - Stimulusコントローラー（delivery_plan_form_controller.js）作成
+  - 配送会社選択時にドライバードロップダウンを動的フィルタリング
+- 配送計画削除機能追加
+  - 削除時に紐づくアイテムを未アサインに戻す（dependent: :nullify）
+  - 削除確認ダイアログ実装
+- 配送計画カラムに統計表示
+  - 案件数（Order count）バッジ表示
+  - アイテム数（DeliveryPlanItem count）バッジ表示
+- モーダルフォーム動作修正
+  - 作成後に一覧画面へ正常に戻るよう修正（turbo: false）
+
+**Orderモデル改善**
+- collection_timeヘルパーメソッド追加（delivery_plan_itemsから取得）
+- warehouse_pickup_timeヘルパーメソッド追加（delivery_plan_itemsから取得）
+- 配送シート画面でのエラー解消
+
+**seedデータ整備**
+- 現在のスキーマに完全対応したseedファイル作成
+- AdminUser, OwnLocation, Company, Restaurant, Menu, Driver等のテストデータ生成
+- DeliveryPlanItem自動生成（Orderコールバック）
 
 ---
 

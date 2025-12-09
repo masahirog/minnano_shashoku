@@ -11,9 +11,9 @@ section.main-content__body.main-content__body--flush
         span 年
         = f.select :month, (1..12).to_a, { selected: @month }, { style: "padding: 5px 10px;" }
         span 月
-        = f.submit "表示", style: "padding: 5px 20px; background: #0074D9; color: white; border: none; border-radius: 4px; cursor: pointer;"
-        = link_to "PDFダウンロード", export_pdf_admin_reports_path(year: @year, month: @month), style: "padding: 5px 20px; background: #FF4136; color: white; text-decoration: none; border-radius: 4px; display: inline-block;"
-        = link_to "CSVダウンロード", export_csv_admin_reports_path(year: @year, month: @month), style: "padding: 5px 20px; background: #2ECC40; color: white; text-decoration: none; border-radius: 4px; display: inline-block;"
+        = f.submit "表示", class: "btn btn-sm btn-primary"
+        = link_to "PDFダウンロード", export_pdf_admin_reports_path(year: @year, month: @month), class: "btn btn-sm btn-danger"
+        = link_to "CSVダウンロード", export_csv_admin_reports_path(year: @year, month: @month), class: "btn btn-sm btn-success"
 
     / サマリーカード
     div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;"

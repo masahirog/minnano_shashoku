@@ -7,6 +7,7 @@ class RecurringOrder < ApplicationRecord
   validates :day_of_week, inclusion: { in: 0..6 }
   validates :meal_count, numericality: { only_integer: true, greater_than: 0 }
   validates :delivery_time, presence: true
+  validates :collection_time, presence: true
 
   # スコープ
   scope :active, -> { where(is_active: true, status: 'active') }

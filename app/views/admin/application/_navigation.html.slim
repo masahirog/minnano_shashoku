@@ -80,9 +80,6 @@ aside.main-sidebar.sidebar-dark-primary.elevation-4
               = link_to calendar_admin_orders_path, class: "nav-link" do
                 p カレンダー
             li.nav-item
-              = link_to admin_delivery_sheet_items_path, class: "nav-link #{nav_link_state(:delivery_sheet_items) == 'active' ? 'active' : ''}" do
-                p 配送シート明細
-            li.nav-item
               = link_to admin_delivery_plans_path, class: "nav-link #{nav_link_state(:delivery_plans) == 'active' ? 'active' : ''}" do
                 p 配送計画
 

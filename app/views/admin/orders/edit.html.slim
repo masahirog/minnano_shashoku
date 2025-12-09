@@ -1,0 +1,61 @@
+- content_for(:title) { t("administrate.actions.edit_resource", name: page.page_title) }
+
+- breadcrumb "admin_#{page.resource_name}".to_sym, page.resource
+
+/ Content Header
+.content-header
+  .container-fluid
+    .row.mb-2
+      .col-sm-6
+        h1.m-0
+          = page.page_title
+          |  の編集
+      .col-sm-6
+        ol.breadcrumb.float-sm-right
+          = breadcrumbs separator: " / ", autoroot: false
+
+= content_for(:header_middle)
+
+/ Main content
+.container-fluid
+  .row
+    .col-12
+      .card
+        .card-header
+          h3.card-title 編集フォーム
+          .card-tools
+            - if accessible_action?(page.resource, :show)
+              = link_to "詳細", [namespace, page.resource], class: "btn btn-info btn-sm"
+
+        = content_for(:header_last)
+
+        = content_for(:before_main)
+
+        - if content_for?(:main)
+          = content_for(:main)
+        - else
+          .card-body
+            = render "form", page: page
+
+        = content_for(:after_main)
+
+javascript:
+  document.addEventListener('DOMContentLoaded', function() {
+    // レストラン選択フィールドを取得
+    const restaurantSelect = document.querySelector('select[name="order[restaurant_id]"]');
+
+    if (restaurantSelect) {
+      // 最初のレストランIDを保存
+      let originalRestaurantId = restaurantSelect.value;
+
+      // レストラン変更時のイベントリスナー
+      restaurantSelect.addEventListener('change', function() {
+        const newRestaurantId = this.value;
+
+        // レストランが変更された場合のみアラート表示
+        if (originalRestaurantId !== newRestaurantId && newRestaurantId !== '') {
+          alert('レストランを変更すると、ピックアップ時間と返却時間がそのレストランのデフォルト時間に上書きされます。変更が必要な際は手動で変更してください。');
+        }
+      });
+    }
+  });

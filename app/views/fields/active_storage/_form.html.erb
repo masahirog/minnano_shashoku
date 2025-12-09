@@ -1,0 +1,42 @@
+<div class="field-unit__label">
+  <%= f.label field.attribute %>
+</div>
+
+<div class="field-unit__field">
+  <% if field.attached? %>
+    <div class="row mb-3">
+      <% field.attachments.each do |attachment| %>
+        <div class="col-md-3 mb-2">
+          <div class="card">
+            <% if attachment.image? %>
+              <%= image_tag attachment.variant(resize_to_limit: [200, 200]), class: 'card-img-top', style: 'object-fit: cover; height: 150px;' %>
+            <% else %>
+              <div class="card-body text-center" style="height: 150px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-file fa-3x text-muted"></i>
+              </div>
+            <% end %>
+            <div class="card-footer p-2">
+              <div class="custom-control custom-checkbox">
+                <%= check_box_tag "remove_attachment_#{attachment.id}", attachment.id, false,
+                    class: 'custom-control-input',
+                    id: "remove_attachment_#{attachment.id}",
+                    name: "#{f.object_name}[remove_#{field.attribute}][]" %>
+                <label class="custom-control-label" for="remove_attachment_<%= attachment.id %>">
+                  削除
+                </label>
+              </div>
+              <small class="text-muted d-block mt-1" style="font-size: 0.7rem; word-break: break-all;"><%= attachment.filename %></small>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="mt-2">
+    <% if field.many? %>
+      <p style="font-size: 0.9em; color: #666; margin-bottom: 5px;">新しい写真を追加（複数選択可能）</p>
+    <% end %>
+    <%= f.file_field field.attribute, field.file_field_options.merge(multiple: true) %>
+  </div>
+</div>

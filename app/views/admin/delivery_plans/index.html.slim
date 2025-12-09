@@ -68,8 +68,8 @@ section.content
               li 既にDeliveryPlanに割り当て済みのOrdersは除外
 
         .modal-footer
-          button.btn.btn-secondary type="button" data-dismiss="modal" キャンセル
-          = f.submit '自動生成', class: 'btn btn-primary', data: { confirm: '配送計画を自動生成します。よろしいですか？' }
+          button.btn.btn-sm.btn-secondary type="button" data-dismiss="modal" キャンセル
+          = f.submit '自動生成', class: 'btn btn-sm btn-primary', data: { confirm: '配送計画を自動生成します。よろしいですか？' }
 
 / モーダル用のturbo-frame
 = turbo_frame_tag 'modal'

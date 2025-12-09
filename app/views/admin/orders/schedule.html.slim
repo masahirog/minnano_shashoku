@@ -50,8 +50,8 @@
                   = f.select :status, options_for_select([['全て', ''], ['保留', 'pending'], ['確定', 'confirmed'], ['完了', 'completed'], ['キャンセル', 'cancelled']], params[:status]), {}, class: 'form-control'
             .row
               .col-md-12
-                = f.submit 'フィルター適用', class: 'btn btn-primary'
-                = link_to 'リセット', schedule_admin_orders_path, class: 'btn btn-default ml-2'
+                = f.submit 'フィルター適用', class: 'btn btn-sm btn-primary'
+                = link_to 'リセット', schedule_admin_orders_path, class: 'btn btn-sm btn-secondary ml-2'
 
       / Schedule Table Card
       .card.card-primary
@@ -120,14 +120,14 @@
                         - if has_conflicts
                           i.fas.fa-exclamation-circle.text-danger.conflict-icon data-toggle="tooltip" data-html="true" title="<strong>スケジュールコンフリクト:</strong><br>#{conflicts.map { |c| c[:message] }.join('<br>')}"
                       td.text-center
-                        = link_to '詳細', admin_order_path(order), class: 'btn btn-xs btn-info', target: '_blank'
+                        = link_to '詳細', admin_order_path(order), class: 'btn btn-sm btn-info', target: '_blank'
                   - if @orders.empty?
                     tr
                       td.text-center.text-muted colspan="11"
                         | 該当する案件がありません
 
             .mt-3
-              = f.submit '選択した案件を更新', class: 'btn btn-primary', id: 'update-button'
+              = f.submit '選択した案件を更新', class: 'btn btn-sm btn-primary', id: 'update-button'
               small.text-muted.ml-3
                 | ※ 日付または時刻を変更した案件のみが更新されます
 

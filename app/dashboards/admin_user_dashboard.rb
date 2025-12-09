@@ -16,7 +16,9 @@ class AdminUserDashboard < Administrate::BaseDashboard
     ),
     phone: Field::String,
     employee_number: Field::String,
-    photo: Field::ActiveStorage,
+    photo: Field::ActiveStorage.with_options(
+      show_preview_size: [150, 150]
+    ),
     is_login_enabled: Field::Boolean,
     companies: Field::HasMany,
     restaurants: Field::HasMany,

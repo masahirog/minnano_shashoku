@@ -4,5 +4,6 @@
   This partial is used on the `show` page to add custom action buttons
   in the header next to Edit/Destroy buttons.
 
-= link_to admin_invoice_pdf_path(page.resource), class: "button button--success", target: "_blank" do
-  | PDFダウンロード
+= link_to admin_invoice_pdf_path(page.resource), class: "btn btn-sm btn-success", target: "_blank" do
+  i.fas.fa-file-pdf.mr-1
+  | PDF

@@ -30,6 +30,24 @@ html lang=I18n.locale
     css:
       /* AdminLTE Customizations */
 
+      /* Fix alignment issue between dt and dd in definition lists */
+      dl.row dt {
+        margin-top: 8px !important;
+      }
+
+      dl.row dd {
+        margin-top: 8px !important;
+      }
+
+      /* 最初のdtとddだけmargin-topを0にする */
+      dl.row dt:first-of-type {
+        margin-top: 0 !important;
+      }
+
+      dl.row dd:first-of-type {
+        margin-top: 0 !important;
+      }
+
       /* Reset Administrate default styles and apply AdminLTE */
       *:not(.fa):not(.fas):not(.far):not(.fab):not(.fal):not(.fad):not([class*="fa-"]) {
         font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;

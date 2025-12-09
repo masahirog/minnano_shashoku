@@ -1,6 +1,5 @@
 class Driver < ApplicationRecord
   belongs_to :delivery_company
-  has_many :delivery_sheet_items
 
   validates :name, presence: true
 
@@ -10,6 +9,6 @@ class Driver < ApplicationRecord
   end
 
   def self.ransackable_associations(auth_object = nil)
-    ["delivery_company", "delivery_sheet_items"]
+    ["delivery_company"]
   end
 end

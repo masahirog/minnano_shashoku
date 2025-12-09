@@ -106,15 +106,15 @@ ja:
         contact_person: 担当者名
         contact_phone: 担当者電話
         contact_email: 担当者メール
-        max_capacity: 対応可能食数
-        pickup_time_with_main: 集荷時刻（本導入あり）
-        pickup_time_trial_only: 集荷時刻（試食会のみ）
+        capacity_per_day: 対応可能食数
+        default_pickup_time: デフォルト集荷時刻
+        default_return_time: デフォルト返却時刻
         pickup_address: 集荷先住所
+        pickup_building_info: 建物名・フロア情報
+        pickup_coordinates: 集荷先座標
+        pickup_notes: 集荷メモ
+        pickup_photos: 集荷先写真
         closed_days: 定休日
-        has_delivery_fee: 配送料発生
-        delivery_fee_per_meal: 配送料（1食あたり）
-        self_delivery: 自社配送
-        trial_available: 試食会対応可能
         created_at: 作成日時
         updated_at: 更新日時
       menu:

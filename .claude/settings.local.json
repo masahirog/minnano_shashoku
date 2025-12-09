@@ -36,7 +36,15 @@
       "Read(//private/tmp/**)",
       "Bash(bin/rails db:schema:dump:*)",
       "Bash(bin/rails db:drop:*)",
-      "Bash(bin/rails:*)"
+      "Bash(bin/rails:*)",
+      "Bash(git push)",
+      "Bash(bundle list:*)",
+      "Bash(bundle install:*)",
+      "Read(//Users/yamashitamasahiro/.rbenv/versions/3.1.4/lib/ruby/gems/3.1.0/gems/administrate-field-active_storage-1.0.6/app/views/fields/active_storage/**)",
+      "Read(//Users/yamashitamasahiro/.rbenv/versions/3.1.4/lib/ruby/gems/3.1.0/gems/administrate-field-active_storage-1.0.6/lib/administrate/field/**)",
+      "Bash(psql:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)"
     ],
     "deny": [],
     "ask": []

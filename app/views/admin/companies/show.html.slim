@@ -1,55 +1,212 @@
 - content_for(:title) { t("administrate.actions.show_resource", name: page.page_title) }
-
-- breadcrumb "admin_#{page.resource_name}".to_sym, page.resource
+- breadcrumb :admin_company, page.resource
 
 / Content Header
 .content-header
   .container-fluid
     .row.mb-2
       .col-sm-6
-        h1.m-0 = page.page_title
+        h1.m-0
+          = page.page_title
+          - if accessible_action?(page.resource, :edit)
+            = link_to [:edit, namespace, page.resource], class: "btn btn-sm btn-outline-secondary ml-3", title: "編集" do
+              i.fas.fa-pencil-alt
+          = link_to "定期案件を登録", new_admin_recurring_order_path(company_id: page.resource.id), class: "btn btn-sm btn-success ml-2"
       .col-sm-6
         ol.breadcrumb.float-sm-right
           = breadcrumbs separator: " / ", autoroot: false
 
-= content_for(:header_middle)
-
 / Main content
 .container-fluid
   .row
-    .col-12
+    / 左カラム - 基本情報
+    .col-md-6
+      / 基本情報カード
       .card
         .card-header
-          h3.card-title 詳細情報
-          .card-tools style="display: flex; gap: 10px;"
-            = link_to "定期案件を登録", new_admin_recurring_order_path(company_id: page.resource.id), class: "btn btn-success btn-sm"
+          h3.card-title 基本情報
 
-            - if accessible_action?(page.resource, :edit)
-              = link_to "編集", [:edit, namespace, page.resource], class: "btn btn-primary btn-sm"
+        .card-body
+          dl.row
+            dt.col-sm-4 ID
+            dd.col-sm-8 = page.resource.id
 
-            - if accessible_action?(page.resource, :destroy)
-              = button_to "削除", [namespace, page.resource], class: "btn btn-danger btn-sm", method: :delete, data: { turbo_confirm: t("administrate.actions.confirm") }
+            dt.col-sm-4 = Company.human_attribute_name(:name)
+            dd.col-sm-8 = page.resource.name
 
-        = content_for(:header_last)
+            dt.col-sm-4 = Company.human_attribute_name(:formal_name)
+            dd.col-sm-8 = page.resource.formal_name
 
-        = content_for(:before_main)
+            dt.col-sm-4 = Company.human_attribute_name(:admin_user)
+            dd.col-sm-8
+              - if page.resource.admin_user
+                = link_to page.resource.admin_user.name, [:admin, page.resource.admin_user]
+              - else
+                | 未設定
 
-        - if content_for?(:main)
-          = content_for(:main)
-        - else
-          .card-body
-            - page.attributes.each do |title, attributes|
-              - if title.present?
-                h5.mt-3.mb-3 = t "helpers.label.#{page.resource_name}.#{title}", default: title
+            dt.col-sm-4 = Company.human_attribute_name(:contract_status)
+            dd.col-sm-8
+              - if page.resource.contract_status
+                - status_class = case page.resource.contract_status
+                - when 'active'
+                  - 'success'
+                - when 'pending'
+                  - 'warning'
+                - when 'suspended'
+                  - 'secondary'
+                - when 'terminated'
+                  - 'danger'
+                - else
+                  - 'secondary'
+                span.badge class="badge-#{status_class}" = page.resource.contract_status
 
-              dl.row
-                - attributes.each do |attribute|
-                  dt.col-sm-3 id=attribute.name
-                    = t("helpers.label.#{resource_name}.#{attribute.name}", default: page.resource.class.human_attribute_name(attribute.name))
-                  dd.col-sm-9
-                    = render_field attribute, page: page
+          hr
 
-              - unless title == page.attributes.keys.last
-                hr
+          / 連絡先情報
+          h5.mt-3.mb-3 連絡先情報
+          dl.row
+            dt.col-sm-4 = Company.human_attribute_name(:contact_person)
+            dd.col-sm-8 = page.resource.contact_person.presence || '未設定'
 
-        = content_for(:after_main)
+            dt.col-sm-4 = Company.human_attribute_name(:contact_phone)
+            dd.col-sm-8 = page.resource.contact_phone.presence || '未設定'
+
+            dt.col-sm-4 = Company.human_attribute_name(:contact_email)
+            dd.col-sm-8 = page.resource.contact_email.presence || '未設定'
+
+            dt.col-sm-4 = Company.human_attribute_name(:delivery_address)
+            dd.col-sm-8 = page.resource.delivery_address.presence || '未設定'
+
+    / 右カラム - 契約・配送情報
+    .col-md-6
+      / 契約情報カード
+      .card
+        .card-header
+          h3.card-title 契約情報
+
+        .card-body
+          dl.row
+            dt.col-sm-5 = Company.human_attribute_name(:first_delivery_date)
+            dd.col-sm-7 = page.resource.first_delivery_date&.strftime('%Y/%m/%d') || '未設定'
+
+            dt.col-sm-5 = Company.human_attribute_name(:contract_end_date)
+            dd.col-sm-7 = page.resource.contract_end_date&.strftime('%Y/%m/%d') || '未設定'
+
+            dt.col-sm-5 = Company.human_attribute_name(:default_meal_count)
+            dd.col-sm-7 = page.resource.default_meal_count ? "#{page.resource.default_meal_count}食" : '未設定'
+
+            dt.col-sm-5 = Company.human_attribute_name(:delivery_day_of_week)
+            dd.col-sm-7 = page.resource.delivery_day_of_week.presence || '未設定'
+
+      / 配送情報カード
+      .card.mt-3
+        .card-header
+          h3.card-title 配送情報
+
+        .card-body
+          dl.row
+            dt.col-sm-5 = Company.human_attribute_name(:delivery_time_goal)
+            dd.col-sm-7 = page.resource.delivery_time_goal&.strftime('%H:%M') || '未設定'
+
+            dt.col-sm-5 = Company.human_attribute_name(:pickup_time_goal)
+            dd.col-sm-7 = page.resource.pickup_time_goal&.strftime('%H:%M') || '未設定'
+
+            dt.col-sm-5 = Company.human_attribute_name(:has_setup)
+            dd.col-sm-7
+              - if page.resource.has_setup
+                span.badge.badge-success あり
+              - else
+                span.badge.badge-secondary なし
+
+            dt.col-sm-5 = Company.human_attribute_name(:delivery_notes)
+            dd.col-sm-7
+              - if page.resource.delivery_notes.present?
+                = simple_format(page.resource.delivery_notes)
+              - else
+                | 未設定
+
+  / 関連データセクション
+  .row.mt-3
+    .col-12
+      / 定期案件
+      .card
+        .card-header
+          h3.card-title
+            = Company.human_attribute_name(:recurring_orders)
+            span.badge.badge-primary.ml-2 = page.resource.recurring_orders.count
+          .card-tools
+            = link_to "すべて表示", admin_recurring_orders_path(search: page.resource.name), class: 'btn btn-sm btn-outline-primary'
+        .card-body
+          - if page.resource.recurring_orders.any?
+            table.table.table-hover
+              thead
+                tr
+                  th 曜日
+                  th 食数
+                  th 配達時間
+                  th 回収時間
+                  th 有効
+                  th 操作
+              tbody
+                - page.resource.recurring_orders.each do |recurring_order|
+                  tr
+                    td = recurring_order.day_of_week
+                    td = "#{recurring_order.meal_count}食"
+                    td = recurring_order.delivery_time&.strftime('%H:%M')
+                    td = recurring_order.collection_time&.strftime('%H:%M')
+                    td
+                      - if recurring_order.is_active
+                        span.badge.badge-success 有効
+                      - else
+                        span.badge.badge-secondary 無効
+                    td
+                      = link_to "表示", [:admin, recurring_order], class: 'btn btn-xs btn-outline-primary'
+          - else
+            p.text-muted 定期案件がありません
+
+    .col-12.mt-3
+      / 案件
+      .card
+        .card-header
+          h3.card-title
+            = Company.human_attribute_name(:orders)
+            span.badge.badge-primary.ml-2 = page.resource.orders.count
+          .card-tools
+            = link_to "すべて表示", admin_orders_path(search: page.resource.name), class: 'btn btn-sm btn-outline-primary'
+        .card-body
+          - if page.resource.orders.any?
+            table.table.table-hover
+              thead
+                tr
+                  th 納品日
+                  th 飲食店
+                  th 案件種別
+                  th 合計食数
+                  th ステータス
+                  th 操作
+              tbody
+                - page.resource.orders.order(scheduled_date: :desc).limit(5).each do |order|
+                  tr
+                    td = order.scheduled_date&.strftime('%Y/%m/%d')
+                    td
+                      - if order.restaurant
+                        = link_to order.restaurant.name, [:admin, order.restaurant]
+                      - else
+                        | -
+                    td = order.order_type
+                    td = "#{order.total_meal_count}食"
+                    td
+                      - status_class = case order.status
+                      - when '確定'
+                        - 'success'
+                      - when '確認待ち'
+                        - 'warning'
+                      - when '完了'
+                        - 'secondary'
+                      - else
+                        - 'info'
+                      span.badge class="badge-#{status_class}" = order.status
+                    td
+                      = link_to "表示", [:admin, order], class: 'btn btn-xs btn-outline-primary'
+          - else
+            p.text-muted 案件がありません

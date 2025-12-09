@@ -49,8 +49,8 @@ section.content
                 = f.select :delivery_company_id, options_from_collection_for_select(DeliveryCompany.order(:name), :id, :name, params[:delivery_company_id]), { include_blank: '全て' }, class: 'form-control'
           .row
             .col-md-12
-              = f.submit 'フィルター適用', class: 'btn btn-primary'
-              = link_to 'リセット', delivery_sheets_admin_orders_path, class: 'btn btn-default ml-2'
+              = f.submit 'フィルター適用', class: 'btn btn-sm btn-primary'
+              = link_to 'リセット', delivery_sheets_admin_orders_path, class: 'btn btn-sm btn-secondary ml-2'
 
     / Delivery Sheet Card
     .card
@@ -147,10 +147,10 @@ section.content
                         - else
                           | -
                       td.text-center
-                        = link_to '詳細', admin_order_path(order), class: 'btn btn-xs btn-info', target: '_blank'
+                        = link_to '詳細', admin_order_path(order), class: 'btn btn-sm btn-info', target: '_blank'
 
           .mt-3
-            = link_to delivery_sheet_pdf_admin_orders_path(start_date: params[:start_date] || @start_date, end_date: params[:end_date] || @end_date, company_id: params[:company_id], restaurant_id: params[:restaurant_id], delivery_company_id: params[:delivery_company_id]), class: 'btn btn-success btn-lg', target: '_blank' do
+            = link_to delivery_sheet_pdf_admin_orders_path(start_date: params[:start_date] || @start_date, end_date: params[:end_date] || @end_date, company_id: params[:company_id], restaurant_id: params[:restaurant_id], delivery_company_id: params[:delivery_company_id]), class: 'btn btn-sm btn-success', target: '_blank' do
               i.fas.fa-file-pdf.mr-2
               | 配送シートをPDF出力
         - else

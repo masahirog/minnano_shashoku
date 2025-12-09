@@ -68,8 +68,8 @@ section.main-content__body.main-content__body--flush
         = text_area_tag :notes, nil, rows: 3, style: "width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
 
       div style="display: flex; gap: 10px;"
-        = submit_tag '登録', style: "padding: 10px 20px; background: #0074D9; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;"
-        = link_to 'キャンセル', admin_supply_movements_path, style: "padding: 10px 20px; background: #ddd; color: #333; border: none; border-radius: 4px; text-decoration: none; display: inline-block;"
+        = submit_tag '登録', class: 'btn btn-sm btn-primary'
+        = link_to 'キャンセル', admin_supply_movements_path, class: 'btn btn-sm btn-secondary'
 
 javascript:
   const companies = #{raw @companies.map { |c| { id: c.id, name: c.name } }.to_json};

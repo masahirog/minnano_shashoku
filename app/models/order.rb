@@ -5,7 +5,6 @@ class Order < ApplicationRecord
   belongs_to :recurring_order, optional: true
   has_many :order_items, dependent: :destroy
   has_many :menus, through: :order_items
-  has_many :delivery_sheet_items
   has_many :invoice_items
   has_one :delivery_assignment, dependent: :destroy
   has_many :delivery_plan_items, dependent: :destroy
@@ -39,7 +38,7 @@ class Order < ApplicationRecord
   end
 
   def self.ransackable_associations(auth_object = nil)
-    ["company", "delivery_company", "delivery_sheet_items", "invoice_items",
+    ["company", "delivery_company", "invoice_items",
      "order_items", "menus", "restaurant", "delivery_plan_items", "delivery_plans"]
   end
 
@@ -169,14 +168,6 @@ class Order < ApplicationRecord
                  "この日の合計食数（#{total_meals}食）が飲食店のキャパシティ（#{restaurant.capacity_per_day}食）を超えています")
     end
 
-    # max_lots_per_dayをチェック（同じ日の案件数）
-    if restaurant.max_lots_per_day
-      total_orders = same_day_orders.count + 1
-      if total_orders > restaurant.max_lots_per_day
-        errors.add(:scheduled_date,
-                   "この日の案件数（#{total_orders}件）が飲食店の1日の最大ロット数（#{restaurant.max_lots_per_day}件）を超えています")
-      end
-    end
   end
 
   # 合計を計算
@@ -275,12 +266,20 @@ class Order < ApplicationRecord
     # 既存のDeliveryPlanItemsを取得
     existing_items = delivery_plan_items.reload
 
+    # recurring_orderから時間を取得（存在する場合）
+    delivery_time_str = recurring_order&.delivery_time&.strftime('%H:%M') || '11:00'
+    collection_time_str = recurring_order&.collection_time&.strftime('%H:%M') || '13:00'
+
+    # restaurantから時間を取得（存在する場合）
+    pickup_time_str = restaurant&.default_pickup_time&.strftime('%H:%M') || '10:00'
+    return_time_str = restaurant&.default_return_time&.strftime('%H:%M') || '15:00'
+
     # 各アクションタイプと対応する情報
     default_items = [
-      { action_type: 'pickup', location_type: :restaurant, location_id: restaurant_id, time: '10:00' },
-      { action_type: 'delivery', location_type: :company, location_id: company_id, time: '11:00' },
-      { action_type: 'collection', location_type: :company, location_id: company_id, time: '13:00' },
-      { action_type: 'return', location_type: :restaurant, location_id: restaurant_id, time: '15:00' }
+      { action_type: 'pickup', location_type: :restaurant, location_id: restaurant_id, time: pickup_time_str },
+      { action_type: 'delivery', location_type: :company, location_id: company_id, time: delivery_time_str },
+      { action_type: 'collection', location_type: :company, location_id: company_id, time: collection_time_str },
+      { action_type: 'return', location_type: :restaurant, location_id: restaurant_id, time: return_time_str }
     ]
 
     default_items.each do |item_config|

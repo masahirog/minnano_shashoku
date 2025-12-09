@@ -1,0 +1,30 @@
+<div class="field-unit__label">
+  <%= f.label field.attribute, "定休日" %>
+</div>
+<div class="field-unit__field">
+  <div class="checkbox-group" style="display: flex; flex-wrap: wrap; gap: 15px;">
+    <%
+      days = [
+        ['日曜日', 'sunday'],
+        ['月曜日', 'monday'],
+        ['火曜日', 'tuesday'],
+        ['水曜日', 'wednesday'],
+        ['木曜日', 'thursday'],
+        ['金曜日', 'friday'],
+        ['土曜日', 'saturday']
+      ]
+      current_closed_days = f.object.closed_days || []
+    %>
+
+    <% days.each do |day_name, day_value| %>
+      <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+        <%= check_box_tag "#{f.object_name}[closed_days][]", day_value,
+            current_closed_days.include?(day_value),
+            id: "#{f.object_name}_closed_days_#{day_value}" %>
+        <%= day_name %>
+      </label>
+    <% end %>
+
+    <%= hidden_field_tag "#{f.object_name}[closed_days][]", "" %>
+  </div>
+</div>

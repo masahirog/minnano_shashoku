@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_12_09_031343) do
+ActiveRecord::Schema[7.1].define(version: 2025_12_09_065854) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -236,30 +236,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_09_031343) do
     t.index ["recorded_at"], name: "index_delivery_routes_on_recorded_at"
   end
 
-  create_table "delivery_sheet_items", force: :cascade do |t|
-    t.bigint "order_id", null: false
-    t.bigint "driver_id"
-    t.date "delivery_date", null: false
-    t.integer "sequence", null: false
-    t.string "action_type", null: false
-    t.string "delivery_type"
-    t.time "scheduled_time"
-    t.string "location_type"
-    t.string "location_name"
-    t.text "address"
-    t.string "phone"
-    t.boolean "has_setup", default: false
-    t.text "meal_info"
-    t.text "supplies_info"
-    t.text "notes"
-    t.string "photo_url"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["delivery_date", "sequence"], name: "index_delivery_sheet_items_on_delivery_date_and_sequence"
-    t.index ["driver_id"], name: "index_delivery_sheet_items_on_driver_id"
-    t.index ["order_id"], name: "index_delivery_sheet_items_on_order_id"
-  end
-
   create_table "delivery_users", force: :cascade do |t|
     t.string "email", null: false
     t.string "encrypted_password", default: "", null: false
@@ -447,12 +423,12 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_09_031343) do
     t.integer "day_of_week", null: false
     t.integer "meal_count", default: 50, null: false
     t.time "delivery_time", null: false
-    t.time "pickup_time"
     t.boolean "is_active", default: true, null: false
     t.string "status", default: "active", null: false
     t.text "notes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.time "collection_time"
     t.index ["company_id", "day_of_week"], name: "index_recurring_orders_on_company_id_and_day_of_week"
     t.index ["company_id"], name: "index_recurring_orders_on_company_id"
     t.index ["is_active"], name: "index_recurring_orders_on_is_active"
@@ -469,22 +445,16 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_09_031343) do
     t.string "contact_person"
     t.string "contact_phone"
     t.string "contact_email"
-    t.integer "max_capacity", null: false
-    t.string "pickup_time_with_main"
-    t.string "pickup_time_trial_only"
     t.text "pickup_address"
     t.string "closed_days", default: [], array: true
-    t.boolean "has_delivery_fee", default: false
-    t.integer "delivery_fee_per_meal", default: 0
-    t.boolean "self_delivery", default: false
-    t.boolean "trial_available", default: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "capacity_per_day", default: 100
-    t.integer "max_lots_per_day", default: 2
-    t.time "pickup_time_earliest"
-    t.time "pickup_time_latest"
-    t.string "regular_holiday"
+    t.time "default_pickup_time"
+    t.time "default_return_time"
+    t.text "pickup_notes"
+    t.text "pickup_building_info"
+    t.string "pickup_coordinates"
     t.index ["admin_user_id"], name: "index_restaurants_on_admin_user_id"
     t.index ["contract_status"], name: "index_restaurants_on_contract_status"
     t.index ["name"], name: "index_restaurants_on_name"

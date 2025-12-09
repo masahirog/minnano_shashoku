@@ -1,0 +1,202 @@
+- content_for(:title) { t("administrate.actions.show_resource", name: "案件 ##{page.resource.id}") }
+- breadcrumb :admin_order, page.resource
+
+/ Content Header
+.content-header
+  .container-fluid
+    .row.mb-2
+      .col-sm-6
+        h1.m-0
+          | 案件 ##{page.resource.id}
+          - if accessible_action?(page.resource, :edit)
+            = link_to [:edit, namespace, page.resource], class: "btn btn-sm btn-outline-secondary ml-3", title: "編集" do
+              i.fas.fa-pencil-alt
+      .col-sm-6
+        ol.breadcrumb.float-sm-right
+          = breadcrumbs separator: " / ", autoroot: false
+
+/ Main content
+.container-fluid
+  .row
+    / 左カラム
+    .col-md-6
+      / 基本情報
+      .card
+        .card-header
+          h3.card-title 基本情報
+        .card-body
+          dl.row
+            dt.col-sm-4 納品日
+            dd.col-sm-8 = page.resource.scheduled_date&.strftime('%Y/%m/%d')
+
+            dt.col-sm-4 導入企業
+            dd.col-sm-8 = link_to page.resource.company.name, [:admin, page.resource.company]
+
+            dt.col-sm-4 飲食店
+            dd.col-sm-8
+              - if page.resource.restaurant
+                = link_to page.resource.restaurant.name, [:admin, page.resource.restaurant]
+              - else
+                | 未設定
+
+            dt.col-sm-4 配送会社
+            dd.col-sm-8
+              - if page.resource.delivery_company
+                = link_to page.resource.delivery_company.name, [:admin, page.resource.delivery_company]
+              - else
+                | 未設定
+
+            dt.col-sm-4 案件種別
+            dd.col-sm-8 = page.resource.order_type
+
+            dt.col-sm-4 ステータス
+            dd.col-sm-8
+              - status_class = case page.resource.status
+              - when '確定', '完了'
+                - 'success'
+              - when '確認待ち', '準備中'
+                - 'warning'
+              - else
+                - 'info'
+              span.badge class="badge-#{status_class}" = page.resource.status
+
+            dt.col-sm-4 試食会
+            dd.col-sm-8
+              - if page.resource.is_trial
+                span.badge.badge-info 試食会
+              - else
+                | 通常案件
+
+    / 右カラム
+    .col-md-6
+      / 金額情報
+      .card
+        .card-header
+          h3.card-title 金額情報
+        .card-body
+          dl.row
+            dt.col-sm-5 合計食数
+            dd.col-sm-7.font-weight-bold = "#{page.resource.total_meal_count}食"
+
+            dt.col-sm-5 小計
+            dd.col-sm-7 = "¥#{number_with_delimiter(page.resource.subtotal&.to_i)}"
+
+            dt.col-sm-5 消費税（8%）
+            dd.col-sm-7 = "¥#{number_with_delimiter(page.resource.tax_8_percent&.to_i)}"
+
+            dt.col-sm-5 消費税（10%）
+            dd.col-sm-7 = "¥#{number_with_delimiter(page.resource.tax_10_percent&.to_i)}"
+
+            dt.col-sm-5 配送料
+            dd.col-sm-7 = "¥#{number_with_delimiter(page.resource.delivery_fee&.to_i)}"
+
+            dt.col-sm-5 割引額
+            dd.col-sm-7 = "¥#{number_with_delimiter(page.resource.discount_amount&.to_i)}"
+
+            dt.col-sm-5 合計金額
+            dd.col-sm-7.font-weight-bold.text-primary = "¥#{number_with_delimiter(page.resource.total_price&.to_i)}"
+
+      / その他情報
+      .card.mt-3
+        .card-header
+          h3.card-title その他情報
+        .card-body
+          dl.row
+            dt.col-sm-5 回収時刻
+            dd.col-sm-7 = page.resource.collection_time&.strftime('%H:%M') || '未設定'
+
+            dt.col-sm-5 倉庫集荷時刻
+            dd.col-sm-7 = page.resource.warehouse_pickup_time&.strftime('%H:%M') || '未設定'
+
+            dt.col-sm-5 返却場所
+            dd.col-sm-7 = page.resource.return_location.presence || '未設定'
+
+            dt.col-sm-5 備品備考
+            dd.col-sm-7
+              - if page.resource.equipment_notes.present?
+                = simple_format(page.resource.equipment_notes)
+              - else
+                | 未設定
+
+            dt.col-sm-5 メモ
+            dd.col-sm-7
+              - if page.resource.memo.present?
+                = simple_format(page.resource.memo)
+              - else
+                | 未設定
+
+  / 注文明細
+  .row.mt-3
+    .col-12
+      .card
+        .card-header
+          h3.card-title
+            | 注文明細
+            span.badge.badge-primary.ml-2 = page.resource.order_items.count
+        .card-body
+          - if page.resource.order_items.any?
+            table.table.table-hover
+              thead
+                tr
+                  th メニュー名
+                  th 飲食店
+                  th 数量
+                  th 単価
+                  th 小計
+              tbody
+                - page.resource.order_items.includes(:menu).each do |order_item|
+                  tr
+                    td = link_to order_item.menu.name, [:admin, order_item.menu]
+                    td = order_item.menu.restaurant.name
+                    td = "#{order_item.quantity}食"
+                    td = "¥#{number_with_delimiter(order_item.unit_price&.to_i)}"
+                    td.font-weight-bold = "¥#{number_with_delimiter(order_item.subtotal&.to_i)}"
+          - else
+            p.text-muted 注文明細がありません
+
+  / 配送計画
+  .row.mt-3
+    .col-12
+      .card
+        .card-header
+          h3.card-title
+            | 配送計画
+            span.badge.badge-primary.ml-2 = page.resource.delivery_plan_items.count
+        .card-body
+          - if page.resource.delivery_plan_items.any?
+            table.table.table-hover
+              thead
+                tr
+                  th 配送日
+                  th ドライバー
+                  th アクション
+                  th 場所
+                  th 予定時刻
+                  th ステータス
+              tbody
+                - page.resource.delivery_plan_items.includes([{delivery_plan: [:driver, :delivery_company]}, :restaurant, :company, :own_location]).each do |item|
+                  tr
+                    td
+                      - if item.delivery_plan
+                        = item.delivery_plan.delivery_date&.strftime('%Y/%m/%d')
+                      - else
+                        span.badge.badge-warning 未アサイン
+                    td
+                      - if item.delivery_plan&.driver
+                        = item.delivery_plan.driver.name
+                      - else
+                        | 未割当
+                    td = item.action_type_ja
+                    td = item.location_name
+                    td = item.scheduled_time&.strftime('%H:%M')
+                    td
+                      - status_class = case item.status
+                      - when 'completed'
+                        - 'success'
+                      - when 'in_progress'
+                        - 'warning'
+                      - else
+                        - 'secondary'
+                      span.badge class="badge-#{status_class}" = item.status_ja
+          - else
+            p.text-muted 配送計画がありません

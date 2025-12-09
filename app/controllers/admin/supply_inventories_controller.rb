@@ -1,6 +1,5 @@
 module Admin
-  class SupplyInventoriesController < ApplicationController
-    before_action :authenticate_admin
+  class SupplyInventoriesController < Admin::ApplicationController
 
     def index
       @q = SupplyInventory.ransack(params[:q])
@@ -95,12 +94,6 @@ module Admin
 
     def show
       @supply_inventory = SupplyInventory.find(params[:id])
-    end
-
-    private
-
-    def authenticate_admin
-      authenticate_admin_user!
     end
   end
 end

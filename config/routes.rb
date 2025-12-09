@@ -3,7 +3,6 @@ Rails.application.routes.draw do
       resources :admin_users
       resources :companies
       resources :delivery_companies
-      resources :delivery_sheet_items
       resources :delivery_plan_items
       resources :drivers
       resources :delivery_users

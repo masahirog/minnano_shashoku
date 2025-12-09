@@ -1,0 +1,116 @@
+- content_for(:title) { t("administrate.actions.show_resource", name: page.page_title) }
+- breadcrumb :admin_menu, page.resource
+
+/ Content Header
+.content-header
+  .container-fluid
+    .row.mb-2
+      .col-sm-6
+        h1.m-0
+          = page.page_title
+          - if accessible_action?(page.resource, :edit)
+            = link_to [:edit, namespace, page.resource], class: "btn btn-sm btn-outline-secondary ml-3", title: "編集" do
+              i.fas.fa-pencil-alt
+      .col-sm-6
+        ol.breadcrumb.float-sm-right
+          = breadcrumbs separator: " / ", autoroot: false
+
+/ Main content
+.container-fluid
+  .row
+    / 左カラム
+    .col-md-6
+      / 基本情報カード
+      .card
+        .card-header
+          h3.card-title 基本情報
+        .card-body
+          dl.row
+            dt.col-sm-4 ID
+            dd.col-sm-8 = page.resource.id
+
+            dt.col-sm-4 メニュー名
+            dd.col-sm-8 = page.resource.name
+
+            dt.col-sm-4 飲食店
+            dd.col-sm-8
+              - if page.resource.restaurant
+                = link_to page.resource.restaurant.name, [:admin, page.resource.restaurant]
+              - else
+                | 未設定
+
+            dt.col-sm-4 説明
+            dd.col-sm-8
+              - if page.resource.description.present?
+                = simple_format(page.resource.description)
+              - else
+                | 未設定
+
+            dt.col-sm-4 有効
+            dd.col-sm-8
+              - if page.resource.is_active
+                span.badge.badge-success 有効
+              - else
+                span.badge.badge-secondary 無効
+
+    / 右カラム
+    .col-md-6
+      / 価格情報カード
+      .card
+        .card-header
+          h3.card-title 価格情報
+        .card-body
+          dl.row
+            dt.col-sm-5 1食あたり価格
+            dd.col-sm-7.font-weight-bold.text-primary = "¥#{number_with_delimiter(page.resource.price_per_meal&.to_i)}"
+
+            dt.col-sm-5 消費税率
+            dd.col-sm-7 = "#{page.resource.tax_rate}%"
+
+      / 写真
+      - if page.resource.photo_url.present?
+        .card.mt-3
+          .card-header
+            h3.card-title 写真
+          .card-body
+            img src=page.resource.photo_url alt=page.resource.name style="max-width: 100%; height: auto; border-radius: 8px;"
+
+  / 関連データ
+  .row.mt-3
+    .col-12
+      .card
+        .card-header
+          h3.card-title
+            | このメニューを含む案件
+            span.badge.badge-primary.ml-2 = page.resource.order_items.count
+        .card-body
+          - if page.resource.order_items.any?
+            table.table.table-hover
+              thead
+                tr
+                  th 納品日
+                  th 導入企業
+                  th 食数
+                  th 案件ステータス
+                  th 操作
+              tbody
+                - page.resource.order_items.includes(order: :company).limit(10).each do |order_item|
+                  - order = order_item.order
+                  tr
+                    td = order.scheduled_date&.strftime('%Y/%m/%d')
+                    td
+                      = link_to order.company.name, [:admin, order.company]
+                    td = "#{order_item.quantity}食"
+                    td
+                      - status_class = case order.status
+                      - when '確定', '完了'
+                        - 'success'
+                      - when '確認待ち', '準備中'
+                        - 'warning'
+                      - else
+                        - 'secondary'
+                      span.badge class="badge-#{status_class}" = order.status
+                    td
+                      = link_to "表示", [:admin, order], class: 'btn btn-xs btn-outline-primary'
+          - else
+            p.text-muted このメニューを含む案件はありません

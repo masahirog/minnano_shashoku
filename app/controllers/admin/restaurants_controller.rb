@@ -1,44 +1,36 @@
 module Admin
   class RestaurantsController < Admin::ApplicationController
-    # Overwrite any of the RESTful controller actions to implement custom behavior
-    # For example, you may want to send an email after a foo is updated.
-    #
-    # def update
-    #   super
-    #   send_foo_updated_email(requested_resource)
-    # end
+    # Override update to handle photo deletion
+    def update
+      # 削除対象の写真を処理
+      if params[:restaurant][:remove_pickup_photos].present?
+        params[:restaurant][:remove_pickup_photos].each do |attachment_id|
+          attachment = ActiveStorage::Attachment.find_by(id: attachment_id)
+          attachment&.purge
+        end
+      end
 
-    # Override this method to specify custom lookup behavior.
-    # This will be used to set the resource for the `show`, `edit`, and `update`
-    # actions.
-    #
-    # def find_resource(param)
-    #   Foo.find_by!(slug: param)
-    # end
+      # 空のpickup_photosパラメータを削除（新しいファイルが選択されていない場合）
+      if params[:restaurant][:pickup_photos].present?
+        # 空文字列のみの配列の場合はパラメータを削除
+        params[:restaurant].delete(:pickup_photos) if params[:restaurant][:pickup_photos].all?(&:blank?)
+      end
 
-    # The result of this lookup will be available as `requested_resource`
+      super
+    end
 
-    # Override this if you have certain roles that require a subset
-    # this will be used to set the records shown on the `index` action.
-    #
-    # def scoped_resource
-    #   if current_user.super_admin?
-    #     resource_class
-    #   else
-    #     resource_class.with_less_stuff
-    #   end
-    # end
+    # Override `resource_params` to handle array parameters (closed_days, pickup_photos)
+    def resource_params
+      permitted_params = dashboard.permitted_attributes(action_name)
 
-    # Override `resource_params` if you want to transform the submitted
-    # data before it's persisted. For example, the following would turn all
-    # empty values into nil values. It uses other APIs such as `resource_class`
-    # and `dashboard`:
-    #
-    # def resource_params
-    #   params.require(resource_class.model_name.param_key).
-    #     permit(dashboard.permitted_attributes(action_name)).
-    #     transform_values { |value| value == "" ? nil : value }
-    # end
+      # closed_daysとpickup_photosを配列として許可
+      params.require(resource_class.model_name.param_key).permit(
+        *permitted_params,
+        closed_days: [],
+        pickup_photos: [],
+        remove_pickup_photos: []
+      )
+    end
 
     # See https://administrate-demo.herokuapp.com/customizing_controller_actions
     # for more information

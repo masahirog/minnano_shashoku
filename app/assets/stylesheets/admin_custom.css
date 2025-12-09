@@ -1,0 +1,10 @@
+/* Admin Custom Styles */
+
+/* Fix alignment issue between dt and dd in definition lists */
+dl.row dt {
+  margin-top: 0 !important;
+}
+
+dl.row dd {
+  margin-top: 0 !important;
+}

@@ -9,28 +9,28 @@ class RestaurantDashboard < Administrate::BaseDashboard
   # on pages throughout the dashboard.
   ATTRIBUTE_TYPES = {
     id: Field::Number,
-    closed_days: Field::String,
+    closed_days: ClosedDaysField,
     contact_email: Field::String,
     contact_person: Field::String,
     contact_phone: Field::String,
-    contract_status: Field::String,
-    delivery_fee_per_meal: Field::Number,
-    genre: Field::String,
-    has_delivery_fee: Field::Boolean,
+    contract_status: ContractStatusField,
+    genre: GenreField,
     invoice_number: Field::String,
-    max_capacity: Field::Number,
+    capacity_per_day: Field::Number,
     menus: Field::HasMany,
     name: Field::String,
     orders: Field::HasMany,
     phone: Field::String,
-    pickup_address: Field::Text,
-    pickup_time_trial_only: Field::String,
-    pickup_time_with_main: Field::String,
-    self_delivery: Field::Boolean,
+    pickup_address: Field::String,
+    pickup_building_info: Field::String,
+    pickup_coordinates: Field::String,
+    pickup_notes: Field::Text,
+    pickup_photos: Field::ActiveStorage.with_options(direct_upload: true),
     admin_user: Field::BelongsTo,
     supplier_code: Field::String,
     supply_stocks: Field::HasMany,
-    trial_available: Field::Boolean,
+    default_pickup_time: Field::Time,
+    default_return_time: Field::Time,
     created_at: Field::DateTime,
     updated_at: Field::DateTime,
   }.freeze
@@ -61,15 +61,15 @@ class RestaurantDashboard < Administrate::BaseDashboard
     phone
     supplier_code
     invoice_number
-    max_capacity
-    pickup_time_with_main
-    pickup_time_trial_only
+    capacity_per_day
+    default_pickup_time
+    default_return_time
     closed_days
-    has_delivery_fee
-    delivery_fee_per_meal
-    self_delivery
-    trial_available
     pickup_address
+    pickup_building_info
+    pickup_coordinates
+    pickup_notes
+    pickup_photos
     menus
     orders
     supply_stocks
@@ -91,15 +91,15 @@ class RestaurantDashboard < Administrate::BaseDashboard
     phone
     supplier_code
     invoice_number
-    max_capacity
-    pickup_time_with_main
-    pickup_time_trial_only
+    capacity_per_day
+    default_pickup_time
+    default_return_time
     closed_days
-    has_delivery_fee
-    delivery_fee_per_meal
-    self_delivery
-    trial_available
     pickup_address
+    pickup_building_info
+    pickup_coordinates
+    pickup_notes
+    pickup_photos
   ].freeze
 
   # COLLECTION_FILTERS
