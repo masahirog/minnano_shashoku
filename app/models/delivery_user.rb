@@ -8,8 +8,6 @@ class DeliveryUser < ApplicationRecord
   belongs_to :delivery_company
   has_many :delivery_assignments, dependent: :destroy
   has_many :delivery_reports, dependent: :destroy
-  has_many :delivery_routes, dependent: :destroy
-  has_many :push_subscriptions, as: :subscribable, dependent: :destroy
 
   # Validations
   validates :name, presence: true
@@ -45,6 +43,6 @@ class DeliveryUser < ApplicationRecord
   end
 
   def self.ransackable_associations(auth_object = nil)
-    ["delivery_company", "delivery_assignments", "delivery_reports", "delivery_routes"]
+    ["delivery_company", "delivery_assignments", "delivery_reports"]
   end
 end

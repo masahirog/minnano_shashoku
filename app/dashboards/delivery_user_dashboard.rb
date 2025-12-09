@@ -24,8 +24,6 @@ class DeliveryUserDashboard < Administrate::BaseDashboard
     last_sign_in_ip: Field::String,
     delivery_assignments: Field::HasMany,
     delivery_reports: Field::HasMany,
-    delivery_routes: Field::HasMany,
-    push_subscriptions: Field::HasMany,
     created_at: Field::DateTime,
     updated_at: Field::DateTime,
     password: Field::Password,

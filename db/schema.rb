@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_12_09_065854) do
+ActiveRecord::Schema[7.1].define(version: 2025_12_09_122704) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -221,21 +221,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_09_065854) do
     t.index ["report_type"], name: "index_delivery_reports_on_report_type"
   end
 
-  create_table "delivery_routes", force: :cascade do |t|
-    t.bigint "delivery_assignment_id", null: false
-    t.bigint "delivery_user_id", null: false
-    t.datetime "recorded_at", null: false
-    t.decimal "latitude", precision: 10, scale: 7, null: false
-    t.decimal "longitude", precision: 10, scale: 7, null: false
-    t.decimal "accuracy", precision: 5, scale: 2
-    t.decimal "speed", precision: 5, scale: 2
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["delivery_assignment_id"], name: "index_delivery_routes_on_delivery_assignment_id"
-    t.index ["delivery_user_id"], name: "index_delivery_routes_on_delivery_user_id"
-    t.index ["recorded_at"], name: "index_delivery_routes_on_recorded_at"
-  end
-
   create_table "delivery_users", force: :cascade do |t|
     t.string "email", null: false
     t.string "encrypted_password", default: "", null: false
@@ -401,21 +386,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_09_065854) do
     t.index ["invoice_id"], name: "index_payments_on_invoice_id"
     t.index ["payment_date"], name: "index_payments_on_payment_date"
     t.index ["payment_method"], name: "index_payments_on_payment_method"
-  end
-
-  create_table "push_subscriptions", force: :cascade do |t|
-    t.string "subscribable_type", null: false
-    t.bigint "subscribable_id", null: false
-    t.text "endpoint", null: false
-    t.string "p256dh_key", null: false
-    t.string "auth_key", null: false
-    t.text "user_agent"
-    t.boolean "is_active", default: true, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["endpoint"], name: "index_push_subscriptions_on_endpoint", unique: true
-    t.index ["is_active"], name: "index_push_subscriptions_on_is_active"
-    t.index ["subscribable_type", "subscribable_id"], name: "index_push_subscriptions_on_subscribable"
   end
 
   create_table "recurring_orders", force: :cascade do |t|

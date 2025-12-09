@@ -4,7 +4,6 @@ class DeliveryAssignment < ApplicationRecord
   belongs_to :delivery_user
   belongs_to :delivery_company
   has_one :delivery_report, dependent: :destroy
-  has_many :delivery_routes, dependent: :destroy
 
   # Validations
   validates :order_id, presence: true, uniqueness: true
@@ -80,7 +79,7 @@ class DeliveryAssignment < ApplicationRecord
   end
 
   def self.ransackable_associations(auth_object = nil)
-    ["delivery_company", "delivery_report", "delivery_routes", "delivery_user", "order"]
+    ["delivery_company", "delivery_report", "delivery_user", "order"]
   end
 
   private

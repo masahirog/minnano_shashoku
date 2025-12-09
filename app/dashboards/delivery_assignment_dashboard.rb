@@ -20,7 +20,6 @@ class DeliveryAssignmentDashboard < Administrate::BaseDashboard
     ),
     assigned_at: Field::DateTime,
     delivery_report: Field::HasOne,
-    delivery_routes: Field::HasMany,
     created_at: Field::DateTime,
     updated_at: Field::DateTime,
   }.freeze
